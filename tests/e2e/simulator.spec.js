@@ -15,13 +15,13 @@ test.describe('price simulator', () => {
     await page.click('#compute-btn');
 
     await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator('#price-label')).toHaveText('64.00 €'); // 4 + 20×3
+    await expect(page.locator('#price-label')).toHaveText('64 €'); // 4 + 20×3
     await expect(page.locator('#distance-label')).toContainText('20 km');
     await expect(page.locator('#route-label')).toContainText('Leuven');
 
     // Breakdown adds up and the night line stays hidden by day.
-    await expect(page.locator('#line-pickup')).toHaveText('4.00 €');
-    await expect(page.locator('#line-km-cost')).toHaveText('60.00 €');
+    await expect(page.locator('#line-pickup')).toHaveText('4 €');
+    await expect(page.locator('#line-km-cost')).toHaveText('60 €');
     await expect(page.locator('#line-night')).toBeHidden();
 
     // "Indicative" is always shown with a price (CDC §4 rule 2).
@@ -32,7 +32,7 @@ test.describe('price simulator', () => {
     const message = decodeURIComponent(href.split('?text=')[1]);
     expect(message).toContain('Leuven');
     expect(message).toContain('Jan Peeters');
-    expect(message).toContain('64.00 €');
+    expect(message).toContain('64 €');
     expect(message).toContain('indicatief');
   });
 
@@ -42,7 +42,7 @@ test.describe('price simulator', () => {
     await page.click('#compute-btn');
 
     await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator('#price-label')).toHaveText('67.00 €'); // 64 + 3
+    await expect(page.locator('#price-label')).toHaveText('67 €'); // 64 + 3
     await expect(page.locator('#line-night')).toBeVisible();
   });
 
@@ -202,7 +202,7 @@ test.describe('homepage estimator hand-off', () => {
     // night surcharge applies if the suite happens to run between 22:00
     // and 04:00. Derive the expectation instead of hard-coding one.
     const hour = new Date().getHours();
-    const expected = hour >= 22 || hour < 4 ? '61.00 €' : '58.00 €'; // 4 + 18×3 (+3)
+    const expected = hour >= 22 || hour < 4 ? '61 €' : '58 €'; // 4 + 18×3 (+3)
     await expect(page.locator('#price-label')).toHaveText(expected);
   });
 });

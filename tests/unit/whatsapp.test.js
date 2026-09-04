@@ -23,19 +23,26 @@ describe('buildWhatsAppMessage', () => {
     expect(msg).toBe(
       'Hallo, ik wil graag een taxi bestellen op 12/09/2026 om 15:30. ' +
         'Grote Markt, Tienen → Leuven. 2 passagier(s), 1 stuk(s) bagage. ' +
-        'Naam: Jan Peeters. Schatting op de site: 64.00 € (indicatief).'
+        'Naam: Jan Peeters. Schatting op de site: 64 € (indicatief).'
     );
+  });
+
+  it('writes the amount the Belgian way, with a comma for cents', () => {
+    const fare = { total: 42.1, isTbc: false };
+    expect(buildWhatsAppMessage({ locale: 'nl', form: baseForm, fare })).toContain('42,10 €');
+    expect(buildWhatsAppMessage({ locale: 'fr', form: baseForm, fare })).toContain('42,10 €');
+    expect(buildWhatsAppMessage({ locale: 'en', form: baseForm, fare })).toContain('€42.10');
   });
 
   it('builds the FR and EN variants', () => {
     const fr = buildWhatsAppMessage({ locale: 'fr', form: baseForm, fare: { total: 64, isTbc: false } });
     expect(fr).toContain('Bonjour, je souhaite un taxi le 12/09/2026 à 15:30.');
     expect(fr).toContain('2 passager(s), 1 bagage(s).');
-    expect(fr).toContain('Estimation vue sur le site : 64.00 € (indicatif).');
+    expect(fr).toContain('Estimation vue sur le site : 64 € (indicatif).');
 
     const en = buildWhatsAppMessage({ locale: 'en', form: baseForm, fare: { total: 64, isTbc: false } });
     expect(en).toContain('Hello, I would like to book a taxi on 12/09/2026 at 15:30.');
-    expect(en).toContain('Estimate from the website: €64.00 (indicative).');
+    expect(en).toContain('Estimate from the website: €64 (indicative).');
   });
 
   it('always carries the "indicative" wording with a price (CDC §4 rule 2)', () => {

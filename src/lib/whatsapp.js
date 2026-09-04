@@ -5,6 +5,7 @@
 // itemized example — the prototype takes precedence for the user-facing
 // flow (brief §1.3). EN wording is our own translation.
 import { BUSINESS } from '../config/business.js';
+import { formatEuro } from './format.js';
 
 function dmy(isoDate) {
   if (!isoDate) return '';
@@ -37,9 +38,9 @@ export function buildWhatsAppMessage({ locale, form, fare }) {
   const priceLine = fare.isTbc
     ? { fr: 'Merci de me confirmer le prix.', nl: 'Graag de prijs bevestigen.', en: 'Please confirm the price.' }[locale]
     : {
-        fr: `Estimation vue sur le site : ${fare.total.toFixed(2)} € (indicatif).`,
-        nl: `Schatting op de site: ${fare.total.toFixed(2)} € (indicatief).`,
-        en: `Estimate from the website: €${fare.total.toFixed(2)} (indicative).`,
+        fr: `Estimation vue sur le site : ${formatEuro(fare.total, 'fr')} (indicatif).`,
+        nl: `Schatting op de site: ${formatEuro(fare.total, 'nl')} (indicatief).`,
+        en: `Estimate from the website: ${formatEuro(fare.total, 'en')} (indicative).`,
       }[locale];
 
   if (locale === 'fr') {

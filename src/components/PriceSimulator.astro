@@ -231,9 +231,10 @@ const s = t(locale);
   import { autocompleteAddress, routeDistance, MapServiceError } from '../lib/geocoding.js';
   import { estimateFare } from '../lib/fare.js';
   import { buildWhatsAppMessage, buildWhatsAppUrl } from '../lib/whatsapp.js';
+  import { formatEuro, formatKm } from '../lib/format.js';
   import { t } from '../i18n/dictionary.js';
   import { DESTINATIONS } from '../data/destinations.js';
-  import { BUSINESS } from '../config/business.js';
+  import { BUSINESS, FARE } from '../config/business.js';
   import { trackEvent } from '../lib/analytics.js';
 
   const section = document.querySelector('.simulator');
@@ -414,17 +415,20 @@ const s = t(locale);
       const bags = getBags();
 
       document.getElementById('route-label').textContent = `${fromVal} → ${destLabel}`;
-      document.getElementById('distance-label').textContent = isTbc ? s.tbcDist : `${km} km · ~${min} min`;
+      document.getElementById('distance-label').textContent = isTbc
+        ? s.tbcDist
+        : `${formatKm(km, locale)} · ~${min} min`;
 
       const priceEl = document.getElementById('price-label');
-      priceEl.textContent = isTbc ? s.tbcPrice : `${fare.total.toFixed(2)} €`;
+      priceEl.textContent = isTbc ? s.tbcPrice : formatEuro(fare.total, locale);
       priceEl.classList.toggle('is-tbc', isTbc);
 
       document.getElementById('indicative-badge').hidden = isTbc;
       document.getElementById('breakdown').hidden = isTbc;
-      document.getElementById('line-pickup').textContent = `${fare.breakdown.base.toFixed(2)} €`;
-      document.getElementById('line-km-label').textContent = `${km} km × 3 €`;
-      document.getElementById('line-km-cost').textContent = `${fare.breakdown.distance.toFixed(2)} €`;
+      document.getElementById('line-pickup').textContent = formatEuro(fare.breakdown.base, locale);
+      document.getElementById('line-km-label').textContent =
+        `${formatKm(km, locale)} × ${formatEuro(FARE.perKmRate, locale)}`;
+      document.getElementById('line-km-cost').textContent = formatEuro(fare.breakdown.distance, locale);
       document.getElementById('line-night').hidden = !fare.isNight;
       document.getElementById('tbc-note').hidden = !isTbc;
 
