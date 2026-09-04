@@ -14,7 +14,9 @@
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "verify:distances": "node scripts/verify-distances.mjs --ors",
+    "verify:distances:write": "node scripts/verify-distances.mjs --ors --write"
   },
   "dependencies": {
     "astro": "^7.3.1"
