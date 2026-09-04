@@ -3,36 +3,27 @@ import FaqSchema from './FaqSchema.astro';
 
 interface Props {
   title: string;
-  items: Array<{ question: string; answer: string }>;
+  items: Array<{ q: string; a: string }>;
 }
 const { title, items } = Astro.props;
 ---
 
 {
   items.length > 0 && (
-    <section class="faq" aria-labelledby="faq-title">
+    <section aria-labelledby="faq-title">
       <h2 id="faq-title">{title}</h2>
-      {items.map((item, index) => (
-        <details class="faq-item">
-          <summary>{item.question}</summary>
-          <p>{item.answer}</p>
-        </details>
-      ))}
-      <FaqSchema items={items} />
+      <div>
+        {items.map((item) => (
+          <details class="faq-item">
+            <summary>
+              {item.q}
+              <span class="chev" />
+            </summary>
+            <p>{item.a}</p>
+          </details>
+        ))}
+      </div>
+      <FaqSchema items={items.map((i) => ({ question: i.q, answer: i.a }))} />
     </section>
   )
 }
-
-<style>
-  .faq-item {
-    border-bottom: 1px solid var(--color-border);
-    padding-block: 0.75rem;
-  }
-  .faq-item summary {
-    cursor: pointer;
-    font-weight: 600;
-    min-height: 48px;
-    display: flex;
-    align-items: center;
-  }
-</style>

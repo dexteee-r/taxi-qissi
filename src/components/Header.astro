@@ -1,113 +1,113 @@
 ---
-import { localePath } from '../i18n/routes.js';
+import { localePath, alternates, LOCALES, LOCALE_NAMES } from '../i18n/routes.js';
 import { t } from '../i18n/dictionary.js';
 import { BUSINESS } from '../config/business.js';
-import LanguageSwitcher from './LanguageSwitcher.astro';
 import CallButton from './CallButton.astro';
-import WhatsAppButton from './WhatsAppButton.astro';
-
 
 interface Props {
   locale: 'nl' | 'fr' | 'en';
   pageKey: string;
 }
 const { locale, pageKey } = Astro.props;
-const nav = t(locale).nav;
-const isBrandConfirmed = BUSINESS.commercialName && BUSINESS.commercialName !== '[TO_BE_CONFIRMED]';
-const brandLabel = isBrandConfirmed ? BUSINESS.commercialName : t(locale).common.brandNamePending;
+const s = t(locale);
+const langAlternates = alternates(/** @type {any} */ (pageKey));
 
 const navItems = [
-  { key: 'home', label: nav.home },
-  { key: 'services', label: nav.services },
-  { key: 'airport', label: nav.airport },
-  { key: 'rates', label: nav.rates },
-  { key: 'contact', label: nav.contact },
+  { key: 'home', label: s.navHome },
+  { key: 'rates', label: s.navPrices },
+  { key: 'airport', label: s.navAirport },
+  { key: 'services', label: s.navServices },
+  { key: 'contact', label: s.navContact },
 ];
 ---
 
 <header class="site-header">
   <div class="container header-inner">
-    <a class="brand" class:list={{ 'placeholder-marker': !isBrandConfirmed }} href={localePath(locale, 'home')}>
-      {brandLabel}
+    <a class="brand" href={localePath(locale, 'home')}>
+      <span class="name">{BUSINESS.commercialName}</span>
+      <span class="tag">{BUSINESS.address.city.toUpperCase()} · 24/7</span>
     </a>
 
-    <nav class="main-nav" aria-label={nav.home}>
-      <ul>
-        {
-          navItems.map((item) => (
-            <li>
-              <a
-                href={localePath(locale, /** @type {any} */ (item.key))}
-                aria-current={pageKey === item.key ? 'page' : undefined}
-              >
-                {item.label}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
+    <nav class="main-nav" aria-label={s.navHome}>
+      {
+        navItems.map((item) => (
+          <a
+            href={localePath(locale, /** @type {any} */ (item.key))}
+            aria-current={pageKey === item.key ? 'page' : undefined}
+          >
+            {item.label}
+          </a>
+        ))
+      }
     </nav>
 
     <div class="header-actions">
-      <LanguageSwitcher locale={locale} pageKey={pageKey} />
-      <div class="header-buttons">
-        <CallButton locale={locale} />
-        <WhatsAppButton locale={locale} />
+      <details class="lang-switcher">
+        <summary>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#52525B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18"/></svg>
+          {locale.toUpperCase()}
+        </summary>
+        <div class="lang-panel">
+          {
+            langAlternates.map((alt) => (
+              <a href={alt.href} aria-current={alt.locale === locale ? 'page' : undefined}>
+                {LOCALE_NAMES[alt.locale]}
+              </a>
+            ))
+          }
+        </div>
+      </details>
+
+      <div class="header-call">
+        <CallButton locale={locale} withPhone />
       </div>
+
+      <details class="mobile-menu-toggle">
+        <summary aria-label={s.menu}>
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </summary>
+        <div class="mobile-menu-panel">
+          <div class="mobile-menu-head">
+            <span>{s.menu}</span>
+            <button type="button" class="mobile-menu-close" data-menu-close aria-label={s.menu}>
+              <svg width="16" height="16" viewBox="0 0 24 24" stroke="#09090B" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+            </button>
+          </div>
+          <nav class="mobile-menu-nav" aria-label={s.navHome}>
+            {
+              navItems.map((item) => (
+                <a href={localePath(locale, /** @type {any} */ (item.key))}>
+                  <span class="left">{item.label}</span>
+                  <span class="chev" style="transform:rotate(-45deg)" />
+                </a>
+              ))
+            }
+          </nav>
+          <div class="mobile-menu-foot">
+            <CallButton locale={locale} withPhone />
+            <div class="mobile-menu-langs">
+              <span>{s.langLabel}</span>
+              {
+                langAlternates.map((alt) => (
+                  <a href={alt.href} aria-current={alt.locale === locale ? 'page' : undefined}>
+                    {LOCALE_NAMES[alt.locale]}
+                  </a>
+                ))
+              }
+            </div>
+          </div>
+        </div>
+      </details>
     </div>
   </div>
 </header>
 
-<style>
-  .site-header {
-    border-bottom: 1px solid var(--color-border);
-  }
-  .header-inner {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    padding-block: 0.75rem;
-  }
-  .brand {
-    font-weight: 800;
-    font-size: 1.25rem;
-    text-decoration: none;
-    color: var(--color-text);
-  }
-  .main-nav ul {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  .main-nav a {
-    text-decoration: none;
-    color: var(--color-text);
-    min-height: 48px;
-    display: inline-flex;
-    align-items: center;
-  }
-  .main-nav a[aria-current='page'] {
-    color: var(--color-accent);
-    font-weight: 700;
-  }
-  .header-actions {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-  .header-buttons {
-    display: none;
-    gap: 0.5rem;
-  }
-  @media (min-width: 768px) {
-    .header-buttons {
-      display: flex;
-    }
-  }
-</style>
+<script>
+  document.querySelectorAll('[data-menu-close]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      btn.closest('details')?.removeAttribute('open');
+    });
+  });
+</script>

@@ -1,25 +1,21 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { seo } from '../../i18n/seo.js';
-import content from '../../content/fr/privacy.json';
+import { LEGAL } from '../../data/legal.js';
 
 const locale = 'fr';
 const meta = seo[locale].privacy;
+const legal = LEGAL[locale].privacy;
 ---
 
 <BaseLayout locale={locale} pageKey="privacy" title={meta.title} description={meta.description}>
-  <div class="container">
-    <p class="error-box">{content.draftWarning}</p>
-    <h1>{content.title}</h1>
-    <p>{content.intro}</p>
-
-    {
-      content.sections.map((section) => (
-        <section>
-          <h2>{section.heading}</h2>
-          <p>{section.body}</p>
-        </section>
-      ))
-    }
-  </div>
+  <section class="container legal-page" style="padding-block:56px">
+    <h1 style="font-size:clamp(30px,4vw,40px);letter-spacing:-.035em;margin-bottom:28px">{legal.title}</h1>
+    <h2>{legal.h1}</h2>
+    <p>{legal.p1}</p>
+    <h2>{legal.h2}</h2>
+    <p>{legal.p2}</p>
+    <h2>{legal.h3}</h2>
+    <p>{legal.p3}</p>
+  </section>
 </BaseLayout>

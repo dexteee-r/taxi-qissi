@@ -1,0 +1,77 @@
+---
+import { t } from '../i18n/dictionary.js';
+import { BUSINESS } from '../config/business.js';
+
+interface Props {
+  locale: 'nl' | 'fr' | 'en';
+}
+const { locale } = Astro.props;
+const s = t(locale);
+---
+
+<section class="container" style="padding-block:52px;border-top:1px solid var(--color-border)">
+  <div class="zone-grid">
+    <div>
+      <h2>{s.zoneTitle}</h2>
+      <p style="max-width:42ch">{s.zoneSub}</p>
+      <div class="field" style="max-width:340px">
+        <label class="field-label" for="zone-query">{s.zonePh}</label>
+        <input type="text" id="zone-query" data-locale={locale} />
+      </div>
+      <p id="zone-msg" class="notice" style="display:flex;align-items:center;gap:9px;margin-top:12px" hidden></p>
+    </div>
+    <div>
+      <div class="commune-list">
+        {BUSINESS.servedMunicipalities.map((c) => <div>{c}</div>)}
+      </div>
+      <p class="notice" style="margin-top:16px">{s.zoneMore}</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .zone-grid {
+    display: grid;
+    gap: 40px;
+  }
+  @media (min-width: 900px) {
+    .zone-grid {
+      grid-template-columns: 1fr 1.1fr;
+      gap: 64px;
+    }
+  }
+</style>
+
+<script>
+  import { BUSINESS } from '../config/business.js';
+  import { dictionary } from '../i18n/dictionary.js';
+
+  function norm(str) {
+    return str
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z]/g, '');
+  }
+
+  const input = document.getElementById('zone-query');
+  const msg = document.getElementById('zone-msg');
+  if (input && msg) {
+    const locale = input.getAttribute('data-locale') ?? 'nl';
+    const s = dictionary[locale];
+    input.addEventListener('input', () => {
+      const zq = norm(input.value);
+      if (zq.length < 3) {
+        msg.hidden = true;
+        return;
+      }
+      const match =
+        BUSINESS.servedMunicipalities.find((c) => norm(c).indexOf(zq) === 0) ||
+        BUSINESS.servedMunicipalities.find((c) => norm(c).indexOf(zq) >= 0) ||
+        null;
+      msg.hidden = false;
+      msg.textContent = match ? `${s.zoneYes}${match}.` : `« ${input.value.trim()} »${s.zoneNo}`;
+      msg.style.color = match ? 'var(--color-accent)' : 'var(--color-text-muted)';
+    });
+  }
+</script>

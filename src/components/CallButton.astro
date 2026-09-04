@@ -4,25 +4,25 @@ import { t } from '../i18n/dictionary.js';
 
 interface Props {
   locale: 'nl' | 'fr' | 'en';
-  variant?: 'solid' | 'bar';
+  withPhone?: boolean;
 }
-const { locale, variant = 'solid' } = Astro.props;
-const strings = t(locale).common;
-const isConfigured = BUSINESS.phone && BUSINESS.phone !== '[TO_BE_CONFIRMED]';
+const { locale, withPhone = false } = Astro.props;
+const s = t(locale);
 ---
 
 {
-  isConfigured ? (
-    <a
-      class="btn btn-call"
-      href={`tel:${BUSINESS.phone}`}
-      data-analytics="call_click"
-    >
-      {strings.call}
+  withPhone ? (
+    <a class="btn btn-call qissi-tap" href={`tel:${BUSINESS.phone}`} data-analytics="call_click">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3h3l1.5 4-2 1.5a12 12 0 0 0 5.5 5.5L16 12l4 1.5v3a2 2 0 0 1-2.2 2A16 16 0 0 1 4 5.2 2 2 0 0 1 6.5 3Z"/></svg>
+      <span style="display:flex;flex-direction:column;gap:1px">
+        <span class="call-label">{s.call}</span>
+        <span class="call-phone">{BUSINESS.phoneDisplay}</span>
+      </span>
     </a>
   ) : (
-    <span class="btn btn-call placeholder-marker" aria-disabled="true" title={strings.phoneUnavailable}>
-      {strings.call} ⚠
-    </span>
+    <a class="btn btn-call qissi-tap" href={`tel:${BUSINESS.phone}`} data-analytics="call_click">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3h3l1.5 4-2 1.5a12 12 0 0 0 5.5 5.5L16 12l4 1.5v3a2 2 0 0 1-2.2 2A16 16 0 0 1 4 5.2 2 2 0 0 1 6.5 3Z"/></svg>
+      {s.call} — {BUSINESS.phoneDisplay}
+    </a>
   )
 }

@@ -3,56 +3,75 @@
 Journal court, tenu à jour au fil des sessions de dev. Complète (ne
 remplace pas) `brief_dev_taxi_qiss.md` et `cdc_v1_taxi_qiss.md`.
 
-## Fait (2026-09-04)
+## Fait (2026-09-04, session 2 — reconstruction sur le prototype)
 
-- Scaffold Astro (sortie statique), structure trilingue avec slugs traduits
-  (`src/i18n/routes.js`), 21 pages générées + page 404 trilingue.
-- Simulateur de prix client-only : autocomplétion + itinéraire routier réel
-  via OpenRouteService, calcul de tarif (`src/lib/fare.js`), génération du
-  message WhatsApp (`src/lib/whatsapp.js`), 4 états (vide/chargement/erreur/
-  résultat), combobox accessible au clavier.
-- Balisage `TaxiService`/`LocalBusiness` (JSON-LD) sur toutes les pages,
-  `FAQPage` sur la home, `sitemap.xml` et `robots.txt` générés dynamiquement.
-- `config/business.js` : toutes les valeurs métier non confirmées restent
-  `[TO_BE_CONFIRMED]` et s'affichent comme telles (vérifié en dev).
-- Build vérifié (`npm run build` → 21 pages + 404 + sitemap + robots, sans
-  erreur) et testé dans le navigateur (états du simulateur, hreflang,
-  JSON-LD, barre d'appel mobile fixe).
+L'utilisateur a fourni le prototype Claude Design validé
+(`../claude design template/TaxiDesktop.dc.html` + `TaxiScreen.dc.html`,
+non versionné dans ce dépôt) et demandé de reconstruire le site dessus.
+Quatre divergences entre prototype et CDC/brief ont été identifiées et
+tranchées avec l'utilisateur (voir README.md) :
 
-## Décisions prises
+1. **Langue EN** — le prototype n'a que NL/FR. Ajoutée en suivant le même
+   design ; traduction faite par le développeur, non relue par le client.
+2. **Architecture du simulateur** — le prototype utilise une liste
+   déroulante de destinations à distances fixes, pas d'autocomplétion
+   d'adresse réelle. Retenu en **hybride** : dropdown du prototype +
+   option "Autre adresse" qui déclenche un vrai lookup OpenRouteService
+   (au lieu du message d'erreur systématique du prototype).
+3. **Coordonnées de contact** — téléphone/WhatsApp/e-mail du prototype
+   confirmés réels par l'utilisateur → intégrés dans `business.js` (plus
+   de `[TO_BE_CONFIRMED]` pour ces champs). Domaine `taxiqissi.be` déduit
+   de l'e-mail, pas confirmé séparément.
+4. **Contenu du prototype** — confirmé comme approuvé/définitif (pas un
+   habillage de maquette) → intégré tel quel pour NL/FR dans
+   `src/data/*.js`.
 
-- Service cartographique : **OpenRouteService** (gratuit, pas de CB, pas
-  d'infra à monter) — choisi par le développeur avec l'accord de
-  l'utilisateur, à rediscuter avec le client si besoin. Isolé dans
-  `src/lib/geocoding.js` pour rester remplaçable.
-- Pas de framework UI : JS vanilla dans le simulateur pour limiter le poids
-  JS (objectif LCP < 2,5 s).
+Reconstruction complète : design system (typographie Cabinet Grotesk +
+Satoshi, palette bleu #0369A1/vert WhatsApp #0F7A6D), header avec menu
+mobile plein écran (`<details>` natif, pas de JS framework), barre d'action
+fixe en bas sur mobile, sélecteur de langue à 3 options, 21 pages + 404
+reconstruites avec le contenu et l'ordre de blocs du prototype.
+
+**Bug trouvé et corrigé en cours de route** : `backdrop-filter` sur le
+header transformait celui-ci en containing block CSS pour le menu mobile
+(`position:fixed`), qui se retrouvait limité à 64px de haut au lieu de
+couvrir l'écran. Retiré du header (voir README.md pour le détail).
+
+Build vérifié (22 pages, sans erreur) et testé dans le navigateur : flux
+simulateur (destination connue, destination aéroport `tbc`, "autre adresse"
+sans résultat → état d'erreur avec bouton d'appel accessible), menu mobile
+plein écran + bouton de fermeture, sélecteur de langue 3 langues, JSON-LD
+avec les vraies données métier, contenu NL/FR/EN sur plusieurs pages.
+
+## Fait (2026-09-04, session 1 — scaffold initial)
+
+Scaffold Astro, structure trilingue, simulateur v1 (autocomplétion libre +
+OpenRouteService), JSON-LD, sitemap/robots. Remplacé par la session 2
+ci-dessus sur la base du prototype ; la logique de calcul de tarif
+(`src/lib/fare.js`) et le module `src/lib/geocoding.js` ont été conservés
+(adaptés pour le flux hybride).
 
 ## Connu comme manquant / en attente
 
-- **Prototype Claude Design** cité comme document d'autorité par le brief
-  (§1.3) pour la hiérarchie des pages et les parcours : jamais fourni. La
-  structure actuelle des pages est une interprétation raisonnable du CDC,
-  pas une conformité vérifiée au prototype.
-- Contenus marketing NL/FR/EN (accroche, descriptions, FAQ, mentions
-  légales, politique de confidentialité) : placeholders dans
-  `src/content/{nl,fr,en}/*.json`, non rédigés (cf. CDC §8).
-- Politique de confidentialité : brouillon technique, **pas prête pour
-  publication** sans relecture juridique.
-- Toutes les valeurs de `src/config/business.js` (téléphone, WhatsApp,
-  licence IBP, nom commercial, domaine, communes desservies).
+- Numéro de licence IBP (absent du prototype, jamais fourni).
+- Confirmation indépendante du domaine (actuellement déduit de l'e-mail).
+- Distances/prix réels des transferts aéroport (`tbc` comme dans le
+  prototype).
+- Liste complète des communes desservies (le site affiche le sous-ensemble
+  "22 plus demandées" du prototype, pas la liste complète du CDC §3).
+- Relecture juridique de la politique de confidentialité (cf. CDC §15).
+- Relecture du contenu anglais par le client.
 - Fournisseur d'analytics sans cookie : non choisi/câblé.
-- Logo, couleur d'accent finale, photos véhicules.
-- Pas encore testé sur device iOS/Android réel (encodage WhatsApp) — fait en
-  dev uniquement, à refaire avant mise en ligne.
+- Logo réel, photos véhicules (le hero utilise un placeholder texte).
+- Test sur device iOS/Android réel (encodage WhatsApp) — fait en dev
+  uniquement.
 
 ## Prochaines étapes probables
 
-1. Obtenir du client les éléments du lot L0 (CDC §13).
-2. Si le prototype Claude Design existe quelque part, le fournir pour
-   vérifier/ajuster la structure de page actuelle.
-3. Rédaction des contenus (accroche, services, FAQ, légal) une fois validés
-   par le client.
-4. Choisir et câbler un outil d'analytics sans cookie.
-5. Config nginx (redirection HTTPS, `/` → `/nl/` en vrai 301, fallback
+1. Obtenir du client : licence IBP, confirmation domaine, prix/distances
+   aéroports, liste communes complète (ou validation du sous-ensemble
+   affiché), relecture EN.
+2. Choisir et câbler un outil d'analytics sans cookie.
+3. Config nginx (redirection HTTPS, `/` → `/nl/` en vrai 301, fallback
    `404.html`) sur le homelab.
+4. Test réel iOS/Android du flux WhatsApp.

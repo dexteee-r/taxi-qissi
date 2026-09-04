@@ -1,48 +1,23 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { seo } from '../../i18n/seo.js';
-import { BUSINESS } from '../../config/business.js';
-import content from '../../content/nl/legal.json';
+import { LEGAL } from '../../data/legal.js';
 
 const locale = 'nl';
 const meta = seo[locale].legal;
-const l = content.labels;
-
-function marker(value) {
-  return value === '[TO_BE_CONFIRMED]';
-}
+const legal = LEGAL[locale].juridisch;
+const company = 'Taxi QISSI · Tienen, België';
 ---
 
 <BaseLayout locale={locale} pageKey="legal" title={meta.title} description={meta.description}>
-  <div class="container">
-    <h1>{content.title}</h1>
-    <dl>
-      <dt>{l.publisher}</dt>
-      <dd>{BUSINESS.legalName}</dd>
-      <dt>{l.legalForm}</dt>
-      <dd>{content.legalForm}</dd>
-      <dt>{l.registeredOffice}</dt>
-      <dd>{BUSINESS.address.street}, {BUSINESS.address.postalCode} {BUSINESS.address.city}</dd>
-      <dt>{l.vat}</dt>
-      <dd>{BUSINESS.vatNumber}</dd>
-      <dt>{l.license}</dt>
-      <dd>
-        {marker(BUSINESS.licenseNumber) ? <span class="placeholder-marker">{BUSINESS.licenseNumber}</span> : BUSINESS.licenseNumber}
-      </dd>
-      <dt>{l.contact}</dt>
-      <dd>
-        {marker(BUSINESS.phone) ? <span class="placeholder-marker">{BUSINESS.phone}</span> : BUSINESS.phone}
-      </dd>
-      <dt>{l.hosting}</dt>
-      <dd>{content.hostingNote}</dd>
-    </dl>
-    <p class="notice">{content.additionalNote}</p>
-  </div>
+  <section class="container legal-page" style="padding-block:56px">
+    <h1 style="font-size:clamp(30px,4vw,40px);letter-spacing:-.035em;margin-bottom:28px">{legal.title}</h1>
+    <h2>{legal.h1}</h2>
+    <p>{legal.p1}</p>
+    <h2>{legal.h2}</h2>
+    <p>{legal.p2}</p>
+    <h2>{legal.h3}</h2>
+    <p>{legal.p3}</p>
+    <div class="legal-footer">{company}</div>
+  </section>
 </BaseLayout>
-
-<style>
-  dt {
-    font-weight: 600;
-    margin-top: 0.75rem;
-  }
-</style>

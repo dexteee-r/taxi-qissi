@@ -6,7 +6,8 @@
 
 export const BUSINESS = {
   legalName: 'Q.I.S.S SRL',
-  commercialName: '[TO_BE_CONFIRMED]', // working name "Taxi QISSI" — CDC §1, not yet validated by client
+  // Confirmed by the user (2026-09-04) from the validated Claude Design prototype.
+  commercialName: 'Taxi QISSI',
   vatNumber: 'BE1025231305',
   address: {
     street: 'Sint-Truidensesteenweg 234',
@@ -14,11 +15,22 @@ export const BUSINESS = {
     city: 'Tienen',
     country: 'BE',
   },
-  phone: '[TO_BE_CONFIRMED]', // international format, digits only when used in tel: links
-  whatsapp: '[TO_BE_CONFIRMED]', // international format, digits only, no leading +
-  licenseNumber: '[TO_BE_CONFIRMED]', // vergunning individueel bezoldigd personenvervoer (IBP)
-  domain: '[TO_BE_CONFIRMED]',
-  servedMunicipalities: [], // awaiting definitive client list (CDC §3 gives an unconfirmed working list)
+  // Confirmed real contact info (source: prototype, validated by the user — not invented).
+  phoneDisplay: '0469 23 00 17',
+  phone: '+32469230017', // international format, used in tel: links
+  whatsapp: '32469230017', // international format, digits only, no leading +
+  email: 'info@taxiqissi.be',
+  // Inferred from the confirmed email's domain — not explicitly confirmed on its own, flag if wrong.
+  domain: 'taxiqissi.be',
+  licenseNumber: '[TO_BE_CONFIRMED]', // vergunning individueel bezoldigd personenvervoer (IBP) — not present in the prototype either
+  // "22 most-requested municipalities" subset shown in the prototype's zone section.
+  // CDC §3 lists a much longer working list — this is display content, not the full service-area definition.
+  servedMunicipalities: [
+    'Tienen', 'Leuven', 'Kessel-Lo', 'Sint-Truiden', 'Heverlee', 'Wilsele',
+    'Scherpenheuvel', 'Landen', 'Grez-Doiceau', 'Jodoigne', 'Lubbeek', 'Tielt',
+    'Linden', 'Hannut', 'Hoegaarden', 'Holsbeek', 'Boutersem', 'Bekkevoort',
+    'Korbeek-Lo', 'Bierbeek', 'Geetbets', 'Oud-Heverlee',
+  ],
   serviceRadiusMeters: 20000,
   // Approximate geographic center of Tienen for the GeoCircle areaServed schema.
   // Precision to be confirmed once the domain/business listing is finalized.

@@ -28,6 +28,8 @@ const defaultUrl = new URL(localePath(DEFAULT_LOCALE, /** @type {any} */ (pageKe
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+    <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@700,800&f[]=satoshi@400,500,700&display=swap" rel="stylesheet" />
     <link rel="canonical" href={canonicalUrl} />
     {
       langAlternates.map((alt) => (
@@ -53,12 +55,14 @@ const defaultUrl = new URL(localePath(DEFAULT_LOCALE, /** @type {any} */ (pageKe
     -->
   </head>
   <body>
-    <a class="skip-link" href="#main">{strings.common.skipToContent}</a>
-    <Header locale={locale} pageKey={pageKey} />
-    <main id="main">
-      <slot />
-    </main>
-    <Footer locale={locale} />
+    <a class="skip-link" href="#main">{strings.skipToContent}</a>
+    <div style="display:flex;flex-direction:column;min-height:100dvh">
+      <Header locale={locale} pageKey={pageKey} />
+      <main id="main" style="flex:1">
+        <slot />
+      </main>
+      <Footer locale={locale} pageKey={pageKey} />
+    </div>
     <MobileCallBar locale={locale} />
 
     <script>

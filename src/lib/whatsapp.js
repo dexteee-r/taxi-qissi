@@ -1,56 +1,77 @@
 // Builds the pre-filled WhatsApp message and wa.me URL — entirely
 // client-side, nothing here ever reaches a server (brief §1.1 / CDC §7.2).
+// Message wording ported from the validated prototype's sentence-style
+// template (claude design template/TaxiDesktop.dc.html), not the brief's
+// itemized example — the prototype takes precedence for the user-facing
+// flow (brief §1.3). EN wording is our own translation.
 import { BUSINESS } from '../config/business.js';
 
-const LOCALE_TAGS = { nl: 'nl-BE', fr: 'fr-BE', en: 'en-GB' };
-
-/**
- * @param {'nl'|'fr'|'en'} locale
- * @param {string} isoDate e.g. "2026-09-12"
- */
-export function formatDate(locale, isoDate) {
+function dmy(isoDate) {
   if (!isoDate) return '';
-  const [year, month, day] = isoDate.split('-').map(Number);
-  const date = new Date(Date.UTC(year, month - 1, day));
-  return new Intl.DateTimeFormat(LOCALE_TAGS[locale] ?? 'nl-BE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    timeZone: 'UTC',
-  }).format(date);
+  const [y, m, d] = isoDate.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function whenPhrase(locale, isoDate, time) {
+  const date = dmy(isoDate);
+  if (locale === 'fr') {
+    if (isoDate) return `le ${date}` + (time ? ` à ${time}` : '');
+    return time ? `aujourd'hui à ${time}` : 'dès que possible';
+  }
+  if (locale === 'nl') {
+    if (isoDate) return `op ${date}` + (time ? ` om ${time}` : '');
+    return time ? `vandaag om ${time}` : 'zo snel mogelijk';
+  }
+  if (isoDate) return `on ${date}` + (time ? ` at ${time}` : '');
+  return time ? `today at ${time}` : 'as soon as possible';
 }
 
 /**
  * @param {object} params
  * @param {'nl'|'fr'|'en'} params.locale
- * @param {import('../i18n/dictionary.js').dictionary['nl']['simulator']['whatsappMessage']} params.labels
- * @param {{ pickup: string, dropoff: string, date: string, time: string, passengers: string|number, luggage: string|number, name: string, note: string }} params.form
- * @param {number} params.estimateTotal
- * @param {string} params.indicativeLabel
+ * @param {{ from: string, destLabel: string, date: string, time: string, pax: number|string, bags: number|string, name: string, note: string }} params.form
+ * @param {{ total: number, isTbc: boolean }} params.fare
  */
-export function buildWhatsAppMessage({ locale, labels, form, estimateTotal, indicativeLabel }) {
-  const lines = [
-    labels.title,
-    `${labels.from}: ${form.pickup}`,
-    `${labels.to}: ${form.dropoff}`,
-    `${labels.date}: ${formatDate(locale, form.date)} ${labels.on} ${form.time}`,
-    `${labels.passengers}: ${form.passengers}${form.luggage ? ` — ${labels.luggage}: ${form.luggage}` : ''}`,
-    `${labels.name}: ${form.name}`,
-  ];
-  if (form.note) {
-    lines.push(`${labels.note}: ${form.note}`);
+export function buildWhatsAppMessage({ locale, form, fare }) {
+  const when = whenPhrase(locale, form.date, form.time);
+  const priceLine = fare.isTbc
+    ? { fr: 'Merci de me confirmer le prix.', nl: 'Graag de prijs bevestigen.', en: 'Please confirm the price.' }[locale]
+    : {
+        fr: `Estimation vue sur le site : ${fare.total.toFixed(2)} € (indicatif).`,
+        nl: `Schatting op de site: ${fare.total.toFixed(2)} € (indicatief).`,
+        en: `Estimate from the website: €${fare.total.toFixed(2)} (indicative).`,
+      }[locale];
+
+  if (locale === 'fr') {
+    return (
+      `Bonjour, je souhaite un taxi ${when}. ${form.from} → ${form.destLabel}. ` +
+      `${form.pax} passager(s), ${form.bags} bagage(s).` +
+      (form.name ? ` Nom : ${form.name}.` : '') +
+      (form.note ? ` ${form.note}` : '') +
+      ` ${priceLine}`
+    );
   }
-  lines.push(`${labels.estimate}: € ${estimateTotal.toFixed(2)} (${indicativeLabel})`);
-  return lines.join('\n');
+  if (locale === 'nl') {
+    return (
+      `Hallo, ik wil graag een taxi bestellen ${when}. ${form.from} → ${form.destLabel}. ` +
+      `${form.pax} passagier(s), ${form.bags} stuk(s) bagage.` +
+      (form.name ? ` Naam: ${form.name}.` : '') +
+      (form.note ? ` ${form.note}` : '') +
+      ` ${priceLine}`
+    );
+  }
+  return (
+    `Hello, I would like to book a taxi ${when}. ${form.from} → ${form.destLabel}. ` +
+    `${form.pax} passenger(s), ${form.bags} bag(s).` +
+    (form.name ? ` Name: ${form.name}.` : '') +
+    (form.note ? ` ${form.note}` : '') +
+    ` ${priceLine}`
+  );
 }
 
-/**
- * @param {string} message plain text, not yet encoded
- * @returns {string|null} wa.me URL, or null if BUSINESS.whatsapp is not yet configured
- */
+/** @param {string} message plain text, not yet encoded */
 export function buildWhatsAppUrl(message) {
-  if (!BUSINESS.whatsapp || BUSINESS.whatsapp === '[TO_BE_CONFIRMED]') {
-    return null;
-  }
   return `https://wa.me/${BUSINESS.whatsapp}?text=${encodeURIComponent(message)}`;
 }
+
+export const WHATSAPP_PLAIN_URL = `https://wa.me/${BUSINESS.whatsapp}`;

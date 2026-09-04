@@ -1,10 +1,11 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 
-// Site URL is a placeholder until the domain is reserved (CDC §9 / brief §1.2).
-// Update once BUSINESS.domain in src/config/business.js is confirmed.
+// Domain inferred from the confirmed email (info@taxiqissi.be) in the
+// prototype — see src/config/business.js. Not independently confirmed by
+// the client; update here too if that turns out to be wrong.
 export default defineConfig({
-  site: 'https://example.invalid',
+  site: 'https://taxiqissi.be',
   trailingSlash: 'always',
   build: {
     format: 'directory',

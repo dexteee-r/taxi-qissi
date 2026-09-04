@@ -2,38 +2,28 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { t } from '../../i18n/dictionary.js';
 import { seo } from '../../i18n/seo.js';
-import { localePath } from '../../i18n/routes.js';
-import content from '../../content/en/services.json';
+import { SERVICES, SERVICE_ICONS } from '../../data/services.js';
 
 const locale = 'en';
+const s = t(locale);
 const meta = seo[locale].services;
-const strings = t(locale);
+const services = SERVICES[locale].map((svc, i) => ({ ...svc, icon: SERVICE_ICONS[i] }));
 ---
 
 <BaseLayout locale={locale} pageKey="services" title={meta.title} description={meta.description}>
-  <div class="container">
-    <h1>{strings.nav.services}</h1>
-    <p>{content.intro}</p>
-
-    {
-      content.services.map((service) => (
-        <article class="service-card" id={service.id}>
-          <h2>{service.title}</h2>
-          <p>{service.description}</p>
-          {service.id === 'airport' && (
-            <p>
-              <a href={localePath(locale, 'airport')}>→ {strings.nav.airport}</a>
-            </p>
-          )}
-        </article>
-      ))
-    }
-  </div>
+  <section class="container" style="padding-block:56px">
+    <h1 style="font-size:clamp(32px,4vw,44px);letter-spacing:-.038em">{s.servTitle}</h1>
+    <p style="font-size:17px;color:var(--color-text-muted);max-width:52ch;margin-bottom:34px">{s.sSub}</p>
+    <div class="services-grid services-grid-long">
+      {services.map((svc) => (
+        <div class="service-cell">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-top:2px"><path d={svc.icon}/></svg>
+          <span style="display:flex;flex-direction:column;gap:7px">
+            <span class="service-title">{svc.title}</span>
+            <span class="service-desc" style="max-width:46ch">{svc.long}</span>
+          </span>
+        </div>
+      ))}
+    </div>
+  </section>
 </BaseLayout>
-
-<style>
-  .service-card {
-    padding-block: 1.5rem;
-    border-bottom: 1px solid var(--color-border);
-  }
-</style>

@@ -68,12 +68,12 @@ export async function autocompleteAddress(query) {
 }
 
 /**
- * Real road distance in kilometers between two points.
+ * Real road distance + duration between two points.
  * @param {{ lon: number, lat: number }} from
  * @param {{ lon: number, lat: number }} to
- * @returns {Promise<number>} distance in kilometers
+ * @returns {Promise<{ km: number, min: number }>}
  */
-export async function routeDistanceKm(from, to) {
+export async function routeDistance(from, to) {
   const apiKey = getApiKey();
   const url = `${ORS_BASE_URL}/v2/directions/driving-car`;
 
@@ -104,9 +104,9 @@ export async function routeDistanceKm(from, to) {
   }
 
   const data = await response.json();
-  const meters = data.routes?.[0]?.summary?.distance;
-  if (typeof meters !== 'number') {
+  const summary = data.routes?.[0]?.summary;
+  if (typeof summary?.distance !== 'number') {
     throw new MapServiceError('Routing service returned no usable route', 'not_found');
   }
-  return meters / 1000;
+  return { km: summary.distance / 1000, min: Math.round(summary.duration / 60) };
 }

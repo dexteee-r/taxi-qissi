@@ -3,7 +3,7 @@
 // taxi, transport, gare, aéroport). This is metadata, not marketing prose —
 // distinct from the hero/body copy still pending in src/content/.
 
-const BRAND = 'Taxi Q.I.S.S';
+const BRAND = 'Taxi QISSI';
 
 export const seo = {
   nl: {

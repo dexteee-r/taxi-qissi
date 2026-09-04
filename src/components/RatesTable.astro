@@ -1,81 +1,43 @@
 ---
-import { FARE } from '../config/business.js';
+import { t } from '../i18n/dictionary.js';
 
 interface Props {
   locale: 'nl' | 'fr' | 'en';
 }
 const { locale } = Astro.props;
-
-const labels = {
-  nl: {
-    item: 'Element',
-    amount: 'Bedrag',
-    base: 'Prijs bij opstappen',
-    perKm: 'Prijs per km',
-    waiting: 'Wachttijd',
-    night: 'Nachttoeslag (22u–4u), eenmalig per rit',
-    perHour: '/ uur',
-  },
-  fr: {
-    item: 'Élément',
-    amount: 'Montant',
-    base: 'Prise en charge',
-    perKm: 'Tarif kilométrique',
-    waiting: "Temps d'attente",
-    night: 'Supplément de nuit (22h–4h), une fois par course',
-    perHour: '/ heure',
-  },
-  en: {
-    item: 'Item',
-    amount: 'Amount',
-    base: 'Pickup fee',
-    perKm: 'Per-kilometer rate',
-    waiting: 'Waiting time',
-    night: 'Night surcharge (10pm–4am), once per ride',
-    perHour: '/ hour',
-  },
-};
-const l = labels[locale];
+const s = t(locale);
 ---
 
-<table class="rates-table">
-  <caption class="sr-only">{l.item} / {l.amount}</caption>
-  <thead>
-    <tr>
-      <th scope="col">{l.item}</th>
-      <th scope="col">{l.amount}</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>{l.base}</td>
-      <td>€ {FARE.baseFare.toFixed(2)}</td>
-    </tr>
-    <tr>
-      <td>{l.perKm}</td>
-      <td>€ {FARE.perKmRate.toFixed(2)} / km</td>
-    </tr>
-    <tr>
-      <td>{l.waiting}</td>
-      <td>€ {FARE.waitingRatePerHour.toFixed(2)} {l.perHour}</td>
-    </tr>
-    <tr>
-      <td>{l.night}</td>
-      <td>€ {FARE.nightSurcharge.toFixed(2)}</td>
-    </tr>
-  </tbody>
-</table>
-
-<style>
-  .rates-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-block: 1.5rem;
-  }
-  .rates-table th,
-  .rates-table td {
-    text-align: left;
-    padding: 0.75rem;
-    border-bottom: 1px solid var(--color-border);
-  }
-</style>
+<div class="rates-list">
+  <div class="rates-row">
+    <span class="label">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V4h11l-1.5 4L17 12H6"/></svg>
+      {s.pPickup}
+    </span>
+    <span class="amount">4 €</span>
+  </div>
+  <div class="rates-row">
+    <span class="label">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18h5a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6"/><path d="M17 3l3 3-3 3"/></svg>
+      {s.pPerKm}
+    </span>
+    <span class="amount">3 €</span>
+  </div>
+  <div class="rates-row">
+    <span class="label">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3.5 2"/></svg>
+      {s.pWait}
+    </span>
+    <span class="amount">36 €/h</span>
+  </div>
+  <div class="rates-row night">
+    <span class="label">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent-hover)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg>
+      <span style="display:flex;flex-direction:column;gap:2px">
+        <span style="font:500 15px/1.3 var(--font-body);color:var(--color-text)">{s.pNight}</span>
+        <span style="font:400 12.5px/1.3 var(--font-body);color:var(--color-accent-hover)">{s.pNightSub}</span>
+      </span>
+    </span>
+    <span class="amount">+ 3 €</span>
+  </div>
+</div>

@@ -2,54 +2,63 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { t } from '../../i18n/dictionary.js';
 import { seo } from '../../i18n/seo.js';
-import { localePath } from '../../i18n/routes.js';
-import CallButton from '../../components/CallButton.astro';
-import WhatsAppButton from '../../components/WhatsAppButton.astro';
+import { SERVICES, SERVICE_ICONS } from '../../data/services.js';
+import { FAQS } from '../../data/faqs.js';
+import HomeEstimator from '../../components/HomeEstimator.astro';
+import ZoneSearch from '../../components/ZoneSearch.astro';
 import FaqSection from '../../components/FaqSection.astro';
-import content from '../../content/en/home.json';
 
 const locale = 'en';
-const strings = t(locale);
+const s = t(locale);
 const meta = seo[locale].home;
+const services = SERVICES[locale].map((svc, i) => ({ ...svc, icon: SERVICE_ICONS[i] }));
 ---
 
 <BaseLayout locale={locale} pageKey="home" title={meta.title} description={meta.description}>
-  <section class="container hero">
-    <h1>{content.heroTitle}</h1>
-    <p>{content.heroSubtitle}</p>
-    <div class="hero-actions">
-      <CallButton locale={locale} />
-      <WhatsAppButton locale={locale} />
+  <section class="container" style="padding-block:44px 40px;display:grid;gap:40px">
+    <div class="hero-grid">
+      <div>
+        <h1 style="font-size:clamp(34px,5vw,52px);letter-spacing:-.04em">{s.h1}</h1>
+        <p style="font-size:17px;color:var(--color-text-muted);max-width:46ch">{s.heroSub}</p>
+        <span style="display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--color-text-muted);margin-top:8px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>
+          {s.trust2}
+        </span>
+      </div>
+      <HomeEstimator locale={locale} />
     </div>
   </section>
 
-  <section class="container">
-    <p>{content.intro}</p>
+  <section class="container" style="padding-block:52px;border-top:1px solid var(--color-border)">
+    <h2>{s.servTitle}</h2>
+    <p style="color:var(--color-text-muted)">{s.servSub}</p>
+    <div class="services-grid services-grid-5">
+      {services.map((svc) => (
+        <div class="service-cell">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d={svc.icon}/></svg>
+          <span class="service-title">{svc.title}</span>
+          <span class="service-desc">{svc.desc}</span>
+        </div>
+      ))}
+    </div>
   </section>
 
-  <section class="container">
-    <h2>{strings.nav.services}</h2>
-    <p><a href={localePath(locale, 'services')}>{strings.common.readMore}</a></p>
-  </section>
+  <ZoneSearch locale={locale} />
 
-  <section class="container">
-    <h2>{content.zoneTitle}</h2>
-    <p>{content.zoneIntro}</p>
+  <section class="container" style="padding-block:52px 56px;border-top:1px solid var(--color-border)">
+    <FaqSection title={s.faqTitle} items={FAQS[locale]} />
   </section>
-
-  <div class="container">
-    <FaqSection title={content.faqTitle} items={content.faq} />
-  </div>
 </BaseLayout>
 
 <style>
-  .hero {
-    padding-block: 2.5rem;
+  .hero-grid {
+    display: grid;
+    gap: 40px;
   }
-  .hero-actions {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    margin-top: 1rem;
+  @media (min-width: 900px) {
+    .hero-grid {
+      grid-template-columns: 1.08fr 0.92fr;
+      align-items: start;
+    }
   }
 </style>
