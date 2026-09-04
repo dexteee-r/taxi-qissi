@@ -90,8 +90,6 @@ export const dictionary = {
     aCtaBtn: 'Estimer mon transfert',
     aPending: 'distance et prix à confirmer',
 
-    servicesPageTitle: 'Services',
-    sPageSub: 'Tout se règle par téléphone ou WhatsApp, en direct avec nous.',
 
     cSub: "Le plus simple reste l'appel. Nous répondons 24h/24.",
     lPhone: 'Téléphone',
@@ -194,8 +192,6 @@ export const dictionary = {
     aCtaBtn: 'Bereken mijn transfer',
     aPending: 'afstand en prijs te bevestigen',
 
-    servicesPageTitle: 'Diensten',
-    sPageSub: 'Alles regelen we telefonisch of via WhatsApp, rechtstreeks met ons.',
 
     cSub: 'Bellen is het snelst. We nemen 24/7 op.',
     lPhone: 'Telefoon',
@@ -228,7 +224,7 @@ export const dictionary = {
     navPrivacy: 'Privacy policy',
 
     h1: 'Where are you headed?',
-    heroSub: 'Immediate ride or booked in advance, in Tienen and 20 km around. Transfers to all airports.',
+    heroSub: 'Ride now or book ahead, in Tienen and up to 20 km around it. Transfers to every airport.',
     trust2: 'Pay in the taxi: card or cash',
 
     estTitle: 'Estimate your ride',
@@ -237,7 +233,7 @@ export const dictionary = {
     estNote: 'Indicative price · no online booking',
 
     zoneTitle: 'Service area',
-    zoneSub: "Tienen and about 20 km around. Outside this area, call us: it's often still possible.",
+    zoneSub: "Tienen and roughly 20 km around it. Outside that area, call us: it's often still possible.",
     zonePh: 'Your municipality?',
     zoneAll: 'See the 22 most requested municipalities',
     zoneMore: 'Not an exhaustive list: we also drive well beyond it.',
@@ -245,7 +241,7 @@ export const dictionary = {
     zoneNo: " isn't on our list. Call us: outside the zone, it's often still possible.",
 
     servTitle: 'Services',
-    servSub: 'Five reasons to call us.',
+    servSub: 'Five ways to reach us.',
     sSub: 'Everything is arranged by phone or WhatsApp, directly with us.',
 
     faqTitle: 'Frequently asked questions',
@@ -253,7 +249,7 @@ export const dictionary = {
     pTitle: 'Rates',
     pSub: 'Our official rates, and an estimate of your ride in a few fields.',
     pPickup: 'Pickup fee',
-    pPerKm: 'Per kilometer',
+    pPerKm: 'Per kilometre',
     pWait: 'Waiting',
     pNight: 'Night surcharge',
     pNightSub: '10pm – 4am',
@@ -268,7 +264,7 @@ export const dictionary = {
     fDate: 'Date',
     fTime: 'Time',
     fPax: 'Passengers',
-    fBags: 'Luggage',
+    fBags: 'Bags',
     fName: 'Name',
     fNamePh: 'Your name',
     fNote: 'Note',
@@ -298,8 +294,6 @@ export const dictionary = {
     aCtaBtn: 'Estimate my transfer',
     aPending: 'distance and price to be confirmed',
 
-    servicesPageTitle: 'Services',
-    sPageSub: 'Everything is arranged by phone or WhatsApp, directly with us.',
 
     cSub: "Calling is the fastest way. We answer 24/7.",
     lPhone: 'Phone',
