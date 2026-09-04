@@ -1,0 +1,25 @@
+---
+// Long service list (services page). Mobile: one column, icon inline with
+// the title. Desktop: two columns, icon in its own left gutter.
+interface Props {
+  services: Array<{ title: string; long: string; icon: string }>;
+}
+const { services } = Astro.props;
+---
+
+<div class="services-list services-long">
+  {
+    services.map((svc) => (
+      <div class="service-cell">
+        <svg class="service-icon-desktop" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d={svc.icon} /></svg>
+        <span style="display:flex;flex-direction:column">
+          <span class="service-title">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d={svc.icon} /></svg>
+            {svc.title}
+          </span>
+          <span class="service-desc">{svc.long}</span>
+        </span>
+      </div>
+    ))
+  }
+</div>

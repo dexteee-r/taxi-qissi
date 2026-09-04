@@ -62,6 +62,32 @@ npm run build     # build statique dans ./dist
 npm run preview   # prévisualiser le build
 ```
 
+## Tests
+
+```sh
+npm test           # unitaires + end-to-end
+npm run test:unit  # Vitest — logique métier pure
+npm run test:e2e   # Playwright — desktop + mobile, sur le build réel
+```
+
+- **Unitaires (`tests/unit/`)** : formule tarifaire (y compris les bornes du
+  supplément de nuit et le refus des entrées invalides), construction et
+  encodage du message WhatsApp (accents, flèches, sauts de ligne), intégrité
+  des 21 routes et des trois dictionnaires, garde sur les valeurs métier
+  encore `[TO_BE_CONFIRMED]`.
+- **E2E (`tests/e2e/`)** : les 21 pages répondent avec un seul `h1`, des
+  `hreflang` réciproques et des métadonnées uniques ; le changement de langue
+  reste sur la même page ; parcours complet du simulateur (destination
+  connue, aéroport « à confirmer », nuit, « autre adresse » sans résultat,
+  recalcul) ; **vérification qu'aucune donnée de formulaire ne quitte le
+  navigateur** ; menu mobile plein écran ; cibles tactiles ≥ 44 px ; absence
+  de débordement horizontal ; sitemap/robots/404 ; JSON-LD.
+
+Playwright sert `dist/` via `tests/static-server.mjs` (et non `astro
+preview`, qui se démonise dans certains environnements). Ce petit serveur
+reproduit aussi le comportement attendu du reverse proxy : index de
+répertoire + repli sur `404.html`.
+
 ## Configuration métier
 
 `src/config/business.js` centralise les valeurs métier.
@@ -124,6 +150,30 @@ La page 404 (`src/pages/404.astro`) est unique physiquement (contrainte des
 sites statiques) mais contient les trois traductions ; un script détecte le
 préfixe `/nl|fr|en/` de l'URL visitée pour afficher la bonne langue.
 
+## Polices
+
+Cabinet Grotesk et Satoshi sont **auto-hébergées** dans `public/fonts/`
+(cinq fichiers woff2, ~110 Ko au total), et non chargées depuis le CDN de
+Fontshare comme le faisait le prototype. Deux raisons : supprimer un
+aller-retour tiers bloquant sur le chemin critique (objectif LCP < 2,5 s),
+et éviter d'envoyer l'adresse IP de chaque visiteur à un tiers — ce qui
+devrait sinon figurer dans la politique de confidentialité.
+
+Les deux fontes visibles au-dessus de la ligne de flottaison sont
+préchargées dans `BaseLayout.astro`. Pour mettre à jour une fonte,
+retélécharger le woff2 depuis fontshare.com et remplacer le fichier ; les
+`@font-face` sont en haut de `src/styles/global.css`.
+
+## Balisage structuré
+
+`SchemaOrg.astro` produit un `TaxiService` dont le `provider` est le
+`LocalBusiness`. **Attention** : l'exemple du CDC §11.4 place `priceRange` et
+`openingHoursSpecification` directement sur `TaxiService` — le validateur
+schema.org les rejette à ce niveau (ce sont des propriétés de
+`LocalBusiness`). Ils sont donc portés par `provider`. Vérifié sur
+validator.schema.org : 0 erreur, 0 avertissement, pour `TaxiService` comme
+pour `FAQPage`. Un test E2E verrouille ce placement.
+
 ## Un piège CSS à connaître si vous touchez le header
 
 `.site-header` n'a **pas** de `backdrop-filter`, volontairement : cette
@@ -150,11 +200,40 @@ soigneusement sur mobile.
 
 ## Analytics
 
-Pas de fournisseur câblé par défaut (décision en attente — cf. brief §8 :
-solution sans cookie de suivi). `src/lib/analytics.js` expose `trackEvent()`
-et ne fait rien tant qu'aucun script n'est chargé dans
-`src/layouts/BaseLayout.astro`. Ne jamais faire transiter une donnée de
-formulaire dans un événement analytics.
+**Umami**, auto-hébergé à côté du site (brief §8 : sans cookie de suivi,
+donc sans bandeau de consentement à traduire trois fois). Choisi parce qu'il
+est libre, gratuit, ne pose aucun cookie, ne stocke pas de donnée
+personnelle, et parce que l'auto-hébergement garde les statistiques sur la
+même machine que le site.
+
+Activation : renseigner `PUBLIC_UMAMI_SRC` et `PUBLIC_UMAMI_WEBSITE_ID` dans
+`.env`. Tant qu'ils sont vides, **aucun script de mesure n'est chargé** — ni
+en dev, ni dans un build de pré-lancement.
+
+Événements instrumentés (via l'attribut `data-analytics`, cf. brief §8) :
+`call_click`, `whatsapp_click`, `simulator_open`, `estimate_success`,
+`whatsapp_send`. Ne jamais faire transiter une donnée de formulaire dans un
+événement — ce sont des noms d'événements anonymes, sans paramètre.
+
+Pour changer d'outil (Plausible CE, GoatCounter…) : la balise script dans
+`src/layouts/BaseLayout.astro` et l'appel unique dans `src/lib/analytics.js`.
+
+## Performance et images
+
+Le build est volontairement léger : ~24 Ko d'HTML par page, ~62 Ko d'assets,
+deux scripts, **aucune requête vers un tiers** (polices comprises, cf.
+`global.css`). Toutes les icônes sont des SVG inline — il n'y a donc à ce
+jour aucune balise `<img>` à différer.
+
+Quand les photos de véhicules arriveront (elles remplaceront les
+placeholders `.airport-media`), elles doivent :
+
+- passer par `<Image />` d'`astro:assets` ou porter `loading="lazy"`,
+  `decoding="async"` et des `width`/`height` explicites (évite le
+  décalage de mise en page) ;
+- être servies en AVIF/WebP avec un repli JPEG ;
+- rester hors du premier écran, sinon retirer le `lazy` sur celle qui
+  devient l'élément LCP.
 
 ## Points en attente côté client
 
@@ -169,3 +248,9 @@ formulaire dans un événement analytics.
 - Relecture juridique de la politique de confidentialité et validation de
   l'affichage des tarifs (cf. `cdc_v1_taxi_qiss.md` §15).
 - Relecture du contenu anglais par le client si l'anglais reste au périmètre.
+- URL et identifiant du serveur Umami une fois celui-ci monté sur le homelab.
+- Logo définitif : remplacer `public/favicon.svg` (icône provisoire) et
+  ajouter un `apple-touch-icon.png`.
+- Test sur téléphone réel (iOS **et** Android) du message WhatsApp
+  pré-rempli — les tests automatisés couvrent l'encodage, pas le
+  comportement de l'app WhatsApp elle-même.

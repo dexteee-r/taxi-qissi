@@ -1,0 +1,47 @@
+---
+import { BUSINESS } from '../config/business.js';
+import { t } from '../i18n/dictionary.js';
+
+interface Props {
+  locale: 'nl' | 'fr' | 'en';
+}
+const { locale } = Astro.props;
+const s = t(locale);
+
+const ICON = {
+  phone: 'M6.5 3h3l1.5 4-2 1.5a12 12 0 0 0 5.5 5.5L16 12l4 1.5v3a2 2 0 0 1-2.2 2A16 16 0 0 1 4 5.2 2 2 0 0 1 6.5 3Z',
+  whatsapp: 'M21 11.5a8.5 8.5 0 0 1-12.4 7.6L4 20.5l1.4-4.4A8.5 8.5 0 1 1 21 11.5Z',
+  mail: 'M3 6h18v12H3zM3 7l9 6 9-6',
+  pin: 'M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11Z',
+  clock: 'M12 7.5V12l3.5 2',
+};
+
+const rows = [
+  { key: s.lPhone, value: BUSINESS.phoneDisplay, icon: ICON.phone },
+  { key: 'WhatsApp', value: BUSINESS.phoneDisplay, icon: ICON.whatsapp },
+  { key: s.lMail, value: BUSINESS.email, icon: ICON.mail },
+  {
+    key: s.lAddr,
+    value: `${BUSINESS.address.street}, ${BUSINESS.address.postalCode} ${BUSINESS.address.city}`,
+    icon: ICON.pin,
+  },
+  { key: s.lHours, value: s.hours, icon: ICON.clock, circle: true },
+];
+---
+
+<div class="detail-list">
+  {
+    rows.map((row) => (
+      <div class="detail-row">
+        <span class="k">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#A1A1AA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none">
+            {row.circle && <circle cx="12" cy="12" r="9" />}
+            <path d={row.icon} />
+          </svg>
+          {row.key}
+        </span>
+        <span class="v">{row.value}</span>
+      </div>
+    ))
+  }
+</div>

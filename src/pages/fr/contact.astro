@@ -4,6 +4,7 @@ import { t } from '../../i18n/dictionary.js';
 import { seo } from '../../i18n/seo.js';
 import { BUSINESS } from '../../config/business.js';
 import { WHATSAPP_PLAIN_URL } from '../../lib/whatsapp.js';
+import ContactDetails from '../../components/ContactDetails.astro';
 
 const locale = 'fr';
 const s = t(locale);
@@ -11,47 +12,34 @@ const meta = seo[locale].contact;
 ---
 
 <BaseLayout locale={locale} pageKey="contact" title={meta.title} description={meta.description}>
-  <section class="container" style="padding-block:56px">
+  <section class="container section-first">
     <div class="contact-grid">
       <div>
-        <h1 style="font-size:clamp(32px,4vw,44px);letter-spacing:-.038em">{s.navContact}</h1>
-        <p style="font-size:17px;color:var(--color-text-muted);max-width:40ch;margin-bottom:28px">{s.cSub}</p>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:32px">
-          <a class="btn btn-call qissi-tap" style="min-height:58px;padding:0 24px" href={`tel:${BUSINESS.phone}`} data-analytics="call_click">
+        <h1 class="h-page">{s.navContact}</h1>
+        <p class="lead" style="max-width:40ch">{s.cSub}</p>
+
+        <div class="contact-cta">
+          <a class="btn btn-call qissi-tap" href={`tel:${BUSINESS.phone}`} data-analytics="call_click">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M6.5 3h3l1.5 4-2 1.5a12 12 0 0 0 5.5 5.5L16 12l4 1.5v3a2 2 0 0 1-2.2 2A16 16 0 0 1 4 5.2 2 2 0 0 1 6.5 3Z"/></svg>
-            <span style="font:700 17px/1 var(--font-display);color:#fff">{BUSINESS.phoneDisplay}</span>
+            <span style="font:700 17px/1 var(--font-display)">{BUSINESS.phoneDisplay}</span>
           </a>
-          <a class="btn btn-whatsapp qissi-tap" style="min-height:58px" href={WHATSAPP_PLAIN_URL} target="_blank" rel="noopener" data-analytics="whatsapp_click">
+          <a class="btn btn-whatsapp qissi-tap" href={WHATSAPP_PLAIN_URL} target="_blank" rel="noopener" data-analytics="whatsapp_click">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.6L4 20.5l1.4-4.4A8.5 8.5 0 1 1 21 11.5Z"/></svg>
-            <span style="font:700 15.5px/1 var(--font-display);color:#fff">{s.wa}</span>
+            {s.wa}
           </a>
         </div>
-        <div class="detail-list">
-          <div class="detail-row">
-            <span class="k">{s.lPhone}</span><span class="v">{BUSINESS.phoneDisplay}</span>
-          </div>
-          <div class="detail-row">
-            <span class="k">WhatsApp</span><span class="v">{BUSINESS.phoneDisplay}</span>
-          </div>
-          <div class="detail-row">
-            <span class="k">{s.lMail}</span><span class="v">{BUSINESS.email}</span>
-          </div>
-          <div class="detail-row">
-            <span class="k">{s.lAddr}</span><span class="v">{BUSINESS.address.street}, {BUSINESS.address.postalCode} {BUSINESS.address.city}</span>
-          </div>
-          <div class="detail-row">
-            <span class="k">{s.lHours}</span><span class="v">{s.hours}</span>
-          </div>
-        </div>
+
+        <ContactDetails locale={locale} />
       </div>
+
       <div>
-        <div style="height:280px;background:#F4F4F5;border-radius:9px;overflow:hidden">
-          <svg viewBox="0 0 460 280" width="100%" height="280" style="display:block">
-            <circle cx="230" cy="140" r="100" fill="var(--color-accent)" fill-opacity=".08" stroke="var(--color-accent)" stroke-width="2" stroke-dasharray="6 6"/>
-            <circle cx="230" cy="140" r="9" fill="var(--color-accent)"/>
+        <div class="contact-media">
+          <svg viewBox="0 0 340 150" width="100%" height="100%" style="display:block" aria-hidden="true">
+            <circle cx="170" cy="75" r="58" fill="var(--color-accent)" fill-opacity=".08" stroke="var(--color-accent)" stroke-width="2" stroke-dasharray="5 5"/>
+            <circle cx="170" cy="75" r="8" fill="var(--color-accent)"/>
           </svg>
         </div>
-        <p style="font-size:14px;color:var(--color-text-muted);margin-top:14px">{s.zoneNote}</p>
+        <p class="sub" style="margin:12px 0 0">{s.zoneNote}</p>
       </div>
     </div>
   </section>
@@ -60,12 +48,13 @@ const meta = seo[locale].contact;
 <style>
   .contact-grid {
     display: grid;
-    gap: 40px;
+    gap: 24px;
   }
   @media (min-width: 900px) {
     .contact-grid {
       grid-template-columns: 1fr 1fr;
       gap: 64px;
+      align-items: start;
     }
   }
 </style>

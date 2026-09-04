@@ -1,5 +1,5 @@
 ---
-import { localePath, alternates, LOCALES, LOCALE_NAMES } from '../i18n/routes.js';
+import { localePath, alternates, LOCALE_NAMES } from '../i18n/routes.js';
 import { t } from '../i18n/dictionary.js';
 import { BUSINESS } from '../config/business.js';
 import CallButton from './CallButton.astro';
@@ -12,18 +12,19 @@ const { locale, pageKey } = Astro.props;
 const s = t(locale);
 const langAlternates = alternates(/** @type {any} */ (pageKey));
 
+// Nav order and drawer icons taken from the prototype.
 const navItems = [
-  { key: 'home', label: s.navHome },
-  { key: 'rates', label: s.navPrices },
-  { key: 'airport', label: s.navAirport },
-  { key: 'services', label: s.navServices },
-  { key: 'contact', label: s.navContact },
+  { key: 'home', label: s.navHome, icon: 'M4 11.5 12 4l8 7.5M6.5 10v9h11v-9' },
+  { key: 'rates', label: s.navPrices, icon: 'M13 3H5v8l8 8 8-8-8-8M8.5 7.5v.01' },
+  { key: 'airport', label: s.navAirport, icon: 'M3 13.5 21 6l-6.5 13-2.5-6-9-1.5Z' },
+  { key: 'services', label: s.navServices, icon: 'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z' },
+  { key: 'contact', label: s.navContact, icon: 'M3 6h18v12H3zM3 7l9 6 9-6' },
 ];
 ---
 
 <header class="site-header">
   <div class="container header-inner">
-    <a class="brand" href={localePath(locale, 'home')}>
+    <a class="brand qissi-tap" href={localePath(locale, 'home')}>
       <span class="name">{BUSINESS.commercialName}</span>
       <span class="tag">{BUSINESS.address.city.toUpperCase()} · 24/7</span>
     </a>
@@ -43,14 +44,14 @@ const navItems = [
 
     <div class="header-actions">
       <details class="lang-switcher">
-        <summary>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#52525B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18"/></svg>
-          {locale.toUpperCase()}
+        <summary aria-label={s.langLabel}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#52525B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15 0 18M12 3c-2.5 2.5-2.5 15 0 18"/></svg>
+          {LOCALE_NAMES[locale]}
         </summary>
         <div class="lang-panel">
           {
             langAlternates.map((alt) => (
-              <a href={alt.href} aria-current={alt.locale === locale ? 'page' : undefined}>
+              <a href={alt.href} lang={alt.locale} aria-current={alt.locale === locale ? 'page' : undefined}>
                 {LOCALE_NAMES[alt.locale]}
               </a>
             ))
@@ -72,15 +73,18 @@ const navItems = [
           <div class="mobile-menu-head">
             <span>{s.menu}</span>
             <button type="button" class="mobile-menu-close" data-menu-close aria-label={s.menu}>
-              <svg width="16" height="16" viewBox="0 0 24 24" stroke="#09090B" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#09090B" stroke-width="2.2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
             </button>
           </div>
-          <nav class="mobile-menu-nav" aria-label={s.navHome}>
+          <nav class="mobile-menu-nav" aria-label={s.menu}>
             {
               navItems.map((item) => (
                 <a href={localePath(locale, /** @type {any} */ (item.key))}>
-                  <span class="left">{item.label}</span>
-                  <span class="chev" style="transform:rotate(-45deg)" />
+                  <span class="left">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d={item.icon}/></svg>
+                    {item.label}
+                  </span>
+                  <span class="arrow"></span>
                 </a>
               ))
             }
@@ -91,7 +95,7 @@ const navItems = [
               <span>{s.langLabel}</span>
               {
                 langAlternates.map((alt) => (
-                  <a href={alt.href} aria-current={alt.locale === locale ? 'page' : undefined}>
+                  <a href={alt.href} lang={alt.locale} aria-current={alt.locale === locale ? 'page' : undefined}>
                     {LOCALE_NAMES[alt.locale]}
                   </a>
                 ))
@@ -109,5 +113,16 @@ const navItems = [
     btn.addEventListener('click', () => {
       btn.closest('details')?.removeAttribute('open');
     });
+  });
+
+  // Close the language dropdown on outside click / Escape.
+  document.addEventListener('click', (event) => {
+    document.querySelectorAll('details.lang-switcher[open]').forEach((el) => {
+      if (!el.contains(/** @type {Node} */ (event.target))) el.removeAttribute('open');
+    });
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    document.querySelectorAll('details.lang-switcher[open]').forEach((el) => el.removeAttribute('open'));
   });
 </script>

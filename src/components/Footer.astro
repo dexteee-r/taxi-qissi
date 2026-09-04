@@ -1,6 +1,6 @@
 ---
 import { BUSINESS } from '../config/business.js';
-import { localePath, alternates } from '../i18n/routes.js';
+import { localePath, alternates, LOCALE_NAMES } from '../i18n/routes.js';
 import { t } from '../i18n/dictionary.js';
 
 interface Props {
@@ -11,11 +11,12 @@ const { locale, pageKey } = Astro.props;
 const s = t(locale);
 const langAlternates = alternates(/** @type {any} */ (pageKey));
 
+// Footer order differs from the header's in the prototype.
 const navItems = [
   { key: 'home', label: s.navHome },
+  { key: 'services', label: s.navServices },
   { key: 'rates', label: s.navPrices },
   { key: 'airport', label: s.navAirport },
-  { key: 'services', label: s.navServices },
   { key: 'contact', label: s.navContact },
 ];
 ---
@@ -24,21 +25,26 @@ const navItems = [
   <div class="container footer-inner">
     <div class="footer-brand">
       <span class="name">{BUSINESS.commercialName}</span>
-      <a href={`tel:${BUSINESS.phone}`}>{BUSINESS.phoneDisplay}</a>
+      <a href={`tel:${BUSINESS.phone}`} data-analytics="call_click">{BUSINESS.phoneDisplay}</a>
       <span>{BUSINESS.address.street}, {BUSINESS.address.postalCode} {BUSINESS.address.city}</span>
       <span>{BUSINESS.email}</span>
     </div>
+
     <nav class="footer-nav" aria-label={s.navHome}>
       {navItems.map((item) => <a href={localePath(locale, /** @type {any} */ (item.key))}>{item.label}</a>)}
     </nav>
-    <div class="footer-legal">
-      <a href={localePath(locale, 'legal')}>{s.navLegal}</a>
-      <a href={localePath(locale, 'privacy')}>{s.navPrivacy}</a>
+
+    <div class="footer-legal-col">
+      <div class="footer-legal">
+        <a href={localePath(locale, 'legal')}>{s.navLegal}</a>
+        <a href={localePath(locale, 'privacy')}>{s.navPrivacy}</a>
+      </div>
+
       <div class="footer-langs">
         {
           langAlternates.map((alt) => (
-            <a href={alt.href} aria-current={alt.locale === locale ? 'page' : undefined}>
-              {alt.locale.toUpperCase()}
+            <a href={alt.href} lang={alt.locale} aria-current={alt.locale === locale ? 'page' : undefined}>
+              {LOCALE_NAMES[alt.locale]}
             </a>
           ))
         }

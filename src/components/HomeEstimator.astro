@@ -4,6 +4,9 @@
 // via query string; PriceSimulator's script reads it on load and
 // auto-computes — the same "estimateFromHome" journey as the prototype,
 // adapted to a static multi-page site (no shared client-side router state).
+//
+// The heading sits outside the card on mobile and inside it on desktop,
+// as in the two artboards — hence the two copies below.
 import { t } from '../i18n/dictionary.js';
 import { localePath } from '../i18n/routes.js';
 import { DESTINATIONS } from '../data/destinations.js';
@@ -16,24 +19,45 @@ const s = t(locale);
 const ratesUrl = localePath(locale, 'rates');
 ---
 
-<div class="sim-card">
-  <div>
-    <h2>{s.estTitle}</h2>
-    <p class="notice">{s.estSub}</p>
+<div class="estimator">
+  <div class="only-mobile">
+    <h2 class="h-section">{s.estTitle}</h2>
+    <p class="sub">{s.estSub}</p>
   </div>
-  <form method="get" action={ratesUrl}>
-    <div class="field">
-      <label class="field-label" for="home-from">{s.fFrom}</label>
-      <input type="text" id="home-from" name="from" value="Grote Markt, Tienen" />
+
+  <div class="sim-card">
+    <div class="only-desktop">
+      <h2 class="h-card">{s.estTitle}</h2>
+      <p class="notice">{s.estSub}</p>
     </div>
-    <div class="field">
-      <label class="field-label" for="home-dest">{s.fTo}</label>
-      <select id="home-dest" name="dest">
-        <option value="">{s.fToPh}</option>
-        {DESTINATIONS.filter((d) => d.id !== 'other').map((d) => <option value={d.id}>{d[locale]}</option>)}
-      </select>
-    </div>
-    <button type="submit" class="btn btn-dark qissi-tap" style="align-self:flex-start">{s.estBtn}</button>
-    <p class="notice" style="margin-top:12px">{s.estNote}</p>
-  </form>
+
+    <form method="get" action={ratesUrl}>
+      <div class="field">
+        <label class="field-label" for="home-from">{s.fFrom}</label>
+        <input type="text" id="home-from" name="from" value="Grote Markt, Tienen" />
+      </div>
+      <div class="field">
+        <label class="field-label" for="home-dest">{s.fTo}</label>
+        <select id="home-dest" name="dest">
+          <option value="">{s.fToPh}</option>
+          {DESTINATIONS.filter((d) => d.id !== 'other').map((d) => <option value={d.id}>{d[locale]}</option>)}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-dark qissi-tap estimator-btn">{s.estBtn}</button>
+      <p class="notice" style="margin:10px 0 0">{s.estNote}</p>
+    </form>
+  </div>
 </div>
+
+<style>
+  .estimator-btn {
+    width: 100%;
+  }
+  @media (min-width: 900px) {
+    .estimator-btn {
+      width: auto;
+      min-height: 56px;
+      padding: 0 28px;
+    }
+  }
+</style>

@@ -1,4 +1,6 @@
 ---
+// Two-column on desktop (heading | accordion), stacked on mobile — as in
+// the prototype's two artboards.
 import FaqSchema from './FaqSchema.astro';
 
 interface Props {
@@ -10,18 +12,20 @@ const { title, items } = Astro.props;
 
 {
   items.length > 0 && (
-    <section aria-labelledby="faq-title">
-      <h2 id="faq-title">{title}</h2>
-      <div>
-        {items.map((item) => (
-          <details class="faq-item">
-            <summary>
-              {item.q}
-              <span class="chev" />
-            </summary>
-            <p>{item.a}</p>
-          </details>
-        ))}
+    <section class="container section section-divider" aria-labelledby="faq-title">
+      <div class="faq-grid">
+        <h2 id="faq-title" class="h-section">{title}</h2>
+        <div>
+          {items.map((item) => (
+            <details class="faq-item">
+              <summary>
+                {item.q}
+                <span class="chev" />
+              </summary>
+              <p>{item.a}</p>
+            </details>
+          ))}
+        </div>
       </div>
       <FaqSchema items={items.map((i) => ({ question: i.q, answer: i.a }))} />
     </section>

@@ -1,4 +1,7 @@
 ---
+// "Zone desservie" section. Two layouts, exactly as in the prototype:
+// mobile shows 6 commune chips + a disclosure for the remaining ones,
+// desktop shows a single 3-column list beside the search field.
 import { t } from '../i18n/dictionary.js';
 import { BUSINESS } from '../config/business.js';
 
@@ -7,40 +10,59 @@ interface Props {
 }
 const { locale } = Astro.props;
 const s = t(locale);
+const communes = BUSINESS.servedMunicipalities;
+const communesMain = communes.slice(0, 6);
+const communesRest = communes.slice(6);
 ---
 
-<section class="container" style="padding-block:52px;border-top:1px solid var(--color-border)">
+<section class="container section section-divider zone-section" aria-labelledby="zone-title">
   <div class="zone-grid">
     <div>
-      <h2>{s.zoneTitle}</h2>
-      <p style="max-width:42ch">{s.zoneSub}</p>
+      <h2 id="zone-title" class="h-section">{s.zoneTitle}</h2>
+      <p class="sub" style="max-width:42ch">{s.zoneSub}</p>
       <div class="field" style="max-width:340px">
         <label class="field-label" for="zone-query">{s.zonePh}</label>
-        <input type="text" id="zone-query" data-locale={locale} />
+        <input type="text" id="zone-query" data-locale={locale} autocomplete="off" />
       </div>
-      <p id="zone-msg" class="notice" style="display:flex;align-items:center;gap:9px;margin-top:12px" hidden></p>
+
+      <p class="zone-hit" id="zone-hit" hidden>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M4 12.5l5 5L20 6.5"/></svg>
+        <span id="zone-hit-text"></span>
+      </p>
+      <div class="zone-miss" id="zone-miss" hidden>
+        <span id="zone-miss-text"></span>
+        <a class="btn btn-call qissi-tap" href={`tel:${BUSINESS.phone}`} data-analytics="call_click">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M6.5 3h3l1.5 4-2 1.5a12 12 0 0 0 5.5 5.5L16 12l4 1.5v3a2 2 0 0 1-2.2 2A16 16 0 0 1 4 5.2 2 2 0 0 1 6.5 3Z"/></svg>
+          {BUSINESS.phoneDisplay}
+        </a>
+      </div>
     </div>
+
     <div>
-      <div class="commune-list">
-        {BUSINESS.servedMunicipalities.map((c) => <div>{c}</div>)}
+      <div class="commune-chips">
+        {communesMain.map((c) => <span>{c}</span>)}
       </div>
-      <p class="notice" style="margin-top:16px">{s.zoneMore}</p>
+      <details class="commune-more">
+        <summary>
+          {s.zoneAll}
+          <span class="chev"></span>
+        </summary>
+        <div class="commune-more-list">
+          {communesRest.map((c) => <div>{c}</div>)}
+        </div>
+      </details>
+
+      <div class="commune-list">
+        {communes.map((c) => <div>{c}</div>)}
+      </div>
+
+      <p class="zone-note">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:3px"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>
+        {s.zoneMore}
+      </p>
     </div>
   </div>
 </section>
-
-<style>
-  .zone-grid {
-    display: grid;
-    gap: 40px;
-  }
-  @media (min-width: 900px) {
-    .zone-grid {
-      grid-template-columns: 1fr 1.1fr;
-      gap: 64px;
-    }
-  }
-</style>
 
 <script>
   import { BUSINESS } from '../config/business.js';
@@ -55,23 +77,34 @@ const s = t(locale);
   }
 
   const input = document.getElementById('zone-query');
-  const msg = document.getElementById('zone-msg');
-  if (input && msg) {
+  const hit = document.getElementById('zone-hit');
+  const miss = document.getElementById('zone-miss');
+
+  if (input && hit && miss) {
     const locale = input.getAttribute('data-locale') ?? 'nl';
     const s = dictionary[locale];
+
     input.addEventListener('input', () => {
       const zq = norm(input.value);
       if (zq.length < 3) {
-        msg.hidden = true;
+        hit.hidden = true;
+        miss.hidden = true;
         return;
       }
       const match =
         BUSINESS.servedMunicipalities.find((c) => norm(c).indexOf(zq) === 0) ||
         BUSINESS.servedMunicipalities.find((c) => norm(c).indexOf(zq) >= 0) ||
         null;
-      msg.hidden = false;
-      msg.textContent = match ? `${s.zoneYes}${match}.` : `« ${input.value.trim()} »${s.zoneNo}`;
-      msg.style.color = match ? 'var(--color-accent)' : 'var(--color-text-muted)';
+
+      if (match) {
+        document.getElementById('zone-hit-text').textContent = `${s.zoneYes}${match}.`;
+        hit.hidden = false;
+        miss.hidden = true;
+      } else {
+        document.getElementById('zone-miss-text').textContent = `« ${input.value.trim()} »${s.zoneNo}`;
+        miss.hidden = false;
+        hit.hidden = true;
+      }
     });
   }
 </script>

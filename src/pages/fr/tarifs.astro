@@ -11,27 +11,14 @@ const meta = seo[locale].rates;
 ---
 
 <BaseLayout locale={locale} pageKey="rates" title={meta.title} description={meta.description}>
-  <section class="container" style="padding-block:56px">
+  <section class="container section-first">
     <div class="rates-grid">
       <div>
-        <h1 style="font-size:clamp(32px,4vw,44px);letter-spacing:-.038em">{s.pTitle}</h1>
-        <p style="font-size:17px;color:var(--color-text-muted);max-width:44ch">{s.pSub}</p>
+        <h1 class="h-page">{s.pTitle}</h1>
+        <p class="lead">{s.pSub}</p>
         <RatesTable locale={locale} />
       </div>
       <PriceSimulator locale={locale} />
     </div>
   </section>
 </BaseLayout>
-
-<style>
-  .rates-grid {
-    display: grid;
-    gap: 40px;
-  }
-  @media (min-width: 900px) {
-    .rates-grid {
-      grid-template-columns: 1fr 1.1fr;
-      align-items: start;
-    }
-  }
-</style>

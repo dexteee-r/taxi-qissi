@@ -5,9 +5,13 @@
 // lookup via OpenRouteService for "other address" — reusing the geocoding
 // module built for the CDC's original free-text-address design. Everything
 // still runs entirely client-side (brief §1.1).
+//
+// Layout follows both prototype artboards: heading outside the card on
+// mobile / inside on desktop, sticky compute button on mobile, and a
+// receipt whose action order differs per breakpoint (see global.css).
 import { t } from '../i18n/dictionary.js';
 import { DESTINATIONS } from '../data/destinations.js';
-import CallButton from './CallButton.astro';
+import { BUSINESS } from '../config/business.js';
 
 interface Props {
   locale: 'nl' | 'fr' | 'en';
@@ -16,142 +20,169 @@ const { locale } = Astro.props;
 const s = t(locale);
 ---
 
-<section class="sim-card" data-locale={locale} aria-labelledby="sim-title">
-  <div>
-    <h2 id="sim-title">{s.simTitle}</h2>
-    <p class="notice">{s.simSub}</p>
+<section class="simulator" data-locale={locale} aria-labelledby="sim-title">
+  <div class="only-mobile">
+    <h2 id="sim-title" class="h-section">{s.simTitle}</h2>
+    <p class="sub">{s.simSub}</p>
   </div>
 
-  <form id="sim-form" novalidate>
-    <div class="field">
-      <label class="field-label" for="from">{s.fFrom}</label>
-      <input type="text" id="from" name="from" value="Grote Markt, Tienen" />
+  <div class="sim-card">
+    <div class="only-desktop">
+      <h2 class="h-card">{s.simTitle}</h2>
+      <p class="notice">{s.simSub}</p>
     </div>
 
-    <div class="field">
-      <label class="field-label" for="dest">{s.fTo}</label>
-      <select id="dest" name="dest">
-        <option value="">{s.fToPh}</option>
-        {DESTINATIONS.map((d) => <option value={d.id}>{d[locale]}</option>)}
-      </select>
-    </div>
-
-    <div class="field autocomplete-field" id="other-address-wrap" hidden>
-      <label class="field-label" for="other-address">{s.fOtherAddress}</label>
-      <input
-        type="text"
-        id="other-address"
-        role="combobox"
-        aria-expanded="false"
-        aria-autocomplete="list"
-        aria-controls="other-address-listbox"
-        autocomplete="off"
-        placeholder={s.fOtherAddressPh}
-      />
-      <ul id="other-address-listbox" role="listbox" class="suggestions" hidden></ul>
-    </div>
-
-    <div id="state-error" class="error-box" hidden>
-      <span class="error-msg" id="error-text">{s.errBody}</span>
-      <CallButton locale={locale} />
-    </div>
-
-    <div class="field-row">
+    <form id="sim-form" novalidate>
       <div class="field">
-        <label class="field-label" for="date">{s.fDate}</label>
-        <input type="date" id="date" name="date" />
+        <label class="field-label" for="from">{s.fFrom}</label>
+        <input type="text" id="from" name="from" value="Grote Markt, Tienen" />
       </div>
+
       <div class="field">
-        <label class="field-label" for="time">{s.fTime}</label>
-        <input type="time" id="time" name="time" />
+        <label class="field-label" for="dest">{s.fTo}</label>
+        <select id="dest" name="dest">
+          <option value="">{s.fToPh}</option>
+          {DESTINATIONS.map((d) => <option value={d.id}>{d[locale]}</option>)}
+        </select>
       </div>
-    </div>
 
-    <div class="field-row">
-      <div class="field">
-        <span class="field-label">{s.fPax}</span>
-        <div class="counter">
-          <span class="counter-value" id="pax-value">2</span>
-          <span style="display:flex;gap:2px">
-            <button class="qissi-tap" type="button" id="pax-down" aria-label="−">−</button>
-            <button class="qissi-tap" type="button" id="pax-up" aria-label="+">+</button>
-          </span>
-        </div>
+      <div class="field autocomplete-field" id="other-address-wrap" hidden>
+        <label class="field-label" for="other-address">{s.fOtherAddress}</label>
+        <input
+          type="text"
+          id="other-address"
+          role="combobox"
+          aria-expanded="false"
+          aria-autocomplete="list"
+          aria-controls="other-address-listbox"
+          autocomplete="off"
+          placeholder={s.fOtherAddressPh}
+        />
+        <ul id="other-address-listbox" role="listbox" class="suggestions" hidden></ul>
       </div>
-      <div class="field">
-        <span class="field-label">{s.fBags}</span>
-        <div class="counter">
-          <span class="counter-value" id="bags-value">1</span>
-          <span style="display:flex;gap:2px">
-            <button class="qissi-tap" type="button" id="bags-down" aria-label="−">−</button>
-            <button class="qissi-tap" type="button" id="bags-up" aria-label="+">+</button>
-          </span>
-        </div>
-      </div>
-    </div>
 
-    <div class="field">
-      <label class="field-label" for="name">{s.fName}</label>
-      <input type="text" id="name" name="name" placeholder={s.fNamePh} />
-    </div>
-
-    <div class="field">
-      <label class="field-label" for="note">{s.fNote}</label>
-      <textarea id="note" name="note" rows="2" placeholder={s.fNotePh}></textarea>
-    </div>
-
-    <p class="notice">{s.noPhone}</p>
-
-    <div id="state-loading" hidden>
-      <div style="display:flex;flex-direction:column;gap:12px;align-items:flex-start">
-        <div style="width:100%;height:8px;border-radius:3px;background:#F4F4F5;overflow:hidden">
-          <div id="loading-bar" style="width:60%;height:100%;background:var(--color-accent);border-radius:6px"></div>
-        </div>
-        <span class="notice" id="loading-text">{s.loading}</span>
-      </div>
-    </div>
-
-    <div id="state-result" class="qissi-receipt" hidden>
-      <div style="height:150px;background:#F4F4F5;border-radius:9px;overflow:hidden">
-        <svg viewBox="0 0 460 150" width="100%" height="150" style="display:block">
-          <path d="M40 120 C 130 106, 140 60, 210 50 S 350 40, 420 30" fill="none" stroke="var(--color-accent)" stroke-width="4" stroke-linecap="round"></path>
-          <circle cx="40" cy="120" r="7" fill="#fff" stroke="var(--color-accent)" stroke-width="4"></circle>
-          <circle cx="420" cy="30" r="7" fill="var(--color-accent)"></circle>
-        </svg>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:2px">
-        <span style="font:600 15px/1.35 var(--font-body);color:var(--color-text)" id="route-label"></span>
-        <span style="font:400 13.5px/1.35 var(--font-mono);color:var(--color-text-muted)" id="distance-label"></span>
-      </div>
-      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;border-top:1px solid var(--color-border-strong);padding:16px 0 12px">
-        <span style="display:flex;flex-direction:column;gap:5px">
-          <span style="font:600 13.5px/1.3 var(--font-body);color:var(--color-text)">{s.resTitle}</span>
-          <span id="indicative-badge" style="font:600 11px/1 var(--font-body);color:var(--color-accent-hover);letter-spacing:.05em">{s.indicative}</span>
+      <div id="state-error" class="error-box" hidden>
+        <span class="error-msg">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-danger)" stroke-width="2" stroke-linecap="round" style="flex:none;margin-top:2px"><circle cx="12" cy="12" r="9"/><path d="M12 8v4.5M12 16v.01"/></svg>
+          <span id="error-text">{s.errBody}</span>
         </span>
-        <span id="price-label" style="font:700 44px/.9 var(--font-display);color:#0284C7;letter-spacing:-.03em;font-variant-numeric:tabular-nums;text-align:right"></span>
+        <a class="btn btn-call qissi-tap" href={`tel:${BUSINESS.phone}`} data-analytics="call_click">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" style="flex:none"><path d="M6.5 3h3l1.5 4-2 1.5a12 12 0 0 0 5.5 5.5L16 12l4 1.5v3a2 2 0 0 1-2.2 2A16 16 0 0 1 4 5.2 2 2 0 0 1 6.5 3Z"/></svg>
+          {BUSINESS.phoneDisplay}
+        </a>
       </div>
-      <div id="breakdown" style="display:flex;flex-direction:column;border-bottom:1px solid var(--color-border-strong);padding-bottom:14px">
-        <div style="display:flex;justify-content:space-between;gap:12px;font:400 13px/1.8 var(--font-mono);color:var(--color-text-muted)"><span>{s.bPickup}</span><span id="line-pickup"></span></div>
-        <div style="display:flex;justify-content:space-between;gap:12px;font:400 13px/1.8 var(--font-mono);color:var(--color-text-muted)"><span id="line-km-label"></span><span id="line-km-cost"></span></div>
-        <div id="line-night" style="display:flex;justify-content:space-between;gap:12px;font:400 13px/1.8 var(--font-mono);color:var(--color-accent-hover)" hidden><span>{s.bNight}</span><span>+ 3 €</span></div>
-      </div>
-      <div id="tbc-note" style="display:flex;flex-direction:column;gap:10px;align-items:flex-start" hidden>
-        <span class="notice">{s.tbcNote}</span>
-        <CallButton locale={locale} />
-      </div>
-      <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <a id="whatsapp-send" class="btn btn-whatsapp qissi-tap" href="#" data-analytics="whatsapp_send">{s.waBtn}</a>
-        <button type="button" class="btn btn-outline qissi-tap" id="recompute-btn">{s.recompute}</button>
-      </div>
-      <p class="notice">{s.whatsappDisclosure}</p>
-      <div style="border-left:2px solid var(--color-border-strong);padding:2px 0 2px 14px;display:flex;flex-direction:column;gap:5px">
-        <span style="font:600 11.5px/1 var(--font-body);color:var(--color-text-faint);letter-spacing:.06em;text-transform:uppercase">{s.msgTitle}</span>
-        <span id="wa-message-preview" style="font:400 13.5px/1.6 var(--font-body);color:var(--color-text-muted)"></span>
-      </div>
-    </div>
 
-    <button type="submit" class="btn btn-dark qissi-tap" id="compute-btn" data-analytics="simulator_open">{s.compute}</button>
-  </form>
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label" for="date">{s.fDate}</label>
+          <input type="date" id="date" name="date" />
+        </div>
+        <div class="field">
+          <label class="field-label" for="time">{s.fTime}</label>
+          <input type="time" id="time" name="time" />
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <span class="field-label" id="pax-label">{s.fPax}</span>
+          <div class="counter">
+            <span class="counter-value" id="pax-value" aria-live="polite" aria-labelledby="pax-label">2</span>
+            <span style="display:flex;gap:2px">
+              <button class="qissi-tap" type="button" id="pax-down" aria-label="−">−</button>
+              <button class="qissi-tap" type="button" id="pax-up" aria-label="+">+</button>
+            </span>
+          </div>
+        </div>
+        <div class="field">
+          <span class="field-label" id="bags-label">{s.fBags}</span>
+          <div class="counter">
+            <span class="counter-value" id="bags-value" aria-live="polite" aria-labelledby="bags-label">1</span>
+            <span style="display:flex;gap:2px">
+              <button class="qissi-tap" type="button" id="bags-down" aria-label="−">−</button>
+              <button class="qissi-tap" type="button" id="bags-up" aria-label="+">+</button>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="name">{s.fName}</label>
+        <input type="text" id="name" name="name" placeholder={s.fNamePh} />
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="note">{s.fNote}</label>
+        <textarea id="note" name="note" rows="2" placeholder={s.fNotePh}></textarea>
+      </div>
+
+      <p class="notice" style="margin:0">{s.noPhone}</p>
+
+      <div id="state-loading" class="sim-loading" hidden>
+        <div class="bar-track"><div class="bar-fill"></div></div>
+        <span id="loading-text">{s.loading}</span>
+      </div>
+
+      <div id="state-result" class="qissi-receipt" hidden>
+        <div class="receipt-map">
+          <svg viewBox="0 0 340 132" width="100%" height="100%" style="display:block" aria-hidden="true">
+            <path d="M28 104 C 90 94, 96 56, 150 48 S 250 38, 306 28" fill="none" stroke="var(--color-accent)" stroke-width="4" stroke-linecap="round"></path>
+            <circle cx="28" cy="104" r="7" fill="#fff" stroke="var(--color-accent)" stroke-width="4"></circle>
+            <circle cx="306" cy="28" r="7" fill="var(--color-accent)"></circle>
+          </svg>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <span class="receipt-route" id="route-label"></span>
+          <span class="receipt-distance" id="distance-label"></span>
+        </div>
+
+        <div class="receipt-price-row">
+          <span style="display:flex;flex-direction:column;gap:5px;padding-bottom:4px">
+            <span style="font:600 13.5px/1.3 var(--font-body)">{s.resTitle}</span>
+            <span class="receipt-indicative" id="indicative-badge">{s.indicative}</span>
+          </span>
+          <span class="receipt-price" id="price-label"></span>
+        </div>
+
+        <div class="receipt-breakdown" id="breakdown">
+          <div><span>{s.bPickup}</span><span id="line-pickup"></span></div>
+          <div><span id="line-km-label"></span><span id="line-km-cost"></span></div>
+          <div class="night" id="line-night" hidden><span>{s.bNight}</span><span>+ 3 €</span></div>
+        </div>
+
+        <div id="tbc-note" style="display:flex;flex-direction:column;gap:10px;align-items:flex-start" hidden>
+          <span style="display:flex;gap:8px;font:400 13px/1.5 var(--font-body);color:var(--color-text-muted)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>
+            {s.tbcNote}
+          </span>
+          <a class="btn btn-call qissi-tap" href={`tel:${BUSINESS.phone}`} data-analytics="call_click">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" style="flex:none"><path d="M6.5 3h3l1.5 4-2 1.5a12 12 0 0 0 5.5 5.5L16 12l4 1.5v3a2 2 0 0 1-2.2 2A16 16 0 0 1 4 5.2 2 2 0 0 1 6.5 3Z"/></svg>
+            {BUSINESS.phoneDisplay}
+          </a>
+        </div>
+
+        <div class="receipt-actions">
+          <a id="whatsapp-send" class="btn btn-whatsapp qissi-tap receipt-wa" href="#" data-analytics="whatsapp_send">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.6L4 20.5l1.4-4.4A8.5 8.5 0 1 1 21 11.5Z"/></svg>
+            {s.waBtn}
+          </a>
+          <button type="button" class="btn btn-outline qissi-tap receipt-reset" id="recompute-btn">{s.recompute}</button>
+        </div>
+
+        <p class="notice receipt-disclosure" style="margin:0">{s.whatsappDisclosure}</p>
+
+        <dl class="receipt-msg">
+          <dt>{s.msgTitle}</dt>
+          <dd id="wa-message-preview"></dd>
+        </dl>
+      </div>
+
+      <div class="compute-wrap">
+        <button type="submit" class="btn btn-dark qissi-tap" id="compute-btn" data-analytics="simulator_open">{s.compute}</button>
+      </div>
+    </form>
+  </div>
 </section>
 
 <style>
@@ -172,6 +203,7 @@ const s = t(locale);
     border-radius: var(--radius);
     max-height: 14rem;
     overflow-y: auto;
+    box-shadow: 0 12px 24px -12px rgba(9, 9, 11, 0.18);
   }
   .suggestions li {
     padding: 0.6rem 0.75rem;
@@ -179,10 +211,19 @@ const s = t(locale);
     min-height: 48px;
     display: flex;
     align-items: center;
+    font-size: 14px;
   }
   .suggestions li[aria-selected='true'],
   .suggestions li:hover {
     background: var(--color-accent-tint);
+  }
+  .receipt-disclosure {
+    order: 1;
+  }
+  @media (min-width: 900px) {
+    .receipt-disclosure {
+      order: 1;
+    }
   }
 </style>
 
@@ -195,7 +236,7 @@ const s = t(locale);
   import { BUSINESS } from '../config/business.js';
   import { trackEvent } from '../lib/analytics.js';
 
-  const section = document.querySelector('.sim-card');
+  const section = document.querySelector('.simulator');
   if (section) {
     const locale = /** @type {'nl'|'fr'|'en'} */ (section.getAttribute('data-locale') ?? 'nl');
     const s = t(locale);
@@ -205,19 +246,16 @@ const s = t(locale);
     const otherInput = /** @type {HTMLInputElement} */ (document.getElementById('other-address'));
     const otherListbox = /** @type {HTMLUListElement} */ (document.getElementById('other-address-listbox'));
 
-    const states = {
-      form: form,
-      error: document.getElementById('state-error'),
-      loading: document.getElementById('state-loading'),
-      result: document.getElementById('state-result'),
-    };
-    const computeBtn = document.getElementById('compute-btn');
+    const errorEl = document.getElementById('state-error');
+    const loadingEl = document.getElementById('state-loading');
+    const resultEl = document.getElementById('state-result');
+    const computeWrap = document.querySelector('.compute-wrap');
 
     function showState(name) {
-      states.error.hidden = name !== 'error';
-      states.loading.hidden = name !== 'loading';
-      states.result.hidden = name !== 'result';
-      computeBtn.hidden = name === 'loading' || name === 'result';
+      errorEl.hidden = name !== 'error';
+      loadingEl.hidden = name !== 'loading';
+      resultEl.hidden = name !== 'result';
+      computeWrap.hidden = name === 'loading' || name === 'result';
     }
 
     // --- pax / bags counters ------------------------------------------
@@ -244,6 +282,7 @@ const s = t(locale);
       otherWrap.hidden = !isOther;
       otherCoord = null;
       showState(null);
+      if (isOther) otherInput.focus();
     });
 
     // --- accessible combobox for the "other address" lookup ------------
@@ -254,6 +293,7 @@ const s = t(locale);
     function closeList() {
       otherListbox.hidden = true;
       otherInput.setAttribute('aria-expanded', 'false');
+      otherInput.removeAttribute('aria-activedescendant');
       activeIndex = -1;
     }
     function renderList() {
@@ -272,6 +312,9 @@ const s = t(locale);
       });
       otherListbox.hidden = items.length === 0;
       otherInput.setAttribute('aria-expanded', String(items.length > 0));
+      if (activeIndex >= 0) {
+        otherInput.setAttribute('aria-activedescendant', `other-address-opt-${activeIndex}`);
+      }
     }
     function selectItem(index) {
       const item = items[index];
@@ -341,7 +384,7 @@ const s = t(locale);
         document.getElementById('loading-text').textContent = s.lookupLoading;
         try {
           const route = await routeDistance(BUSINESS.geoMidpoint, otherCoord);
-          km = route.km;
+          km = Math.round(route.km * 10) / 10;
           min = route.min;
           destLabel = otherCoord.label;
           isTbc = false;
@@ -371,11 +414,12 @@ const s = t(locale);
       const bags = getBags();
 
       document.getElementById('route-label').textContent = `${fromVal} → ${destLabel}`;
-      document.getElementById('distance-label').textContent = isTbc
-        ? s.tbcDist
-        : `${km} km · ~${min} min`;
-      document.getElementById('price-label').textContent = isTbc ? s.tbcPrice : `${fare.total.toFixed(2)} €`;
-      document.getElementById('price-label').style.fontSize = isTbc ? '26px' : '44px';
+      document.getElementById('distance-label').textContent = isTbc ? s.tbcDist : `${km} km · ~${min} min`;
+
+      const priceEl = document.getElementById('price-label');
+      priceEl.textContent = isTbc ? s.tbcPrice : `${fare.total.toFixed(2)} €`;
+      priceEl.classList.toggle('is-tbc', isTbc);
+
       document.getElementById('indicative-badge').hidden = isTbc;
       document.getElementById('breakdown').hidden = isTbc;
       document.getElementById('line-pickup').textContent = `${fare.breakdown.base.toFixed(2)} €`;
@@ -390,8 +434,7 @@ const s = t(locale);
         fare: { total: fare.total, isTbc },
       });
       document.getElementById('wa-message-preview').textContent = `« ${message} »`;
-      const waBtn = /** @type {HTMLAnchorElement} */ (document.getElementById('whatsapp-send'));
-      waBtn.href = buildWhatsAppUrl(message);
+      /** @type {HTMLAnchorElement} */ (document.getElementById('whatsapp-send')).href = buildWhatsAppUrl(message);
 
       showState('result');
       trackEvent('estimate_success');

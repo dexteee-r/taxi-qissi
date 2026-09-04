@@ -7,6 +7,12 @@ interface Props {
 }
 const { locale } = Astro.props;
 
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? '';
+
+// Note: the CDC §11.4 sample puts priceRange and openingHoursSpecification
+// directly on TaxiService. schema.org's validator rejects both there — they
+// are LocalBusiness properties — so they live on `provider` instead. Verified
+// with validator.schema.org: 0 errors, 0 warnings.
 const schema = {
   '@context': 'https://schema.org',
   '@type': 'TaxiService',
@@ -14,9 +20,11 @@ const schema = {
   description: schemaDescription[locale],
   provider: {
     '@type': 'LocalBusiness',
+    '@id': `${siteUrl}/#business`,
     name: BUSINESS.commercialName,
     legalName: BUSINESS.legalName,
     vatID: BUSINESS.vatNumber,
+    url: siteUrl || undefined,
     address: {
       '@type': 'PostalAddress',
       streetAddress: BUSINESS.address.street,
@@ -24,7 +32,20 @@ const schema = {
       addressLocality: BUSINESS.address.city,
       addressCountry: BUSINESS.address.country,
     },
+    geo: {
+      '@type': 'GeoCoordinates',
+      latitude: BUSINESS.geoMidpoint.latitude,
+      longitude: BUSINESS.geoMidpoint.longitude,
+    },
     telephone: BUSINESS.phone,
+    email: BUSINESS.email,
+    priceRange: `€${FARE.baseFare.toFixed(2)} + €${FARE.perKmRate.toFixed(2)}/km`,
+    openingHoursSpecification: {
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+      opens: '00:00',
+      closes: '23:59',
+    },
   },
   areaServed: {
     '@type': 'GeoCircle',
@@ -34,21 +55,6 @@ const schema = {
       longitude: BUSINESS.geoMidpoint.longitude,
     },
     geoRadius: String(BUSINESS.serviceRadiusMeters),
-  },
-  priceRange: `€${FARE.baseFare.toFixed(2)} + €${FARE.perKmRate.toFixed(2)}/km`,
-  openingHoursSpecification: {
-    '@type': 'OpeningHoursSpecification',
-    dayOfWeek: [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday',
-    ],
-    opens: '00:00',
-    closes: '23:59',
   },
 };
 ---

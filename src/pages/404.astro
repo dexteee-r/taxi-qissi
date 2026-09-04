@@ -6,8 +6,7 @@
 // visitor was on. No-JS fallback: NL content, with links to switch.
 import '../styles/global.css';
 import { dictionary } from '../i18n/dictionary.js';
-import { localePath, LOCALES } from '../i18n/routes.js';
-import { BUSINESS } from '../config/business.js';
+import { localePath, LOCALES, LOCALE_NAMES } from '../i18n/routes.js';
 ---
 
 <!doctype html>
@@ -17,28 +16,31 @@ import { BUSINESS } from '../config/business.js';
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{dictionary.nl.e404Title} / {dictionary.fr.e404Title} / {dictionary.en.e404Title}</title>
     <meta name="robots" content="noindex" />
-    <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
-    <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@700,800&f[]=satoshi@400,500,700&display=swap" rel="stylesheet" />
+    <link rel="preload" href="/fonts/satoshi-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   </head>
   <body>
-    <main class="container" style="padding-block:96px;max-width:40rem">
+    <main class="container">
       {
         LOCALES.map((locale) => (
-          <section class:list={['nf-block', { 'nf-hidden': locale !== 'nl' }]} data-locale={locale}>
+          <section class:list={['error-404', 'nf-block', { 'nf-hidden': locale !== 'nl' }]} data-locale={locale}>
             <span class="error-404-code">404</span>
-            <h1 style="margin-top:14px">{dictionary[locale].e404Title}</h1>
-            <p style="color:var(--color-text-muted);max-width:44ch">{dictionary[locale].e404Sub}</p>
-            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px">
-              <a class="btn btn-outline qissi-tap" href={localePath(locale, 'home')}>{dictionary[locale].e404Btn}</a>
-              <a class="btn btn-call qissi-tap" href={`tel:${BUSINESS.phone}`}>{dictionary[locale].call} — {BUSINESS.phoneDisplay}</a>
-            </div>
+            <h1>{dictionary[locale].e404Title}</h1>
+            <p>{dictionary[locale].e404Sub}</p>
+            <a class="btn btn-outline qissi-tap" href={localePath(locale, 'home')}>
+              {dictionary[locale].e404Btn}
+            </a>
           </section>
         ))
       }
-      <nav style="display:flex;gap:16px;margin-top:32px" aria-label="Language">
-        {LOCALES.map((locale) => (
-          <a href={localePath(locale, 'home')}>{locale.toUpperCase()}</a>
-        ))}
+      <nav class="footer-langs" style="margin-bottom:48px" aria-label="Language">
+        {
+          LOCALES.map((locale) => (
+            <a href={localePath(locale, 'home')} lang={locale} style="border-color:var(--color-border-strong);color:var(--color-text)">
+              {LOCALE_NAMES[locale]}
+            </a>
+          ))
+        }
       </nav>
     </main>
 

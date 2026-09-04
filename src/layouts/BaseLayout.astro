@@ -15,6 +15,8 @@ interface Props {
 }
 const { locale, pageKey, title, description } = Astro.props;
 const strings = t(locale);
+const umamiSrc = import.meta.env.PUBLIC_UMAMI_SRC;
+const umamiWebsiteId = import.meta.env.PUBLIC_UMAMI_WEBSITE_ID;
 const langAlternates = alternates(/** @type {any} */ (pageKey));
 const canonicalPath = localePath(locale, /** @type {any} */ (pageKey));
 const canonicalUrl = new URL(canonicalPath, Astro.site).toString();
@@ -28,8 +30,10 @@ const defaultUrl = new URL(localePath(DEFAULT_LOCALE, /** @type {any} */ (pageKe
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
-    <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@700,800&f[]=satoshi@400,500,700&display=swap" rel="stylesheet" />
+    {/* Self-hosted fonts (see global.css): preload the two faces used above
+        the fold so the swap happens before first paint. */}
+    <link rel="preload" href="/fonts/satoshi-400.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/cabinet-grotesk-800.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="canonical" href={canonicalUrl} />
     {
       langAlternates.map((alt) => (
@@ -47,12 +51,14 @@ const defaultUrl = new URL(localePath(DEFAULT_LOCALE, /** @type {any} */ (pageKe
 
     <SchemaOrg locale={locale} />
 
-    <!--
-      Analytics: no provider wired up yet (cookie-less option pending
-      selection — brief §8 / CDC §10.2). When one is chosen, load its script
-      tag here. src/lib/analytics.js already dispatches events by name and
-      no-ops until window.plausible (or an equivalent) exists.
-    -->
+    {/* Cookie-less analytics (Umami, self-hosted). Loads only when both env
+        vars are set, so dev and pre-launch builds ship no tracking at all.
+        See src/lib/analytics.js. */}
+    {
+      umamiSrc && umamiWebsiteId && (
+        <script defer src={umamiSrc} data-website-id={umamiWebsiteId} data-do-not-track="true"></script>
+      )
+    }
   </head>
   <body>
     <a class="skip-link" href="#main">{strings.skipToContent}</a>
