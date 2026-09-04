@@ -99,6 +99,43 @@ test.describe('touch targets and layout (brief §7)', () => {
   });
 });
 
+test.describe('homepage section alignment', () => {
+  // Regression: .container sets margin-inline:auto, and an auto cross-axis
+  // margin cancels stretch inside the .home-sections flex column — the
+  // services section shrank to its content width and centred itself while
+  // every other section stayed flush left.
+  test('all sections share the same left edge and full width', async ({ page, isMobile }) => {
+    await page.goto('/nl/');
+
+    const heroLeft = (await page.locator('.h-hero').boundingBox()).x;
+    const edges = {
+      zone: (await page.locator('.zone-section h2').boundingBox()).x,
+      services: (await page.locator('.services-section h2').boundingBox()).x,
+      faq: (await page.locator('.faq-grid h2').boundingBox()).x,
+    };
+    if (isMobile) {
+      // On mobile the services are a plain list, so their text is flush with
+      // the headings. On desktop they become grid cells with their own
+      // padding, as in the prototype — so only compare headings there.
+      edges.firstService = (await page.locator('.services-section .service-title').first().boundingBox()).x;
+    }
+    for (const [name, x] of Object.entries(edges)) {
+      expect(Math.abs(x - heroLeft), `${name} left edge`).toBeLessThan(2);
+    }
+
+    // The section box itself must fill the row like its neighbours, rather
+    // than shrinking to its content and centring. (Above 1120px the
+    // container is legitimately centred — hence comparing the two sections
+    // to each other, not to the viewport edge.)
+    const viewport = page.viewportSize().width;
+    const zone = await page.locator('.zone-section').boundingBox();
+    const services = await page.locator('.services-section').boundingBox();
+    expect(services.x).toBeCloseTo(zone.x, 0);
+    expect(services.width).toBeCloseTo(zone.width, 0);
+    expect(services.width).toBeGreaterThanOrEqual(Math.min(viewport, 1120) - 2);
+  });
+});
+
 test.describe('semantics', () => {
   test('has a skip link, one main landmark, and a labelled language menu', async ({ page }) => {
     await page.goto('/nl/');

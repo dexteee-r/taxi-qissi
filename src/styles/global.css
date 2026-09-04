@@ -997,6 +997,13 @@ details[open] > summary .chev {
   display: flex;
   flex-direction: column;
 }
+/* .container sets margin-inline:auto, and an auto cross-axis margin cancels
+   a flex item's stretch: the section would shrink to its content width and
+   centre itself instead of filling the row. Pin the width back to 100% —
+   .container's own max-width still centres the content on wide screens. */
+.home-sections > * {
+  width: 100%;
+}
 .home-sections .zone-section {
   order: 1;
 }
