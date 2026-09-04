@@ -9,6 +9,14 @@ playwright-report/
 blob-report/
 .playwright/
 
+# AI tooling files — kept out of the client repository.
+# (The Astro starter template generates AGENTS.md + a CLAUDE.md symlink.)
+CLAUDE.md
+AGENTS.md
+.claude/
+.cursor/
+.aider*
+
 # dependencies
 node_modules/
 
