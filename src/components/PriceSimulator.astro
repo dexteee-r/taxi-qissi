@@ -1,0 +1,351 @@
+---
+// Client-side price simulator. Address lookup + routing + fare calculation +
+// WhatsApp message construction all run in the browser — see src/lib/*.js.
+// Nothing here is ever sent to this site's own server (brief §1.1).
+import { BUSINESS } from '../config/business.js';
+import { t } from '../i18n/dictionary.js';
+import CallButton from './CallButton.astro';
+
+interface Props {
+  locale: 'nl' | 'fr' | 'en';
+}
+const { locale } = Astro.props;
+const s = t(locale).simulator;
+const common = t(locale).common;
+const whatsappConfigured = BUSINESS.whatsapp && BUSINESS.whatsapp !== '[TO_BE_CONFIRMED]';
+---
+
+<section class="simulator" data-locale={locale} aria-labelledby="simulator-title">
+  <h2 id="simulator-title">{s.title}</h2>
+
+  <form id="simulator-form" novalidate>
+    <div class="field autocomplete-field">
+      <label for="pickup">{s.pickup}</label>
+      <input
+        type="text"
+        id="pickup"
+        name="pickup"
+        role="combobox"
+        aria-expanded="false"
+        aria-autocomplete="list"
+        aria-controls="pickup-listbox"
+        autocomplete="off"
+        required
+      />
+      <ul id="pickup-listbox" role="listbox" class="suggestions" hidden></ul>
+    </div>
+
+    <div class="field autocomplete-field">
+      <label for="dropoff">{s.dropoff}</label>
+      <input
+        type="text"
+        id="dropoff"
+        name="dropoff"
+        role="combobox"
+        aria-expanded="false"
+        aria-autocomplete="list"
+        aria-controls="dropoff-listbox"
+        autocomplete="off"
+        required
+      />
+      <ul id="dropoff-listbox" role="listbox" class="suggestions" hidden></ul>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="date">{s.date}</label>
+        <input type="date" id="date" name="date" required />
+      </div>
+      <div class="field">
+        <label for="time">{s.time}</label>
+        <input type="time" id="time" name="time" required />
+      </div>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="passengers">{s.passengers}</label>
+        <input type="number" id="passengers" name="passengers" min="1" step="1" value="1" required />
+      </div>
+      <div class="field">
+        <label for="luggage">{s.luggage}</label>
+        <input type="number" id="luggage" name="luggage" min="0" step="1" value="0" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="name">{s.name}</label>
+      <input type="text" id="name" name="name" required />
+    </div>
+
+    <div class="field">
+      <label for="note">{s.note}</label>
+      <textarea id="note" name="note" rows="2" placeholder={s.notePlaceholder}></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-call" data-analytics="simulator_open">{s.submit}</button>
+  </form>
+
+  <div id="state-idle" role="status" class="notice">{s.stateIdle}</div>
+
+  <div id="state-loading" role="status" hidden>{s.stateLoading}</div>
+
+  <div id="state-error" class="error-box" hidden>
+    <p>{s.stateError}</p>
+    <CallButton locale={locale} />
+  </div>
+
+  <div id="state-result" hidden data-analytics="estimate_success">
+    <p>
+      <strong>{s.stateResult}: € <span id="result-total">0.00</span></strong>
+      <span class="notice"> ({common.indicative})</span>
+    </p>
+    <p class="notice">
+      {s.distanceLabel}: <span id="result-distance">0</span> km
+    </p>
+    <p id="result-night" class="notice" hidden>{s.nightSurchargeApplied}</p>
+    <p class="notice">{common.indicativeNotice}</p>
+
+    {
+      whatsappConfigured ? (
+        <>
+          <a id="whatsapp-send" class="btn btn-whatsapp" href="#" data-analytics="whatsapp_send">
+            {s.sendWhatsapp}
+          </a>
+          <p class="notice">{common.whatsappDisclosure}</p>
+        </>
+      ) : (
+        <span class="btn btn-whatsapp placeholder-marker" aria-disabled="true">
+          {s.sendWhatsapp} ⚠ {common.whatsappUnavailable}
+        </span>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .simulator {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    max-width: 40rem;
+  }
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .autocomplete-field {
+    position: relative;
+  }
+  .suggestions {
+    position: absolute;
+    z-index: 20;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    max-height: 14rem;
+    overflow-y: auto;
+  }
+  .suggestions li {
+    padding: 0.6rem 0.75rem;
+    cursor: pointer;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+  }
+  .suggestions li[aria-selected='true'],
+  .suggestions li:hover {
+    background: var(--color-border);
+  }
+  #state-result {
+    margin-top: 1rem;
+  }
+</style>
+
+<script>
+  import { autocompleteAddress, routeDistanceKm, MapServiceError } from '../lib/geocoding.js';
+  import { estimateFare } from '../lib/fare.js';
+  import { buildWhatsAppMessage, buildWhatsAppUrl } from '../lib/whatsapp.js';
+  import { t } from '../i18n/dictionary.js';
+  import { trackEvent } from '../lib/analytics.js';
+
+  const section = document.querySelector('.simulator');
+  if (section) {
+    const locale = /** @type {'nl'|'fr'|'en'} */ (section.getAttribute('data-locale') ?? 'nl');
+    const strings = t(locale);
+    const form = /** @type {HTMLFormElement} */ (document.getElementById('simulator-form'));
+
+    const states = {
+      idle: document.getElementById('state-idle'),
+      loading: document.getElementById('state-loading'),
+      error: document.getElementById('state-error'),
+      result: document.getElementById('state-result'),
+    };
+
+    function showState(name) {
+      for (const [key, el] of Object.entries(states)) {
+        if (el) el.hidden = key !== name;
+      }
+    }
+
+    // --- Accessible address combobox -----------------------------------
+    /** @type {{ pickup: {lon:number, lat:number}|null, dropoff: {lon:number, lat:number}|null }} */
+    const selected = { pickup: null, dropoff: null };
+
+    function setupCombobox(inputId, listboxId, key) {
+      const input = /** @type {HTMLInputElement} */ (document.getElementById(inputId));
+      const listbox = /** @type {HTMLUListElement} */ (document.getElementById(listboxId));
+      let items = [];
+      let activeIndex = -1;
+      let debounceTimer;
+
+      function closeList() {
+        listbox.hidden = true;
+        input.setAttribute('aria-expanded', 'false');
+        activeIndex = -1;
+      }
+
+      function renderList() {
+        listbox.innerHTML = '';
+        items.forEach((item, index) => {
+          const li = document.createElement('li');
+          li.role = 'option';
+          li.id = `${listboxId}-opt-${index}`;
+          li.textContent = item.label;
+          li.setAttribute('aria-selected', String(index === activeIndex));
+          li.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            selectItem(index);
+          });
+          listbox.appendChild(li);
+        });
+        listbox.hidden = items.length === 0;
+        input.setAttribute('aria-expanded', String(items.length > 0));
+      }
+
+      function selectItem(index) {
+        const item = items[index];
+        if (!item) return;
+        input.value = item.label;
+        selected[key] = { lon: item.lon, lat: item.lat };
+        closeList();
+      }
+
+      input.addEventListener('input', () => {
+        selected[key] = null;
+        clearTimeout(debounceTimer);
+        const query = input.value;
+        debounceTimer = setTimeout(async () => {
+          try {
+            items = await autocompleteAddress(query);
+            activeIndex = -1;
+            renderList();
+          } catch {
+            items = [];
+            closeList();
+          }
+        }, 300);
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (listbox.hidden) return;
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          activeIndex = Math.min(activeIndex + 1, items.length - 1);
+          renderList();
+          input.setAttribute('aria-activedescendant', `${listboxId}-opt-${activeIndex}`);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          activeIndex = Math.max(activeIndex - 1, 0);
+          renderList();
+          input.setAttribute('aria-activedescendant', `${listboxId}-opt-${activeIndex}`);
+        } else if (e.key === 'Enter') {
+          if (activeIndex >= 0) {
+            e.preventDefault();
+            selectItem(activeIndex);
+          }
+        } else if (e.key === 'Escape') {
+          closeList();
+        }
+      });
+
+      input.addEventListener('blur', () => {
+        setTimeout(closeList, 100);
+      });
+    }
+
+    setupCombobox('pickup', 'pickup-listbox', 'pickup');
+    setupCombobox('dropoff', 'dropoff-listbox', 'dropoff');
+
+    // --- Form submission --------------------------------------------------
+    let lastEstimate = null;
+
+    form?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      if (!selected.pickup || !selected.dropoff) {
+        showState('error');
+        return;
+      }
+
+      const formData = new FormData(form);
+      const time = String(formData.get('time') ?? '00:00');
+      const hour = Number(time.split(':')[0]);
+
+      showState('loading');
+
+      try {
+        const distanceKm = await routeDistanceKm(selected.pickup, selected.dropoff);
+        const fare = estimateFare(distanceKm, hour);
+
+        lastEstimate = {
+          distanceKm,
+          fare,
+          form: {
+            pickup: /** @type {HTMLInputElement} */ (document.getElementById('pickup')).value,
+            dropoff: /** @type {HTMLInputElement} */ (document.getElementById('dropoff')).value,
+            date: String(formData.get('date') ?? ''),
+            time,
+            passengers: String(formData.get('passengers') ?? ''),
+            luggage: String(formData.get('luggage') ?? ''),
+            name: String(formData.get('name') ?? ''),
+            note: String(formData.get('note') ?? ''),
+          },
+        };
+
+        document.getElementById('result-total').textContent = fare.total.toFixed(2);
+        document.getElementById('result-distance').textContent = distanceKm.toFixed(1);
+        const nightEl = document.getElementById('result-night');
+        if (nightEl) nightEl.hidden = !fare.isNight;
+
+        const whatsappBtn = /** @type {HTMLAnchorElement|null} */ (document.getElementById('whatsapp-send'));
+        if (whatsappBtn) {
+          const message = buildWhatsAppMessage({
+            locale,
+            labels: strings.simulator.whatsappMessage,
+            form: lastEstimate.form,
+            estimateTotal: fare.total,
+            indicativeLabel: strings.common.indicative,
+          });
+          const url = buildWhatsAppUrl(message);
+          if (url) whatsappBtn.href = url;
+        }
+
+        showState('result');
+        trackEvent('estimate_success');
+      } catch (err) {
+        showState('error');
+        if (!(err instanceof MapServiceError)) {
+          console.error(err);
+        }
+      }
+    });
+  }
+</script>

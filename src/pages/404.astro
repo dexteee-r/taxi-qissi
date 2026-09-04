@@ -1,0 +1,72 @@
+---
+// A static site serves exactly one physical 404 page regardless of URL
+// prefix. To satisfy "page 404 traduite dans les trois langues"
+// (brief §4 / CDC §5), all three translations are pre-rendered here and a
+// small inline script shows the one matching the /nl|fr|en/ prefix the
+// visitor was on. No-JS fallback: NL content, with links to switch.
+import '../styles/global.css';
+import { dictionary } from '../i18n/dictionary.js';
+import { localePath, LOCALES } from '../i18n/routes.js';
+import { BUSINESS } from '../config/business.js';
+---
+
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{dictionary.nl.notFound.title} / {dictionary.fr.notFound.title} / {dictionary.en.notFound.title}</title>
+    <meta name="robots" content="noindex" />
+  </head>
+  <body>
+    <main class="container not-found">
+      {
+        LOCALES.map((locale) => (
+          <section class:list={['nf-block', { 'nf-hidden': locale !== 'nl' }]} data-locale={locale}>
+            <h1>{dictionary[locale].notFound.title}</h1>
+            <p>{dictionary[locale].notFound.message}</p>
+            <p>
+              <a href={localePath(locale, 'home')}>{dictionary[locale].notFound.backHome}</a>
+            </p>
+            {
+              BUSINESS.phone !== '[TO_BE_CONFIRMED]' && (
+                <p>
+                  <a href={`tel:${BUSINESS.phone}`}>{dictionary[locale].common.call}</a>
+                </p>
+              )
+            }
+          </section>
+        ))
+      }
+      <nav class="lang-links" aria-label="Language">
+        {LOCALES.map((locale) => (
+          <a href={localePath(locale, 'home')}>{locale.toUpperCase()}</a>
+        ))}
+      </nav>
+    </main>
+
+    <style>
+      .not-found {
+        padding-block: 3rem;
+        max-width: 40rem;
+      }
+      .nf-hidden {
+        display: none;
+      }
+      .lang-links {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+    </style>
+
+    <script>
+      const prefix = window.location.pathname.split('/')[1];
+      const locale = ['nl', 'fr', 'en'].includes(prefix) ? prefix : 'nl';
+      document.documentElement.lang = locale;
+      document.querySelectorAll('.nf-block').forEach((el) => {
+        el.classList.toggle('nf-hidden', el.getAttribute('data-locale') !== locale);
+      });
+    </script>
+  </body>
+</html>

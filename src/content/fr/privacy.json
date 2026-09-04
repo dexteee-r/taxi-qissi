@@ -1,0 +1,37 @@
+{
+  "_note": "BROUILLON — squelette structurel construit sur les points explicitement listés dans cdc_v1_taxi_qiss.md §10.2. NE PAS PUBLIER sans validation par un juriste ou l'APD (cdc_v1_taxi_qiss.md §15 point 5). Formulations à revoir.",
+  "draftWarning": "⚠ Brouillon technique — cette page ne doit pas être mise en ligne sans relecture juridique.",
+  "title": "Politique de confidentialité",
+  "intro": "[CONTENU À RÉDIGER ET FAIRE VALIDER JURIDIQUEMENT]",
+  "sections": [
+    {
+      "heading": "Responsable du traitement",
+      "body": "Q.I.S.S SRL, Sint-Truidensesteenweg 234, 3300 Tienen, TVA BE1025231305."
+    },
+    {
+      "heading": "Le simulateur de prix",
+      "body": "Le calcul d'itinéraire, l'estimation de prix et la préparation du message WhatsApp s'exécutent entièrement dans votre navigateur. Aucune adresse, aucun nom saisi dans le formulaire n'est envoyé à nos serveurs ni stocké par nous."
+    },
+    {
+      "heading": "Base légale",
+      "body": "Le traitement relève de l'article 6.1.b du RGPD (mesures précontractuelles prises à la demande de la personne concernée). Aucune case de consentement n'est requise pour ce flux."
+    },
+    {
+      "heading": "Service cartographique",
+      "body": "L'autocomplétion d'adresses et le calcul d'itinéraire utilisent OpenRouteService. Les adresses que vous saisissez dans le simulateur sont transmises à ce fournisseur pour effectuer ce calcul. [À COMPLÉTER — lien vers la politique de confidentialité d'OpenRouteService, transfert hors UE le cas échéant]"
+    },
+    {
+      "heading": "Canal WhatsApp",
+      "body": "En cliquant sur « Envoyer la demande via WhatsApp », votre message sera envoyé via WhatsApp, un service exploité par WhatsApp Ireland Limited (groupe Meta). [À COMPLÉTER — détail du transfert hors UE et base légale WhatsApp, cf. cdc_v1_taxi_qiss.md §10.2]"
+    },
+    {
+      "heading": "Mesure d'audience",
+      "body": "Le site utilise un outil d'analyse sans cookie de suivi. [À COMPLÉTER une fois l'outil choisi — cf. brief_dev_taxi_qiss.md §8]"
+    },
+    {
+      "heading": "Vos droits",
+      "body": "[CONTENU À RÉDIGER ET FAIRE VALIDER JURIDIQUEMENT]"
+    }
+  ],
+  "whatsappButtonNotice": "En cliquant, votre message sera envoyé via WhatsApp."
+}

@@ -1,0 +1,213 @@
+/*
+ * Design tokens are PLACEHOLDERS pending the client's logo and brand
+ * identity (cdc_v1_taxi_qiss.md §9: "couleur principale: blanc" + explicit
+ * warning that white alone won't make the call/WhatsApp buttons visible —
+ * an accent color is required and "à définir avec le logo").
+ * The accent below is chosen only to satisfy WCAG AA contrast on a white
+ * ground; replace it once the client validates a brand color.
+ */
+:root {
+  --color-bg: #ffffff;
+  --color-text: #16181a;
+  --color-text-muted: #4b5157;
+  --color-border: #dfe3e6;
+  --color-accent: #0b6e4f; /* placeholder — call CTA */
+  --color-accent-contrast: #ffffff;
+  --color-whatsapp: #0e6b60; /* placeholder — WhatsApp CTA, distinct hue */
+  --color-whatsapp-contrast: #ffffff;
+  --color-danger: #a3231a;
+  --color-danger-bg: #fbeceb;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --touch-target: 48px;
+  --radius: 8px;
+  --container-width: 72rem;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+picture,
+video {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: var(--color-accent);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.2;
+  margin: 0 0 0.6em;
+}
+
+p {
+  margin: 0 0 1em;
+}
+
+.container {
+  max-width: var(--container-width);
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: 0.5rem;
+  top: -3rem;
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  z-index: 100;
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+  top: 0.5rem;
+}
+
+/* Buttons — minimum 48px touch target (brief §7) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: var(--touch-target);
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  text-decoration: none;
+  border: 2px solid transparent;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.btn:focus-visible {
+  outline: 3px solid #0b3d91;
+  outline-offset: 2px;
+}
+
+.btn-call {
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+}
+
+.btn-whatsapp {
+  background: var(--color-whatsapp);
+  color: var(--color-whatsapp-contrast);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+/* Sticky mobile call bar — bouton d'appel toujours accessible sans scroll */
+.mobile-call-bar {
+  position: fixed;
+  inset-block-end: 0;
+  inset-inline: 0;
+  z-index: 50;
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border);
+}
+
+.mobile-call-bar .btn {
+  flex: 1;
+}
+
+@media (min-width: 768px) {
+  .mobile-call-bar {
+    display: none;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.field label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.field input,
+.field textarea,
+.field select {
+  min-height: var(--touch-target);
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.field input:focus-visible,
+.field textarea:focus-visible,
+.field select:focus-visible {
+  outline: 3px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.notice {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.error-box {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius);
+  padding: 1rem;
+}
+
+.placeholder-marker {
+  display: inline-block;
+  background: #fff3cd;
+  color: #664d03;
+  border: 1px dashed #997404;
+  border-radius: 4px;
+  padding: 0.1em 0.4em;
+  font-size: 0.85em;
+}

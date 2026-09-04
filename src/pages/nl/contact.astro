@@ -1,0 +1,58 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { t } from '../../i18n/dictionary.js';
+import { seo } from '../../i18n/seo.js';
+import { BUSINESS } from '../../config/business.js';
+import CallButton from '../../components/CallButton.astro';
+import WhatsAppButton from '../../components/WhatsAppButton.astro';
+import content from '../../content/nl/contact.json';
+
+const locale = 'nl';
+const meta = seo[locale].contact;
+const strings = t(locale);
+---
+
+<BaseLayout locale={locale} pageKey="contact" title={meta.title} description={meta.description}>
+  <div class="container">
+    <h1>{strings.nav.contact}</h1>
+    <p>{content.intro}</p>
+
+    <div class="cta-row">
+      <CallButton locale={locale} />
+      <WhatsAppButton locale={locale} />
+    </div>
+
+    <dl class="contact-details">
+      <dt>{content.hoursLabel}</dt>
+      <dd>{content.hoursValue}</dd>
+      <dt>{strings.footer.vat}</dt>
+      <dd>{BUSINESS.vatNumber}</dd>
+      <dt>{strings.footer.license}</dt>
+      <dd>
+        {BUSINESS.licenseNumber === '[TO_BE_CONFIRMED]' ? (
+          <span class="placeholder-marker">{BUSINESS.licenseNumber}</span>
+        ) : (
+          BUSINESS.licenseNumber
+        )}
+      </dd>
+      <dt>{BUSINESS.address.city}</dt>
+      <dd>{BUSINESS.address.street}, {BUSINESS.address.postalCode} {BUSINESS.address.city}</dd>
+    </dl>
+  </div>
+</BaseLayout>
+
+<style>
+  .cta-row {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-block: 1.5rem;
+  }
+  .contact-details dt {
+    font-weight: 600;
+    margin-top: 0.75rem;
+  }
+  .contact-details dd {
+    margin-left: 0;
+  }
+</style>

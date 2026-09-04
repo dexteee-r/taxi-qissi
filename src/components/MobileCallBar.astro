@@ -1,0 +1,14 @@
+---
+import CallButton from './CallButton.astro';
+import WhatsAppButton from './WhatsAppButton.astro';
+
+interface Props {
+  locale: 'nl' | 'fr' | 'en';
+}
+const { locale } = Astro.props;
+---
+
+<div class="mobile-call-bar">
+  <CallButton locale={locale} />
+  <WhatsAppButton locale={locale} />
+</div>

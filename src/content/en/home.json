@@ -1,0 +1,23 @@
+{
+  "_note": "Marketing copy not yet supplied (cdc_v1_taxi_qiss.md §8). Fill these files in without touching the .astro templates.",
+  "heroTitle": "[CONTENT TO BE WRITTEN — homepage hero title]",
+  "heroSubtitle": "[CONTENT TO BE WRITTEN]",
+  "intro": "[CONTENT TO BE WRITTEN — short intro text]",
+  "zoneTitle": "Service area",
+  "zoneIntro": "Tienen and a radius of about 20 km. [DEFINITIVE MUNICIPALITY LIST PENDING CLIENT CONFIRMATION]",
+  "faqTitle": "Frequently asked questions",
+  "faq": [
+    {
+      "question": "Do you drive at night?",
+      "answer": "Yes, we're available 24/7. A flat €3 night surcharge applies between 10pm and 4am."
+    },
+    {
+      "question": "Do you serve the airport?",
+      "answer": "Yes, we provide transport to all airports, at the standard rate (no separate airport package)."
+    },
+    {
+      "question": "Can I pay by card?",
+      "answer": "[TO BE CONFIRMED BY CLIENT — payment methods not yet communicated]"
+    }
+  ]
+}

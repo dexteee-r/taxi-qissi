@@ -1,0 +1,81 @@
+---
+import { FARE } from '../config/business.js';
+
+interface Props {
+  locale: 'nl' | 'fr' | 'en';
+}
+const { locale } = Astro.props;
+
+const labels = {
+  nl: {
+    item: 'Element',
+    amount: 'Bedrag',
+    base: 'Prijs bij opstappen',
+    perKm: 'Prijs per km',
+    waiting: 'Wachttijd',
+    night: 'Nachttoeslag (22u–4u), eenmalig per rit',
+    perHour: '/ uur',
+  },
+  fr: {
+    item: 'Élément',
+    amount: 'Montant',
+    base: 'Prise en charge',
+    perKm: 'Tarif kilométrique',
+    waiting: "Temps d'attente",
+    night: 'Supplément de nuit (22h–4h), une fois par course',
+    perHour: '/ heure',
+  },
+  en: {
+    item: 'Item',
+    amount: 'Amount',
+    base: 'Pickup fee',
+    perKm: 'Per-kilometer rate',
+    waiting: 'Waiting time',
+    night: 'Night surcharge (10pm–4am), once per ride',
+    perHour: '/ hour',
+  },
+};
+const l = labels[locale];
+---
+
+<table class="rates-table">
+  <caption class="sr-only">{l.item} / {l.amount}</caption>
+  <thead>
+    <tr>
+      <th scope="col">{l.item}</th>
+      <th scope="col">{l.amount}</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>{l.base}</td>
+      <td>€ {FARE.baseFare.toFixed(2)}</td>
+    </tr>
+    <tr>
+      <td>{l.perKm}</td>
+      <td>€ {FARE.perKmRate.toFixed(2)} / km</td>
+    </tr>
+    <tr>
+      <td>{l.waiting}</td>
+      <td>€ {FARE.waitingRatePerHour.toFixed(2)} {l.perHour}</td>
+    </tr>
+    <tr>
+      <td>{l.night}</td>
+      <td>€ {FARE.nightSurcharge.toFixed(2)}</td>
+    </tr>
+  </tbody>
+</table>
+
+<style>
+  .rates-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-block: 1.5rem;
+  }
+  .rates-table th,
+  .rates-table td {
+    text-align: left;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+</style>

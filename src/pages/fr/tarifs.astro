@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { t } from '../../i18n/dictionary.js';
+import { seo } from '../../i18n/seo.js';
+import RatesTable from '../../components/RatesTable.astro';
+import PriceSimulator from '../../components/PriceSimulator.astro';
+
+const locale = 'fr';
+const meta = seo[locale].rates;
+const strings = t(locale);
+---
+
+<BaseLayout locale={locale} pageKey="rates" title={meta.title} description={meta.description}>
+  <div class="container">
+    <h1>{strings.nav.rates}</h1>
+    <RatesTable locale={locale} />
+    <p class="notice">{strings.common.indicativeNotice}</p>
+  </div>
+
+  <div class="container">
+    <PriceSimulator locale={locale} />
+  </div>
+</BaseLayout>

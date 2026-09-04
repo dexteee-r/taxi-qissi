@@ -1,0 +1,70 @@
+---
+import { BUSINESS } from '../config/business.js';
+import { localePath } from '../i18n/routes.js';
+import { t } from '../i18n/dictionary.js';
+
+interface Props {
+  locale: 'nl' | 'fr' | 'en';
+}
+const { locale } = Astro.props;
+const strings = t(locale);
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div>
+      <p>{BUSINESS.legalName}</p>
+      <p>{BUSINESS.address.street}, {BUSINESS.address.postalCode} {BUSINESS.address.city}</p>
+      <p>{strings.footer.vat}: {BUSINESS.vatNumber}</p>
+      <p>
+        {strings.footer.license}:{' '}
+        {BUSINESS.licenseNumber === '[TO_BE_CONFIRMED]' ? (
+          <span class="placeholder-marker">{BUSINESS.licenseNumber}</span>
+        ) : (
+          BUSINESS.licenseNumber
+        )}
+      </p>
+    </div>
+    <nav aria-label="legal">
+      <ul>
+        <li><a href={localePath(locale, 'legal')}>{strings.nav.legal}</a></li>
+        <li><a href={localePath(locale, 'privacy')}>{strings.nav.privacy}</a></li>
+      </ul>
+    </nav>
+    <p class="copyright">© {year} {BUSINESS.legalName} — {strings.footer.rights}</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--color-border);
+    margin-top: 3rem;
+    padding-block: 2rem;
+    padding-bottom: calc(2rem + 64px); /* clear the fixed mobile call bar */
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+  @media (min-width: 768px) {
+    .site-footer {
+      padding-bottom: 2rem;
+    }
+  }
+  .footer-inner {
+    display: grid;
+    gap: 1.5rem;
+  }
+  .footer-inner nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 1rem;
+  }
+  .footer-inner a {
+    color: var(--color-text-muted);
+  }
+  .copyright {
+    margin: 0;
+  }
+</style>

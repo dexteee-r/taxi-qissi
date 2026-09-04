@@ -1,0 +1,39 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { t } from '../../i18n/dictionary.js';
+import { seo } from '../../i18n/seo.js';
+import { localePath } from '../../i18n/routes.js';
+import content from '../../content/fr/services.json';
+
+const locale = 'fr';
+const meta = seo[locale].services;
+const strings = t(locale);
+---
+
+<BaseLayout locale={locale} pageKey="services" title={meta.title} description={meta.description}>
+  <div class="container">
+    <h1>{strings.nav.services}</h1>
+    <p>{content.intro}</p>
+
+    {
+      content.services.map((service) => (
+        <article class="service-card" id={service.id}>
+          <h2>{service.title}</h2>
+          <p>{service.description}</p>
+          {service.id === 'airport' && (
+            <p>
+              <a href={localePath(locale, 'airport')}>→ {strings.nav.airport}</a>
+            </p>
+          )}
+        </article>
+      ))
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .service-card {
+    padding-block: 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+</style>

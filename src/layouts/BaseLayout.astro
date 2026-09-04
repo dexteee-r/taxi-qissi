@@ -1,0 +1,75 @@
+---
+import '../styles/global.css';
+import { alternates, localePath, DEFAULT_LOCALE } from '../i18n/routes.js';
+import { t } from '../i18n/dictionary.js';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import MobileCallBar from '../components/MobileCallBar.astro';
+import SchemaOrg from '../components/SchemaOrg.astro';
+
+interface Props {
+  locale: 'nl' | 'fr' | 'en';
+  pageKey: string;
+  title: string;
+  description: string;
+}
+const { locale, pageKey, title, description } = Astro.props;
+const strings = t(locale);
+const langAlternates = alternates(/** @type {any} */ (pageKey));
+const canonicalPath = localePath(locale, /** @type {any} */ (pageKey));
+const canonicalUrl = new URL(canonicalPath, Astro.site).toString();
+const defaultUrl = new URL(localePath(DEFAULT_LOCALE, /** @type {any} */ (pageKey)), Astro.site).toString();
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    {
+      langAlternates.map((alt) => (
+        <link rel="alternate" hreflang={alt.locale} href={new URL(alt.href, Astro.site).toString()} />
+      ))
+    }
+    <link rel="alternate" hreflang="x-default" href={defaultUrl} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:locale" content={locale} />
+
+    <SchemaOrg locale={locale} />
+
+    <!--
+      Analytics: no provider wired up yet (cookie-less option pending
+      selection — brief §8 / CDC §10.2). When one is chosen, load its script
+      tag here. src/lib/analytics.js already dispatches events by name and
+      no-ops until window.plausible (or an equivalent) exists.
+    -->
+  </head>
+  <body>
+    <a class="skip-link" href="#main">{strings.common.skipToContent}</a>
+    <Header locale={locale} pageKey={pageKey} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer locale={locale} />
+    <MobileCallBar locale={locale} />
+
+    <script>
+      import { trackEvent } from '../lib/analytics.js';
+      document.addEventListener('click', (event) => {
+        const target = /** @type {HTMLElement} */ (event.target)?.closest('[data-analytics]');
+        if (target instanceof HTMLElement) {
+          const eventName = target.dataset.analytics;
+          if (eventName) trackEvent(/** @type {any} */ (eventName));
+        }
+      });
+    </script>
+  </body>
+</html>

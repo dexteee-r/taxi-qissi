@@ -1,0 +1,56 @@
+---
+import { BUSINESS, FARE } from '../config/business.js';
+import schemaDescription from '../content/common/schema-description.json';
+
+interface Props {
+  locale: 'nl' | 'fr' | 'en';
+}
+const { locale } = Astro.props;
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'TaxiService',
+  name: BUSINESS.commercialName,
+  description: schemaDescription[locale],
+  provider: {
+    '@type': 'LocalBusiness',
+    name: BUSINESS.commercialName,
+    legalName: BUSINESS.legalName,
+    vatID: BUSINESS.vatNumber,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: BUSINESS.address.street,
+      postalCode: BUSINESS.address.postalCode,
+      addressLocality: BUSINESS.address.city,
+      addressCountry: BUSINESS.address.country,
+    },
+    telephone: BUSINESS.phone,
+  },
+  areaServed: {
+    '@type': 'GeoCircle',
+    geoMidpoint: {
+      '@type': 'GeoCoordinates',
+      latitude: BUSINESS.geoMidpoint.latitude,
+      longitude: BUSINESS.geoMidpoint.longitude,
+    },
+    geoRadius: String(BUSINESS.serviceRadiusMeters),
+  },
+  priceRange: `€${FARE.baseFare.toFixed(2)} + €${FARE.perKmRate.toFixed(2)}/km`,
+  openingHoursSpecification: {
+    '@type': 'OpeningHoursSpecification',
+    dayOfWeek: [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ],
+    opens: '00:00',
+    closes: '23:59',
+  },
+};
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />

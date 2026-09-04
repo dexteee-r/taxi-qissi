@@ -1,0 +1,48 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { seo } from '../../i18n/seo.js';
+import { BUSINESS } from '../../config/business.js';
+import content from '../../content/en/legal.json';
+
+const locale = 'en';
+const meta = seo[locale].legal;
+const l = content.labels;
+
+function marker(value) {
+  return value === '[TO_BE_CONFIRMED]';
+}
+---
+
+<BaseLayout locale={locale} pageKey="legal" title={meta.title} description={meta.description}>
+  <div class="container">
+    <h1>{content.title}</h1>
+    <dl>
+      <dt>{l.publisher}</dt>
+      <dd>{BUSINESS.legalName}</dd>
+      <dt>{l.legalForm}</dt>
+      <dd>{content.legalForm}</dd>
+      <dt>{l.registeredOffice}</dt>
+      <dd>{BUSINESS.address.street}, {BUSINESS.address.postalCode} {BUSINESS.address.city}</dd>
+      <dt>{l.vat}</dt>
+      <dd>{BUSINESS.vatNumber}</dd>
+      <dt>{l.license}</dt>
+      <dd>
+        {marker(BUSINESS.licenseNumber) ? <span class="placeholder-marker">{BUSINESS.licenseNumber}</span> : BUSINESS.licenseNumber}
+      </dd>
+      <dt>{l.contact}</dt>
+      <dd>
+        {marker(BUSINESS.phone) ? <span class="placeholder-marker">{BUSINESS.phone}</span> : BUSINESS.phone}
+      </dd>
+      <dt>{l.hosting}</dt>
+      <dd>{content.hostingNote}</dd>
+    </dl>
+    <p class="notice">{content.additionalNote}</p>
+  </div>
+</BaseLayout>
+
+<style>
+  dt {
+    font-weight: 600;
+    margin-top: 0.75rem;
+  }
+</style>

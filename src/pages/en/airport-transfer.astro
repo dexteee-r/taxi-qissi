@@ -1,0 +1,33 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { t } from '../../i18n/dictionary.js';
+import { seo } from '../../i18n/seo.js';
+import CallButton from '../../components/CallButton.astro';
+import WhatsAppButton from '../../components/WhatsAppButton.astro';
+import content from '../../content/en/airport.json';
+
+const locale = 'en';
+const meta = seo[locale].airport;
+const strings = t(locale);
+---
+
+<BaseLayout locale={locale} pageKey="airport" title={meta.title} description={meta.description}>
+  <div class="container">
+    <h1>{strings.nav.airport}</h1>
+    <p>{content.intro}</p>
+    <p>{content.body}</p>
+    <div class="cta-row">
+      <CallButton locale={locale} />
+      <WhatsAppButton locale={locale} />
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .cta-row {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+  }
+</style>

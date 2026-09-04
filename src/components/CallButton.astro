@@ -1,0 +1,28 @@
+---
+import { BUSINESS } from '../config/business.js';
+import { t } from '../i18n/dictionary.js';
+
+interface Props {
+  locale: 'nl' | 'fr' | 'en';
+  variant?: 'solid' | 'bar';
+}
+const { locale, variant = 'solid' } = Astro.props;
+const strings = t(locale).common;
+const isConfigured = BUSINESS.phone && BUSINESS.phone !== '[TO_BE_CONFIRMED]';
+---
+
+{
+  isConfigured ? (
+    <a
+      class="btn btn-call"
+      href={`tel:${BUSINESS.phone}`}
+      data-analytics="call_click"
+    >
+      {strings.call}
+    </a>
+  ) : (
+    <span class="btn btn-call placeholder-marker" aria-disabled="true" title={strings.phoneUnavailable}>
+      {strings.call} ⚠
+    </span>
+  )
+}

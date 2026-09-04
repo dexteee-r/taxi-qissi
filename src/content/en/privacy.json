@@ -1,0 +1,37 @@
+{
+  "_note": "DRAFT — structural skeleton built from the points explicitly listed in cdc_v1_taxi_qiss.md §10.2. DO NOT PUBLISH without legal / DPA review (cdc_v1_taxi_qiss.md §15 point 5). Wording still to be finalized.",
+  "draftWarning": "⚠ Technical draft — this page must not go live without legal review.",
+  "title": "Privacy policy",
+  "intro": "[CONTENT TO BE WRITTEN AND LEGALLY VALIDATED]",
+  "sections": [
+    {
+      "heading": "Data controller",
+      "body": "Q.I.S.S SRL, Sint-Truidensesteenweg 234, 3300 Tienen, VAT BE1025231305."
+    },
+    {
+      "heading": "The price simulator",
+      "body": "Route calculation, price estimation and preparation of the WhatsApp message all happen entirely in your browser. No address or name you enter in the form is sent to our servers or stored by us."
+    },
+    {
+      "heading": "Legal basis",
+      "body": "This processing relies on Article 6.1.b GDPR (pre-contractual steps taken at the data subject's request). No consent checkbox is required for this flow."
+    },
+    {
+      "heading": "Mapping service",
+      "body": "Address autocomplete and route calculation use OpenRouteService. Addresses you type into the simulator are sent to this provider to perform that calculation. [TO BE COMPLETED — link to OpenRouteService's privacy policy, any transfer outside the EU]"
+    },
+    {
+      "heading": "WhatsApp channel",
+      "body": "By clicking \"Send request via WhatsApp\", your message is sent via WhatsApp, a service operated by WhatsApp Ireland Limited (Meta group). [TO BE COMPLETED — detail on the transfer outside the EU and WhatsApp's legal basis, cf. cdc_v1_taxi_qiss.md §10.2]"
+    },
+    {
+      "heading": "Analytics",
+      "body": "The site uses a cookie-less analytics tool. [TO BE COMPLETED once the tool is chosen — cf. brief_dev_taxi_qiss.md §8]"
+    },
+    {
+      "heading": "Your rights",
+      "body": "[CONTENT TO BE WRITTEN AND LEGALLY VALIDATED]"
+    }
+  ],
+  "whatsappButtonNotice": "By clicking, your message will be sent via WhatsApp."
+}

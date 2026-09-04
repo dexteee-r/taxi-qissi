@@ -1,0 +1,31 @@
+{
+  "_note": "Dienstnamen overgenomen zoals genoemd in cdc_v1_taxi_qiss.md §3. Beschrijvingen moeten nog geschreven worden.",
+  "intro": "[INHOUD NOG TE SCHRIJVEN]",
+  "services": [
+    {
+      "id": "on-demand",
+      "title": "Rit op aanvraag",
+      "description": "[INHOUD NOG TE SCHRIJVEN]"
+    },
+    {
+      "id": "advance-booking",
+      "title": "Vooraf reserveren",
+      "description": "[INHOUD NOG TE SCHRIJVEN]"
+    },
+    {
+      "id": "airport",
+      "title": "Luchthaven- / stationvervoer",
+      "description": "[INHOUD NOG TE SCHRIJVEN — zie ook de aparte pagina Luchthavenvervoer]"
+    },
+    {
+      "id": "events",
+      "title": "Terbeschikkingstelling / evenementen",
+      "description": "[INHOUD NOG TE SCHRIJVEN]"
+    },
+    {
+      "id": "business",
+      "title": "Zakelijke accounts",
+      "description": "[INHOUD NOG TE SCHRIJVEN — gedetailleerde zakelijke facturatie voorzien in V2]"
+    }
+  ]
+}

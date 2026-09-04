@@ -1,0 +1,31 @@
+{
+  "_note": "Service names taken from cdc_v1_taxi_qiss.md §3. Descriptions still need to be written.",
+  "intro": "[CONTENT TO BE WRITTEN]",
+  "services": [
+    {
+      "id": "on-demand",
+      "title": "On-demand ride",
+      "description": "[CONTENT TO BE WRITTEN]"
+    },
+    {
+      "id": "advance-booking",
+      "title": "Advance booking",
+      "description": "[CONTENT TO BE WRITTEN]"
+    },
+    {
+      "id": "airport",
+      "title": "Airport / station transfer",
+      "description": "[CONTENT TO BE WRITTEN — see also the dedicated Airport transfer page]"
+    },
+    {
+      "id": "events",
+      "title": "Chauffeur hire / events",
+      "description": "[CONTENT TO BE WRITTEN]"
+    },
+    {
+      "id": "business",
+      "title": "Business accounts",
+      "description": "[CONTENT TO BE WRITTEN — detailed business invoicing planned for V2]"
+    }
+  ]
+}

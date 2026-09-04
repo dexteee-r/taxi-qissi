@@ -1,0 +1,16 @@
+{
+  "_note": "Squelette de mentions légales basé sur les faits fournis (cdc_v1_taxi_qiss.md §1, §10.3). Contenu juridique complémentaire à valider avant publication.",
+  "title": "Mentions légales",
+  "labels": {
+    "publisher": "Éditeur du site",
+    "legalForm": "Forme juridique",
+    "registeredOffice": "Siège social",
+    "vat": "Numéro d'entreprise / TVA",
+    "license": "Numéro de licence IBP",
+    "contact": "Contact",
+    "hosting": "Hébergement"
+  },
+  "legalForm": "Société à responsabilité limitée (SRL)",
+  "hostingNote": "[À COMPLÉTER — informations d'hébergement, cf. brief_dev_taxi_qiss.md §3]",
+  "additionalNote": "[CONTENU JURIDIQUE COMPLÉMENTAIRE À RÉDIGER ET FAIRE VALIDER — cdc_v1_taxi_qiss.md §15 point 5]"
+}

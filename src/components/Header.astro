@@ -1,0 +1,113 @@
+---
+import { localePath } from '../i18n/routes.js';
+import { t } from '../i18n/dictionary.js';
+import { BUSINESS } from '../config/business.js';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+import CallButton from './CallButton.astro';
+import WhatsAppButton from './WhatsAppButton.astro';
+
+
+interface Props {
+  locale: 'nl' | 'fr' | 'en';
+  pageKey: string;
+}
+const { locale, pageKey } = Astro.props;
+const nav = t(locale).nav;
+const isBrandConfirmed = BUSINESS.commercialName && BUSINESS.commercialName !== '[TO_BE_CONFIRMED]';
+const brandLabel = isBrandConfirmed ? BUSINESS.commercialName : t(locale).common.brandNamePending;
+
+const navItems = [
+  { key: 'home', label: nav.home },
+  { key: 'services', label: nav.services },
+  { key: 'airport', label: nav.airport },
+  { key: 'rates', label: nav.rates },
+  { key: 'contact', label: nav.contact },
+];
+---
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="brand" class:list={{ 'placeholder-marker': !isBrandConfirmed }} href={localePath(locale, 'home')}>
+      {brandLabel}
+    </a>
+
+    <nav class="main-nav" aria-label={nav.home}>
+      <ul>
+        {
+          navItems.map((item) => (
+            <li>
+              <a
+                href={localePath(locale, /** @type {any} */ (item.key))}
+                aria-current={pageKey === item.key ? 'page' : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="header-actions">
+      <LanguageSwitcher locale={locale} pageKey={pageKey} />
+      <div class="header-buttons">
+        <CallButton locale={locale} />
+        <WhatsAppButton locale={locale} />
+      </div>
+    </div>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    border-bottom: 1px solid var(--color-border);
+  }
+  .header-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-block: 0.75rem;
+  }
+  .brand {
+    font-weight: 800;
+    font-size: 1.25rem;
+    text-decoration: none;
+    color: var(--color-text);
+  }
+  .main-nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .main-nav a {
+    text-decoration: none;
+    color: var(--color-text);
+    min-height: 48px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .main-nav a[aria-current='page'] {
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .header-buttons {
+    display: none;
+    gap: 0.5rem;
+  }
+  @media (min-width: 768px) {
+    .header-buttons {
+      display: flex;
+    }
+  }
+</style>
