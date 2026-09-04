@@ -328,6 +328,9 @@ const s = t(locale);
       otherCoord = null;
       clearTimeout(debounceTimer);
       const query = otherInput.value;
+      // 500 ms rather than 300: the API key is public by design, so its daily
+      // quota protects real visitors only as long as we spend it sparingly.
+      // Waiting for a real pause in typing roughly halves the request count.
       debounceTimer = setTimeout(async () => {
         try {
           items = await autocompleteAddress(query);
@@ -337,7 +340,7 @@ const s = t(locale);
           items = [];
           closeList();
         }
-      }, 300);
+      }, 500);
     });
     otherInput.addEventListener('keydown', (e) => {
       if (otherListbox.hidden) return;

@@ -32,17 +32,29 @@ function getApiKey() {
   return key;
 }
 
+// The key ships in the browser bundle by necessity (brief §1.1 forbids a
+// server-side proxy), so the daily quota is the only thing standing between
+// us and someone else's traffic. Every request we don't make is quota kept
+// for real visitors — hence this per-session cache: typing, backspacing and
+// retyping the same address costs one request, not one per keystroke.
+const suggestionCache = new Map();
+const MAX_CACHED_QUERIES = 50;
+
 /**
  * Address autocomplete, biased to Belgium.
  * @param {string} query
  * @returns {Promise<Array<{ label: string, lon: number, lat: number }>>}
  */
 export async function autocompleteAddress(query) {
-  if (!query || query.trim().length < 3) return [];
+  const text = (query ?? '').trim();
+  if (text.length < 3) return [];
+
+  const cacheKey = text.toLowerCase();
+  if (suggestionCache.has(cacheKey)) return suggestionCache.get(cacheKey);
 
   const apiKey = getApiKey();
   const url = new URL(`${ORS_BASE_URL}/geocode/autocomplete`);
-  url.searchParams.set('text', query);
+  url.searchParams.set('text', text);
   url.searchParams.set('boundary.country', 'BE');
   url.searchParams.set('size', '5');
 
@@ -60,11 +72,18 @@ export async function autocompleteAddress(query) {
   }
 
   const data = await response.json();
-  return (data.features ?? []).map((feature) => ({
+  const results = (data.features ?? []).map((feature) => ({
     label: feature.properties.label,
     lon: feature.geometry.coordinates[0],
     lat: feature.geometry.coordinates[1],
   }));
+
+  // Only successful lookups are cached: a failure must be retryable.
+  if (suggestionCache.size >= MAX_CACHED_QUERIES) {
+    suggestionCache.delete(suggestionCache.keys().next().value);
+  }
+  suggestionCache.set(cacheKey, results);
+  return results;
 }
 
 /**

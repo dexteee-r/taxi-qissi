@@ -73,7 +73,39 @@ describe('address autocomplete', () => {
     mockFetch(okJson({ features: [] }));
     expect(await autocompleteAddress('zzzzzz')).toEqual([]);
     mockFetch(okJson({}));
-    expect(await autocompleteAddress('zzzzzz')).toEqual([]);
+    expect(await autocompleteAddress('yyyyyy')).toEqual([]);
+  });
+
+  // The key is public by design, so the daily quota is the only guard rail:
+  // spending it on repeated lookups would deny service to real visitors.
+  it('serves a repeated query from cache instead of calling the API again', async () => {
+    const fetchMock = mockFetch(
+      okJson({
+        features: [{ properties: { label: 'Grote Markt, Tienen' }, geometry: { coordinates: [4.94, 50.8] } }],
+      })
+    );
+
+    const first = await autocompleteAddress('Grote Markt Tienen');
+    const second = await autocompleteAddress('Grote Markt Tienen');
+    const cased = await autocompleteAddress('  grote markt tienen  ');
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(second).toEqual(first);
+    expect(cased).toEqual(first);
+  });
+
+  it('does not cache failures, so a retry can still succeed', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('offline')));
+    await expect(autocompleteAddress('Bondgenotenlaan')).rejects.toBeInstanceOf(MapServiceError);
+
+    const fetchMock = mockFetch(
+      okJson({
+        features: [{ properties: { label: 'Bondgenotenlaan, Leuven' }, geometry: { coordinates: [4.7, 50.88] } }],
+      })
+    );
+    const results = await autocompleteAddress('Bondgenotenlaan');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(results[0].label).toBe('Bondgenotenlaan, Leuven');
   });
 
   it('reports a network failure rather than returning a wrong address', async () => {
