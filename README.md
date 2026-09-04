@@ -49,6 +49,27 @@ Les aéroports sont marqués `tbc: true` dans `destinations.js` — prix et
 distance "à confirmer", exactement comme dans le prototype ; le simulateur
 affiche alors un CTA d'appel au lieu d'un prix.
 
+### Distances : vérifiées, pas devinées
+
+Les distances livrées avec le prototype étaient des estimations de maquette,
+fausses de −60 % à +68 %. Elles sont désormais mesurées via OpenRouteService :
+
+```sh
+npm run verify:distances         # compare, sans rien modifier
+npm run verify:distances:write   # met à jour src/data/destinations.js
+```
+
+Le script refuse d'écrire sans `--ors` : les distances stockées doivent venir
+du même routeur que celui interrogé à l'exécution, sinon la même destination
+serait facturée différemment selon le chemin emprunté par le visiteur.
+
+⚠️ **À faire valider par le chauffeur.** Ce sont des trajets de centre à
+centre, et un routeur optimise le *temps*, pas la distance. Viser la grand-
+place plutôt que la gare ajoute plusieurs kilomètres à cause des zones
+piétonnes (Leuven : 33,6 km vers la Grote Markt contre 26 km vers la gare).
+Comme le tarif est kilométrique, le point de référence déplace le prix
+annoncé.
+
 ## Développement
 
 ```sh
@@ -105,10 +126,12 @@ Avant mise en ligne :
 
 1. Confirmer `BUSINESS.domain` et renseigner `BUSINESS.licenseNumber`.
 2. Vérifier que `site` dans `astro.config.mjs` correspond au domaine réel.
-3. Configurer `PUBLIC_ORS_API_KEY` en production, et **restreindre la clé par
-   domaine référent + plafonner le quota** sur le dashboard OpenRouteService
-   avant d'ouvrir l'accès public (sinon facturation/abus possible) — cette
-   clé n'est utilisée que par le chemin "Autre adresse" du simulateur.
+3. Déclarer `PUBLIC_ORS_API_KEY` **dans les variables d'environnement Vercel**
+   (Settings → Environment Variables) : le `.env` local n'est pas déployé, donc
+   sans ça l'option « Autre adresse » échoue en production alors qu'elle
+   fonctionne en local. Puis **restreindre la clé par domaine référent et
+   plafonner le quota** sur le dashboard OpenRouteService avant d'ouvrir
+   l'accès public (sinon facturation/abus possible).
 
 ## Contenus
 
