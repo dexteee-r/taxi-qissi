@@ -1,7 +1,16 @@
 import { test, expect } from '@playwright/test';
+import { DESTINATIONS } from '../../src/data/destinations.js';
+import { estimateFare } from '../../src/lib/fare.js';
+import { formatEuro, formatKm } from '../../src/lib/format.js';
 
 const PHONE = '+32469230017';
 const WHATSAPP = '32469230017';
+
+// Expectations are derived from the destination data rather than hard-coded,
+// so re-running `npm run verify:distances` cannot silently break the suite —
+// and the assertions keep checking the tariff rule, not a frozen number.
+const dest = (id) => DESTINATIONS.find((d) => d.id === id);
+const priceFor = (id, hour, locale = 'nl') => formatEuro(estimateFare(dest(id).km, hour).total, locale);
 
 test.describe('price simulator', () => {
   test.beforeEach(async ({ page }) => {
@@ -15,13 +24,13 @@ test.describe('price simulator', () => {
     await page.click('#compute-btn');
 
     await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator('#price-label')).toHaveText('64 €'); // 4 + 20×3
-    await expect(page.locator('#distance-label')).toContainText('20 km');
+    await expect(page.locator('#price-label')).toHaveText(priceFor('leu', 15)); // 4 + km×3
+    await expect(page.locator('#distance-label')).toContainText(formatKm(dest('leu').km, 'nl'));
     await expect(page.locator('#route-label')).toContainText('Leuven');
 
     // Breakdown adds up and the night line stays hidden by day.
-    await expect(page.locator('#line-pickup')).toHaveText('4 €');
-    await expect(page.locator('#line-km-cost')).toHaveText('60 €');
+    await expect(page.locator('#line-pickup')).toHaveText(formatEuro(4, 'nl'));
+    await expect(page.locator('#line-km-cost')).toHaveText(formatEuro(dest('leu').km * 3, 'nl'));
     await expect(page.locator('#line-night')).toBeHidden();
 
     // "Indicative" is always shown with a price (CDC §4 rule 2).
@@ -32,7 +41,7 @@ test.describe('price simulator', () => {
     const message = decodeURIComponent(href.split('?text=')[1]);
     expect(message).toContain('Leuven');
     expect(message).toContain('Jan Peeters');
-    expect(message).toContain('64 €');
+    expect(message).toContain(priceFor('leu', 15));
     expect(message).toContain('indicatief');
   });
 
@@ -42,7 +51,7 @@ test.describe('price simulator', () => {
     await page.click('#compute-btn');
 
     await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator('#price-label')).toHaveText('67 €'); // 64 + 3
+    await expect(page.locator('#price-label')).toHaveText(priceFor('leu', 23)); // day price + 3
     await expect(page.locator('#line-night')).toBeVisible();
   });
 
@@ -196,14 +205,12 @@ test.describe('homepage estimator hand-off', () => {
     await page.waitForURL('**/nl/tarieven/**');
     await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
     await expect(page.locator('#route-label')).toContainText('Sint-Truiden');
-    await expect(page.locator('#distance-label')).toContainText('18 km');
+    await expect(page.locator('#distance-label')).toContainText(formatKm(dest('stt').km, 'nl'));
 
     // No time was picked, so the simulator prices "now" — which means the
     // night surcharge applies if the suite happens to run between 22:00
     // and 04:00. Derive the expectation instead of hard-coding one.
-    const hour = new Date().getHours();
-    const expected = hour >= 22 || hour < 4 ? '61 €' : '58 €'; // 4 + 18×3 (+3)
-    await expect(page.locator('#price-label')).toHaveText(expected);
+    await expect(page.locator('#price-label')).toHaveText(priceFor('stt', new Date().getHours()));
   });
 });
 

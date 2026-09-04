@@ -45,9 +45,11 @@ const ORIGIN_QUERY = 'Grote Markt, Tienen, Belgium';
 const QUERIES = {
   zav: 'Brussels Airport, Zaventem, Belgium',
   cri: 'Brussels South Charleroi Airport, Belgium',
-  lgg: 'Liege Airport, Bierset, Belgium',
+  // Airport centroids land on a runway, where ORS finds no routable road —
+  // aim at the terminal / access road instead.
+  lgg: 'Liege Airport terminal, Belgium',
   maa: 'Maastricht Aachen Airport, Netherlands',
-  ein: 'Eindhoven Airport, Netherlands',
+  ein: 'Luchthavenweg, Eindhoven, Netherlands',
   bru: 'Grote Markt, Brussels, Belgium',
   leu: 'Grote Markt, Leuven, Belgium',
   has: 'Grote Markt, Hasselt, Belgium',
