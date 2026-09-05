@@ -152,6 +152,31 @@ fonds OpenStreetMap), conformément au CDC §7.1. Trois points de conception :
   d'appel fonctionnent normalement. Testé en coupant le fournisseur de
   tuiles.
 
+### Carte de la zone desservie (page Contact)
+
+La page Contact affiche le rayon d'intervention (~20 km autour de Tienen) sur
+la même carte, à la place du cercle pointillé décoratif du prototype
+(`src/components/ServiceAreaMap.astro`). Elle n'est pas derrière un clic,
+contrairement à celle du simulateur, d'où deux différences :
+
+- **Chargement à l'entrée dans le champ de vision** (`IntersectionObserver`,
+  marge de 200 px) plutôt qu'au chargement de la page : les autres pages ne
+  demandent toujours aucune tuile, et la politique de confidentialité le dit.
+- **Le dessin du prototype reste le repli** : il est dans le HTML servi, donc
+  visible sans JavaScript, et il est remis en place si Leaflet ou les tuiles
+  échouent (`tests/e2e/contact-map.spec.js` coupe le chunk Leaflet pour le
+  vérifier).
+
+Pas d'épingle d'adresse, volontairement : la légende décrit une zone, et le
+point mémorisé est la ville, pas la porte du bureau.
+
+⚠️ Piège Leaflet : il faut appeler `setView()` **avant** d'ajouter les
+couches. Tant que la carte n'a pas de vue, Leaflet met les couches en
+attente, et un cercle sans carte ne sait pas donner ses limites — le
+`fitBounds(cercle.getBounds())` qui suit lève alors une exception, la carte
+se rabat silencieusement sur le dessin. La carte d'itinéraire n'a pas le
+problème : elle cadre sur une liste de points, pas sur une couche.
+
 ⚠️ Les tuiles sont **la seule requête tierce du site**. Elles envoient l'IP
 du visiteur et la zone consultée à OpenStreetMap — c'est déclaré dans la
 politique de confidentialité. Le fournisseur est une constante dans
