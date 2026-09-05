@@ -4,6 +4,12 @@
 // (brief_dev_taxi_qiss.md §1.2). If a value is missing, the render must show
 // the marker, never an invented value.
 
+// Where the simulator measures from by default. Geocoded from "Grote Markt,
+// Tienen" — the pickup address the form pre-fills — and deliberately the same
+// point scripts/verify-distances.mjs uses for the preset destinations, so the
+// dropdown and the live lookup stay consistent.
+const ROUTING_ORIGIN = { lat: 50.8075398, lon: 4.9371503 };
+
 export const BUSINESS = {
   legalName: 'Q.I.S.S SRL',
   // Confirmed by the user (2026-09-04) from the validated Claude Design prototype.
@@ -40,13 +46,14 @@ export const BUSINESS = {
     latitude: 50.8064,
     longitude: 4.9403,
   },
-  // Where the simulator measures from. Geocoded from "Grote Markt, Tienen"
-  // — the pickup address the form pre-fills — and deliberately the same
-  // point scripts/verify-distances.mjs uses for the preset destinations, so
-  // the dropdown and the live "other address" lookup stay consistent.
-  routingOrigin: {
-    lat: 50.8075398,
-    lon: 4.9371503,
+  routingOrigin: ROUTING_ORIGIN,
+  // What the simulator's pickup field starts with. It is a resolved address,
+  // not just placeholder text: the visitor may replace it with their own and
+  // the route is then measured from whatever they pick — but leaving it
+  // alone costs no geocoding request, since its coordinate is already known.
+  defaultPickup: {
+    label: 'Grote Markt, Tienen',
+    ...ROUTING_ORIGIN,
   },
 };
 

@@ -52,12 +52,19 @@ function getApiKey() {
 const suggestionCache = new Map();
 const MAX_CACHED_QUERIES = 50;
 
+// Belgium plus its neighbours, rather than Belgium alone: the dropdown
+// already offers Maastricht and Eindhoven, so a visitor who types a Dutch
+// address must be able to find it too. `focus.point` keeps local results on
+// top — a search for "Grote Markt" still ranks Tienen before Rotterdam.
+const SEARCH_COUNTRIES = 'BE,NL,FR,DE,LU';
+
 /**
- * Address autocomplete, biased to Belgium.
+ * Address autocomplete, biased to the area around Tienen.
  * @param {string} query
+ * @param {{ lat: number, lon: number }} [focus] point to rank results around
  * @returns {Promise<Array<{ label: string, lon: number, lat: number }>>}
  */
-export async function autocompleteAddress(query) {
+export async function autocompleteAddress(query, focus) {
   const text = (query ?? '').trim();
   if (text.length < 3) return [];
 
@@ -67,7 +74,11 @@ export async function autocompleteAddress(query) {
   const url = new URL(`${ORS_BASE_URL}/geocode/autocomplete`);
   url.searchParams.set('api_key', getApiKey());
   url.searchParams.set('text', text);
-  url.searchParams.set('boundary.country', 'BE');
+  url.searchParams.set('boundary.country', SEARCH_COUNTRIES);
+  if (focus) {
+    url.searchParams.set('focus.point.lat', String(focus.lat));
+    url.searchParams.set('focus.point.lon', String(focus.lon));
+  }
   url.searchParams.set('size', '5');
 
   let response;

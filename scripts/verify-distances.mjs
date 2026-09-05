@@ -22,6 +22,16 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { DESTINATIONS } from '../src/data/destinations.js';
 
+import { decodePolyline } from '../src/lib/polyline.js';
+
+// Last point of an encoded route = where the router put the destination.
+function endOf(encoded) {
+  const points = encoded ? decodePolyline(encoded) : [];
+  if (points.length === 0) return null;
+  const [lat, lon] = points[points.length - 1];
+  return { lat, lon };
+}
+
 const USE_ORS = process.argv.includes('--ors');
 const AS_JSON = process.argv.includes('--json');
 const WRITE = process.argv.includes('--write');
@@ -180,12 +190,19 @@ if (WRITE) {
   let source = readFileSync(path, 'utf8');
 
   for (const row of rows) {
-    const pattern = new RegExp(`(\\{ id: '${row.id}', km: )[\\d.]+(, min: )\\d+`);
+    const pattern = new RegExp(
+      String.raw`(\{ id: '${row.id}', km: )[\d.]+(, min: )\d+(, lat: [-\d.]+, lon: [-\d.]+)?`
+    );
     if (!pattern.test(source)) {
       console.error(`Refusing to write: could not locate the entry for "${row.id}".`);
       process.exit(1);
     }
-    source = source.replace(pattern, `$1${row.km}$2${row.min}`);
+    // The stored coordinate is the route's own end point rather than the
+    // geocoded address: it is already snapped to the road network, and taking
+    // it from the geometry we just measured means the two cannot drift apart.
+    const end = endOf(row.geometry) ?? row.target;
+    const coords = `, lat: ${end.lat.toFixed(6)}, lon: ${end.lon.toFixed(6)}`;
+    source = source.replace(pattern, `$1${row.km}$2${row.min}${coords}`);
   }
 
   const stamp = `// Distances verified against OpenRouteService on ${new Date().toISOString().slice(0, 10)}\n// via scripts/verify-distances.mjs, measured from ${ORIGIN_QUERY}.\n`;

@@ -33,9 +33,27 @@ const s = t(locale);
     </div>
 
     <form id="sim-form" novalidate>
-      <div class="field">
+      {/* The pickup address is a combobox like the destination one: it is
+          what the route is measured from, so it needs a real coordinate,
+          not just a label for the WhatsApp message. Pre-filled with the
+          town's main square, whose coordinate we already know — the common
+          case therefore still costs zero API calls. */}
+      <div class="field autocomplete-field">
         <label class="field-label" for="from">{s.fFrom}</label>
-        <input type="text" id="from" name="from" value="Grote Markt, Tienen" />
+        <input
+          type="text"
+          id="from"
+          name="from"
+          value={BUSINESS.defaultPickup.label}
+          role="combobox"
+          aria-expanded="false"
+          aria-autocomplete="list"
+          aria-controls="from-listbox"
+          autocomplete="off"
+          maxlength="120"
+          placeholder={s.fFromPh}
+        />
+        <ul id="from-listbox" role="listbox" class="suggestions" hidden></ul>
       </div>
 
       <div class="field">
@@ -56,6 +74,7 @@ const s = t(locale);
           aria-autocomplete="list"
           aria-controls="other-address-listbox"
           autocomplete="off"
+          maxlength="120"
           placeholder={s.fOtherAddressPh}
         />
         <ul id="other-address-listbox" role="listbox" class="suggestions" hidden></ul>
@@ -159,6 +178,20 @@ const s = t(locale);
           </a>
         </div>
 
+        {/* Shown when the live lookup lands further away than anything the
+            dropdown offers: the price still appears, but a trip of that
+            length is worth agreeing on the phone. */}
+        <div id="long-distance-note" style="display:flex;flex-direction:column;gap:10px;align-items:flex-start" hidden>
+          <span style="display:flex;gap:8px;font:400 13px/1.5 var(--font-body);color:var(--color-text-muted)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>
+            {s.longDistance}
+          </span>
+          <a class="btn btn-call qissi-tap" href={`tel:${BUSINESS.phone}`} data-analytics="call_click">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" style="flex:none"><path d="M6.5 3h3l1.5 4-2 1.5a12 12 0 0 0 5.5 5.5L16 12l4 1.5v3a2 2 0 0 1-2.2 2A16 16 0 0 1 4 5.2 2 2 0 0 1 6.5 3Z"/></svg>
+            {BUSINESS.phoneDisplay}
+          </a>
+        </div>
+
         <div class="receipt-actions">
           <a id="whatsapp-send" class="btn btn-whatsapp qissi-tap receipt-wa" href="#" data-analytics="whatsapp_send">
             <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.6L4 20.5l1.4-4.4A8.5 8.5 0 1 1 21 11.5Z"/></svg>
@@ -210,6 +243,13 @@ const s = t(locale);
     align-items: center;
     font-size: 14px;
   }
+  /* "Searching…" / "No address found" — a row that reports, not a choice. */
+  .suggestions li.suggestion-status {
+    color: var(--color-text-muted);
+    font-style: italic;
+    cursor: default;
+    background: transparent;
+  }
   .suggestions li[aria-selected='true'],
   .suggestions li:hover {
     background: var(--color-accent-tint);
@@ -230,7 +270,7 @@ const s = t(locale);
   import { buildWhatsAppMessage, buildWhatsAppUrl } from '../lib/whatsapp.js';
   import { formatEuro, formatKm } from '../lib/format.js';
   import { t } from '../i18n/dictionary.js';
-  import { DESTINATIONS } from '../data/destinations.js';
+  import { DESTINATIONS, FURTHEST_PRESET_KM } from '../data/destinations.js';
   import { BUSINESS, FARE } from '../config/business.js';
   import { trackEvent } from '../lib/analytics.js';
 
@@ -240,6 +280,8 @@ const s = t(locale);
     const s = t(locale);
     const form = /** @type {HTMLFormElement} */ (document.getElementById('sim-form'));
     const destSelect = /** @type {HTMLSelectElement} */ (document.getElementById('dest'));
+    const fromInput = /** @type {HTMLInputElement} */ (document.getElementById('from'));
+    const fromListbox = /** @type {HTMLUListElement} */ (document.getElementById('from-listbox'));
     const otherWrap = document.getElementById('other-address-wrap');
     const otherInput = /** @type {HTMLInputElement} */ (document.getElementById('other-address'));
     const otherListbox = /** @type {HTMLUListElement} */ (document.getElementById('other-address-listbox'));
@@ -273,105 +315,199 @@ const s = t(locale);
     const getPax = setupCounter('pax', 1, 8, 2);
     const getBags = setupCounter('bags', 0, 8, 1);
 
-    // --- destination select: reveal "other address" field --------------
-    let otherCoord = null;
-    destSelect.addEventListener('change', () => {
-      const isOther = destSelect.value === 'other';
-      otherWrap.hidden = !isOther;
-      otherCoord = null;
-      showState(null);
-      if (isOther) otherInput.focus();
-    });
+    // --- accessible address combobox -----------------------------------
+    // Both address fields behave identically, so they share one
+    // implementation. A field is "resolved" only when its text corresponds
+    // to a coordinate the visitor actually picked: typing an address is not
+    // the same as choosing one, and the route cannot be measured from a
+    // string. Editing the text un-resolves the field again.
+    function createAddressField(input, listbox, idPrefix) {
+      let items = [];
+      let activeIndex = -1;
+      let debounceTimer;
+      let resolved = null;
 
-    // --- accessible combobox for the "other address" lookup ------------
-    let items = [];
-    let activeIndex = -1;
-    let debounceTimer;
-
-    function closeList() {
-      otherListbox.hidden = true;
-      otherInput.setAttribute('aria-expanded', 'false');
-      otherInput.removeAttribute('aria-activedescendant');
-      activeIndex = -1;
-    }
-    function renderList() {
-      otherListbox.innerHTML = '';
-      items.forEach((item, index) => {
-        const li = document.createElement('li');
-        li.role = 'option';
-        li.id = `other-address-opt-${index}`;
-        li.textContent = item.label;
-        li.setAttribute('aria-selected', String(index === activeIndex));
-        li.addEventListener('mousedown', (e) => {
-          e.preventDefault();
-          selectItem(index);
-        });
-        otherListbox.appendChild(li);
-      });
-      otherListbox.hidden = items.length === 0;
-      otherInput.setAttribute('aria-expanded', String(items.length > 0));
-      if (activeIndex >= 0) {
-        otherInput.setAttribute('aria-activedescendant', `other-address-opt-${activeIndex}`);
+      function closeList() {
+        listbox.hidden = true;
+        input.setAttribute('aria-expanded', 'false');
+        input.removeAttribute('aria-activedescendant');
+        activeIndex = -1;
       }
-    }
-    function selectItem(index) {
-      const item = items[index];
-      if (!item) return;
-      otherInput.value = item.label;
-      otherCoord = { lon: item.lon, lat: item.lat, label: item.label };
-      closeList();
-    }
-    otherInput.addEventListener('input', () => {
-      otherCoord = null;
-      clearTimeout(debounceTimer);
-      const query = otherInput.value;
-      // 500 ms rather than 300: the API key is public by design, so its daily
-      // quota protects real visitors only as long as we spend it sparingly.
-      // Waiting for a real pause in typing roughly halves the request count.
-      debounceTimer = setTimeout(async () => {
+
+      // A single non-selectable row: "searching…" or "no address found".
+      // Without it the field just stays silent, which reads as "nothing
+      // happened" rather than "there is no such address".
+      function renderStatus(text) {
+        listbox.innerHTML = '';
+        const li = document.createElement('li');
+        li.className = 'suggestion-status';
+        li.setAttribute('role', 'status');
+        li.textContent = text;
+        listbox.appendChild(li);
+        listbox.hidden = false;
+        input.setAttribute('aria-expanded', 'false');
+        input.removeAttribute('aria-activedescendant');
+      }
+
+      function renderList() {
+        listbox.innerHTML = '';
+        items.forEach((item, index) => {
+          const li = document.createElement('li');
+          li.role = 'option';
+          li.id = `${idPrefix}-opt-${index}`;
+          li.textContent = item.label;
+          li.setAttribute('aria-selected', String(index === activeIndex));
+          li.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            selectItem(index);
+          });
+          listbox.appendChild(li);
+        });
+        listbox.hidden = items.length === 0;
+        input.setAttribute('aria-expanded', String(items.length > 0));
+        if (activeIndex >= 0) {
+          input.setAttribute('aria-activedescendant', `${idPrefix}-opt-${activeIndex}`);
+        } else {
+          input.removeAttribute('aria-activedescendant');
+        }
+      }
+
+      function selectItem(index) {
+        const item = items[index];
+        if (!item) return;
+        input.value = item.label;
+        resolved = { lon: item.lon, lat: item.lat, label: item.label };
+        closeList();
+        showState(null);
+      }
+
+      async function lookup(query) {
+        renderStatus(s.acSearching);
         try {
-          items = await autocompleteAddress(query);
+          items = await autocompleteAddress(query, BUSINESS.routingOrigin);
           activeIndex = -1;
-          renderList();
+          if (items.length === 0) renderStatus(s.acNoResult);
+          else renderList();
         } catch {
           items = [];
           closeList();
         }
-      }, 500);
-    });
-    otherInput.addEventListener('keydown', (e) => {
-      if (otherListbox.hidden) return;
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        activeIndex = Math.min(activeIndex + 1, items.length - 1);
-        renderList();
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        activeIndex = Math.max(activeIndex - 1, 0);
-        renderList();
-      } else if (e.key === 'Enter') {
-        if (activeIndex >= 0) {
-          e.preventDefault();
-          selectItem(activeIndex);
-        }
-      } else if (e.key === 'Escape') {
-        closeList();
       }
+
+      input.addEventListener('input', () => {
+        resolved = null;
+        clearTimeout(debounceTimer);
+        const query = input.value;
+        if (query.trim().length < 3) {
+          items = [];
+          closeList();
+          return;
+        }
+        // 500 ms rather than 300: the API key is public by design, so its
+        // daily quota protects real visitors only as long as we spend it
+        // sparingly. Waiting for a real pause in typing roughly halves the
+        // request count.
+        debounceTimer = setTimeout(() => lookup(query), 500);
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (listbox.hidden) return;
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          activeIndex = Math.min(activeIndex + 1, items.length - 1);
+          renderList();
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          activeIndex = Math.max(activeIndex - 1, 0);
+          renderList();
+        } else if (e.key === 'Enter') {
+          // Enter on an open list means "take this one", never "submit the
+          // form": submitting would fail on the very address being offered.
+          if (items.length > 0) {
+            e.preventDefault();
+            selectItem(activeIndex >= 0 ? activeIndex : 0);
+          }
+        } else if (e.key === 'Escape') {
+          closeList();
+        }
+      });
+
+      input.addEventListener('blur', () => setTimeout(closeList, 100));
+
+      return {
+        get value() {
+          return resolved;
+        },
+        set(coord) {
+          resolved = coord;
+          if (coord) input.value = coord.label;
+        },
+        clear() {
+          resolved = null;
+        },
+        // Used when the visitor submits with an address they typed but never
+        // picked: open the list on it rather than only complaining.
+        prompt() {
+          input.focus();
+          const query = input.value;
+          if (query.trim().length >= 3) lookup(query);
+        },
+      };
+    }
+
+    const fromField = createAddressField(fromInput, fromListbox, 'from');
+    const otherField = createAddressField(otherInput, otherListbox, 'other-address');
+    // The pre-filled pickup address is already resolved: its coordinate is
+    // the one every stored distance was measured from.
+    fromField.set({ ...BUSINESS.defaultPickup });
+
+    // --- destination select: reveal "other address" field --------------
+    destSelect.addEventListener('change', () => {
+      const isOther = destSelect.value === 'other';
+      otherWrap.hidden = !isOther;
+      showState(null);
+      // The chosen address is deliberately kept: leaving "other" and coming
+      // back used to leave the field showing an address the form no longer
+      // considered chosen, and the site then claimed it could not find it.
+      if (isOther) otherInput.focus();
     });
-    otherInput.addEventListener('blur', () => setTimeout(closeList, 100));
 
     // --- compute --------------------------------------------------------
+    function fail(message, field) {
+      document.getElementById('error-text').textContent = message;
+      showState('error');
+      if (field) field.prompt();
+    }
+
+    // Which message an OpenRouteService failure deserves. "Address not found"
+    // is only true for `not_found`: an exhausted quota or a network outage
+    // has nothing to do with the address, and telling every visitor their
+    // address is wrong would hide the real problem from us as well.
+    function serviceMessage(err) {
+      return err instanceof MapServiceError && err.kind === 'not_found' ? s.lookupError : s.errService;
+    }
+
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
       const destId = destSelect.value;
-      if (!destId) {
-        document.getElementById('error-text').textContent = s.errBody;
-        showState('error');
-        return;
-      }
+
+      if (!fromInput.value.trim()) return fail(s.errNoFrom, fromField);
+      if (!fromField.value) return fail(s.errPickAddress, fromField);
+      if (!destId) return fail(s.errBody);
+      if (destId === 'other' && !otherField.value) return fail(s.errPickAddress, otherField);
 
       const time = /** @type {HTMLInputElement} */ (document.getElementById('time')).value;
       const hour = time ? parseInt(time.slice(0, 2), 10) : new Date().getHours();
+
+      const origin = fromField.value;
+      const dest = DESTINATIONS.find((d) => d.id === destId);
+      // The stored distances were all measured from the pre-filled pickup
+      // point, so they are only usable while the visitor keeps it. Change the
+      // pickup address and the trip has to be measured for real — otherwise
+      // someone starting three towns away is quoted a Tienen price.
+      const fromDefault =
+        origin.lat === BUSINESS.defaultPickup.lat && origin.lon === BUSINESS.defaultPickup.lon;
+      const needsLiveRoute = destId === 'other' || !fromDefault;
 
       let km, min, destLabel, isTbc;
       // Route shape for the map, as [lat, lon] pairs. The live lookup returns
@@ -379,29 +515,24 @@ const s = t(locale);
       // data file instead.
       let livePoints = null;
 
-      if (destId === 'other') {
-        if (!otherCoord) {
-          document.getElementById('error-text').textContent = s.lookupError;
-          showState('error');
-          return;
-        }
+      if (needsLiveRoute) {
+        const target = destId === 'other' ? otherField.value : { lat: dest.lat, lon: dest.lon };
         showState('loading');
-        document.getElementById('loading-text').textContent = s.lookupLoading;
+        document.getElementById('loading-text').textContent =
+          destId === 'other' ? s.lookupLoading : s.loading;
         try {
-          const route = await routeDistance(BUSINESS.routingOrigin, otherCoord);
+          const route = await routeDistance(origin, target);
           km = Math.round(route.km * 10) / 10;
           min = route.min;
-          destLabel = otherCoord.label;
-          isTbc = false;
+          destLabel = destId === 'other' ? otherField.value.label : dest[locale];
+          isTbc = destId === 'other' ? false : !!dest.tbc;
           livePoints = route.points;
         } catch (err) {
-          document.getElementById('error-text').textContent = s.lookupError;
-          showState('error');
+          fail(serviceMessage(err));
           if (!(err instanceof MapServiceError)) console.error(err);
           return;
         }
       } else {
-        const dest = DESTINATIONS.find((d) => d.id === destId);
         showState('loading');
         document.getElementById('loading-text').textContent = s.loading;
         await new Promise((r) => setTimeout(r, 700));
@@ -412,7 +543,9 @@ const s = t(locale);
       }
 
       const fare = estimateFare(km, ((hour % 24) + 24) % 24);
-      const fromVal = /** @type {HTMLInputElement} */ (document.getElementById('from')).value;
+      // The confirmed label, not the raw field: what is priced and what the
+      // driver reads in the WhatsApp message must be the same address.
+      const fromVal = origin.label;
       const dateVal = /** @type {HTMLInputElement} */ (document.getElementById('date')).value;
       const nameVal = /** @type {HTMLInputElement} */ (document.getElementById('name')).value;
       const noteVal = /** @type {HTMLTextAreaElement} */ (document.getElementById('note')).value;
@@ -436,6 +569,12 @@ const s = t(locale);
       document.getElementById('line-km-cost').textContent = formatEuro(fare.breakdown.distance, locale);
       document.getElementById('line-night').hidden = !fare.isNight;
       document.getElementById('tbc-note').hidden = !isTbc;
+      // Further than anything the dropdown offers: still priced, but worth
+      // agreeing on the phone. Not shown for the preset destinations
+      // themselves — the client chose to advertise those.
+      document.getElementById('long-distance-note').hidden = !(
+        !isTbc && km > FURTHEST_PRESET_KM
+      );
 
       const message = buildWhatsAppMessage({
         locale,
@@ -471,14 +610,29 @@ const s = t(locale);
     });
 
     // --- arriving from the homepage teaser (?from=&dest=) ----------------
+    // The teaser is a plain GET form, so `from` is free text from the URL:
+    // it can be anything, including something someone else put in a link.
+    // It is therefore treated exactly like text the visitor typed here —
+    // capped at the field's own length, and unresolved until confirmed.
     const params = new URLSearchParams(window.location.search);
     const qFrom = params.get('from');
     const qDest = params.get('dest');
-    if (qFrom) /** @type {HTMLInputElement} */ (document.getElementById('from')).value = qFrom;
+    if (qFrom) {
+      const text = qFrom.slice(0, 120);
+      fromInput.value = text;
+      if (text !== BUSINESS.defaultPickup.label) fromField.clear();
+    }
     if (qDest && DESTINATIONS.some((d) => d.id === qDest)) {
       destSelect.value = qDest;
-      if (typeof form.requestSubmit === 'function') form.requestSubmit();
-      else form.dispatchEvent(new Event('submit', { cancelable: true }));
+      // Only compute straight away when the pickup point is known. Otherwise
+      // offer the suggestions for what was passed in, rather than opening
+      // the page on an error the visitor did not cause.
+      if (fromField.value) {
+        if (typeof form.requestSubmit === 'function') form.requestSubmit();
+        else form.dispatchEvent(new Event('submit', { cancelable: true }));
+      } else {
+        fromField.prompt();
+      }
     }
   }
 </script>
