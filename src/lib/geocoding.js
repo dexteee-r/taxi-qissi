@@ -4,11 +4,18 @@
 // call to a mapping provider is isolated in this file.
 //
 // This runs entirely in the browser (brief §1.1). The API key below is
-// necessarily exposed in shipped code; it MUST be restricted by HTTP referrer
-// and given a capped daily quota in the OpenRouteService dashboard before
-// go-live (brief §5.4 warning 1). Addresses typed by visitors are sent to
-// OpenRouteService's servers — this must be disclosed in the privacy policy
-// (brief §5.4 warning 2).
+// necessarily exposed in shipped code; it MUST be given a capped daily quota
+// in the OpenRouteService dashboard before go-live (brief §5.4 warning 1).
+// Addresses typed by visitors are sent to OpenRouteService's servers — this
+// is disclosed in the privacy policy (brief §5.4 warning 2).
+//
+// Both calls are plain GETs carrying the key as a query parameter, and that
+// is not a stylistic choice: OpenRouteService's CORS preflight rejects the
+// Authorization header ("Request header field authorization is not allowed
+// by Access-Control-Allow-Headers"), so the header form — which their docs
+// show for server-side use — can never work from a page. GET with api_key
+// also avoids a preflight entirely. Verified: both endpoints answer 200 with
+// Access-Control-Allow-Origin: *.
 
 const ORS_BASE_URL = 'https://api.openrouteservice.org';
 
@@ -57,17 +64,15 @@ export async function autocompleteAddress(query) {
   const cacheKey = text.toLowerCase();
   if (suggestionCache.has(cacheKey)) return suggestionCache.get(cacheKey);
 
-  const apiKey = getApiKey();
   const url = new URL(`${ORS_BASE_URL}/geocode/autocomplete`);
+  url.searchParams.set('api_key', getApiKey());
   url.searchParams.set('text', text);
   url.searchParams.set('boundary.country', 'BE');
   url.searchParams.set('size', '5');
 
   let response;
   try {
-    response = await fetch(url, {
-      headers: { Authorization: apiKey },
-    });
+    response = await fetch(url);
   } catch {
     throw new MapServiceError('Network error while fetching address suggestions', 'network');
   }
@@ -92,30 +97,27 @@ export async function autocompleteAddress(query) {
 }
 
 /**
- * Real road distance + duration between two points.
+ * Real road distance + duration between two points, plus the route shape.
+ *
+ * Uses the GET/GeoJSON form of the directions endpoint: the POST form needs
+ * a JSON content type, which triggers a CORS preflight that this API does
+ * not satisfy from a browser. The route shape comes back in the same
+ * response, so the map costs no extra request.
+ *
  * @param {{ lon: number, lat: number }} from
  * @param {{ lon: number, lat: number }} to
- * @returns {Promise<{ km: number, min: number }>}
+ * @returns {Promise<{ km: number, min: number, points: Array<[number, number]> }>}
+ *          points are [lat, lon] pairs, ready for the map
  */
 export async function routeDistance(from, to) {
-  const apiKey = getApiKey();
-  const url = `${ORS_BASE_URL}/v2/directions/driving-car`;
+  const url = new URL(`${ORS_BASE_URL}/v2/directions/driving-car`);
+  url.searchParams.set('api_key', getApiKey());
+  url.searchParams.set('start', `${from.lon},${from.lat}`);
+  url.searchParams.set('end', `${to.lon},${to.lat}`);
 
   let response;
   try {
-    response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Authorization: apiKey,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        coordinates: [
-          [from.lon, from.lat],
-          [to.lon, to.lat],
-        ],
-      }),
-    });
+    response = await fetch(url);
   } catch {
     throw new MapServiceError('Network error while calculating the route', 'network');
   }
@@ -128,9 +130,17 @@ export async function routeDistance(from, to) {
   }
 
   const data = await response.json();
-  const summary = data.routes?.[0]?.summary;
+  const feature = data.features?.[0];
+  const summary = feature?.properties?.summary;
   if (typeof summary?.distance !== 'number') {
     throw new MapServiceError('Routing service returned no usable route', 'not_found');
   }
-  return { km: summary.distance / 1000, min: Math.round(summary.duration / 60) };
+
+  // GeoJSON stores [lon, lat]; the map wants [lat, lon].
+  const coordinates = Array.isArray(feature.geometry?.coordinates) ? feature.geometry.coordinates : [];
+  return {
+    km: summary.distance / 1000,
+    min: Math.round(summary.duration / 60),
+    points: coordinates.map(([lon, lat]) => [lat, lon]),
+  };
 }

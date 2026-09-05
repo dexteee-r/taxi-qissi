@@ -34,9 +34,19 @@ export const BUSINESS = {
   serviceRadiusMeters: 20000,
   // Approximate geographic center of Tienen for the GeoCircle areaServed schema.
   // Precision to be confirmed once the domain/business listing is finalized.
+  // Note the property names: schema.org spells them out, so this object is
+  // NOT interchangeable with routingOrigin below.
   geoMidpoint: {
     latitude: 50.8064,
     longitude: 4.9403,
+  },
+  // Where the simulator measures from. Geocoded from "Grote Markt, Tienen"
+  // — the pickup address the form pre-fills — and deliberately the same
+  // point scripts/verify-distances.mjs uses for the preset destinations, so
+  // the dropdown and the live "other address" lookup stay consistent.
+  routingOrigin: {
+    lat: 50.8075398,
+    lon: 4.9371503,
   },
 };
 

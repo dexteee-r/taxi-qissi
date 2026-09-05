@@ -51,7 +51,7 @@ describe('address autocomplete', () => {
     ]);
   });
 
-  it('biases the search to Belgium and authenticates', async () => {
+  it('biases the search to Belgium and authenticates via the query string', async () => {
     const fetchMock = mockFetch(okJson({ features: [] }));
     await autocompleteAddress('Bondgenotenlaan');
 
@@ -59,7 +59,10 @@ describe('address autocomplete', () => {
     expect(url.toString()).toContain('/geocode/autocomplete');
     expect(url.searchParams.get('boundary.country')).toBe('BE');
     expect(url.searchParams.get('text')).toBe('Bondgenotenlaan');
-    expect(init.headers.Authorization).toBe(ORS_KEY);
+    // The key must travel as a parameter: ORS's CORS preflight rejects an
+    // Authorization header, so the header form cannot work from a browser.
+    expect(url.searchParams.get('api_key')).toBe(ORS_KEY);
+    expect(init).toBeUndefined();
   });
 
   it('does not call the API for queries shorter than 3 characters', async () => {
@@ -123,25 +126,49 @@ describe('route distance', () => {
   const from = { lon: 4.9403, lat: 50.8064 };
   const to = { lon: 4.7005, lat: 50.8798 };
 
+  const geoJsonRoute = (summary, coordinates = []) =>
+    okJson({ features: [{ properties: { summary }, geometry: { type: 'LineString', coordinates } }] });
+
   it('converts an ORS directions summary to kilometres and minutes', async () => {
-    mockFetch(okJson({ routes: [{ summary: { distance: 20450.7, duration: 1512 } }] }));
-    expect(await routeDistance(from, to)).toEqual({ km: 20.4507, min: 25 });
+    mockFetch(geoJsonRoute({ distance: 20450.7, duration: 1512 }));
+    const route = await routeDistance(from, to);
+    expect(route.km).toBeCloseTo(20.4507, 4);
+    expect(route.min).toBe(25);
   });
 
-  it('posts the coordinates in ORS order (lon, lat)', async () => {
-    const fetchMock = mockFetch(okJson({ routes: [{ summary: { distance: 1000, duration: 120 } }] }));
+  // The route shape arrives in the response we already pay for, so the map
+  // draws the real route without a second request.
+  it('returns the route shape as [lat, lon] pairs for the map', async () => {
+    mockFetch(
+      geoJsonRoute({ distance: 1000, duration: 120 }, [
+        [4.9371, 50.8075],
+        [4.8, 50.85],
+      ])
+    );
+    const route = await routeDistance(from, to);
+    // GeoJSON is [lon, lat]; the map needs them the other way round.
+    expect(route.points).toEqual([
+      [50.8075, 4.9371],
+      [50.85, 4.8],
+    ]);
+  });
+
+  it('yields an empty shape rather than crashing when geometry is missing', async () => {
+    mockFetch(okJson({ features: [{ properties: { summary: { distance: 1000, duration: 120 } } }] }));
+    expect((await routeDistance(from, to)).points).toEqual([]);
+  });
+
+  it('requests the route as a plain GET, coordinates in lon,lat order', async () => {
+    const fetchMock = mockFetch(geoJsonRoute({ distance: 1000, duration: 120 }));
     await routeDistance(from, to);
 
     const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toContain('/v2/directions/driving-car');
-    expect(init.method).toBe('POST');
-    expect(init.headers.Authorization).toBe(ORS_KEY);
-    expect(JSON.parse(init.body)).toEqual({
-      coordinates: [
-        [4.9403, 50.8064],
-        [4.7005, 50.8798],
-      ],
-    });
+    expect(url.toString()).toContain('/v2/directions/driving-car');
+    // A JSON POST would trigger a CORS preflight this API does not satisfy.
+    expect(init).toBeUndefined();
+    expect(url.searchParams.get('api_key')).toBe(ORS_KEY);
+    expect(url.searchParams.get('start')).toBe('4.9403,50.8064');
+    expect(url.searchParams.get('end')).toBe('4.7005,50.8798');
   });
 
   it('treats an unroutable pair as "not found", not as a zero-distance ride', async () => {
@@ -150,10 +177,10 @@ describe('route distance', () => {
   });
 
   it('rejects a response with no usable summary instead of pricing 0 km', async () => {
-    mockFetch(okJson({ routes: [] }));
+    mockFetch(okJson({ features: [] }));
     await expect(routeDistance(from, to)).rejects.toMatchObject({ kind: 'not_found' });
 
-    mockFetch(okJson({ routes: [{ summary: {} }] }));
+    mockFetch(okJson({ features: [{ properties: {} }] }));
     await expect(routeDistance(from, to)).rejects.toMatchObject({ kind: 'not_found' });
   });
 

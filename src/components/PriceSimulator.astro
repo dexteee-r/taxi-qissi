@@ -124,13 +124,10 @@ const s = t(locale);
       </div>
 
       <div id="state-result" class="qissi-receipt" hidden>
-        <div class="receipt-map">
-          <svg viewBox="0 0 340 132" width="100%" height="100%" style="display:block" aria-hidden="true">
-            <path d="M28 104 C 90 94, 96 56, 150 48 S 250 38, 306 28" fill="none" stroke="var(--color-accent)" stroke-width="4" stroke-linecap="round"></path>
-            <circle cx="28" cy="104" r="7" fill="#fff" stroke="var(--color-accent)" stroke-width="4"></circle>
-            <circle cx="306" cy="28" r="7" fill="var(--color-accent)"></circle>
-          </svg>
-        </div>
+        {/* Filled in on demand once an estimate is computed — see the
+            lazy import in the script below. Hidden entirely if the map
+            cannot load, so it never blocks the price or the call button. */}
+        <div class="receipt-map" id="route-map" hidden></div>
 
         <div style="display:flex;flex-direction:column;gap:3px">
           <span class="receipt-route" id="route-label"></span>
@@ -377,6 +374,10 @@ const s = t(locale);
       const hour = time ? parseInt(time.slice(0, 2), 10) : new Date().getHours();
 
       let km, min, destLabel, isTbc;
+      // Route shape for the map, as [lat, lon] pairs. The live lookup returns
+      // them directly; preset destinations decode theirs from the generated
+      // data file instead.
+      let livePoints = null;
 
       if (destId === 'other') {
         if (!otherCoord) {
@@ -387,11 +388,12 @@ const s = t(locale);
         showState('loading');
         document.getElementById('loading-text').textContent = s.lookupLoading;
         try {
-          const route = await routeDistance(BUSINESS.geoMidpoint, otherCoord);
+          const route = await routeDistance(BUSINESS.routingOrigin, otherCoord);
           km = Math.round(route.km * 10) / 10;
           min = route.min;
           destLabel = otherCoord.label;
           isTbc = false;
+          livePoints = route.points;
         } catch (err) {
           document.getElementById('error-text').textContent = s.lookupError;
           showState('error');
@@ -445,6 +447,23 @@ const s = t(locale);
 
       showState('result');
       trackEvent('estimate_success');
+
+      // The map is loaded only now, and only if it works: Leaflet, its CSS,
+      // the stored geometries and the tiles are all fetched after the price
+      // is already on screen (brief §7), and a failure just leaves the map
+      // hidden (brief §5.3 — the call button must survive).
+      const mapEl = document.getElementById('route-map');
+      try {
+        const { routePoints, showRoute } = await import('../lib/route-map.js');
+        const points = await routePoints(destId, livePoints);
+        mapEl.hidden = points.length < 2;
+        if (!mapEl.hidden) {
+          const shown = await showRoute(mapEl, points, `${fromVal} → ${destLabel}`);
+          mapEl.hidden = !shown;
+        }
+      } catch {
+        mapEl.hidden = true;
+      }
     });
 
     document.getElementById('recompute-btn').addEventListener('click', () => {
