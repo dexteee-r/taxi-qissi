@@ -51,18 +51,37 @@ describe('address autocomplete', () => {
     ]);
   });
 
-  it('biases the search to Belgium and authenticates via the query string', async () => {
+  it('searches Belgium and its neighbours, and authenticates via the query string', async () => {
     const fetchMock = mockFetch(okJson({ features: [] }));
     await autocompleteAddress('Bondgenotenlaan');
 
     const [url, init] = fetchMock.mock.calls[0];
     expect(url.toString()).toContain('/geocode/autocomplete');
-    expect(url.searchParams.get('boundary.country')).toBe('BE');
+    // Belgium alone would make the Dutch airports in the dropdown
+    // unreachable by typing an address.
+    expect(url.searchParams.get('boundary.country')).toBe('BE,NL,FR,DE,LU');
     expect(url.searchParams.get('text')).toBe('Bondgenotenlaan');
     // The key must travel as a parameter: ORS's CORS preflight rejects an
     // Authorization header, so the header form cannot work from a browser.
     expect(url.searchParams.get('api_key')).toBe(ORS_KEY);
     expect(init).toBeUndefined();
+  });
+
+  it('ranks results around the given focus point when one is passed', async () => {
+    const fetchMock = mockFetch(okJson({ features: [] }));
+    await autocompleteAddress('Grote Markt straat', { lat: 50.8075398, lon: 4.9371503 });
+
+    const [url] = fetchMock.mock.calls[0];
+    expect(url.searchParams.get('focus.point.lat')).toBe('50.8075398');
+    expect(url.searchParams.get('focus.point.lon')).toBe('4.9371503');
+  });
+
+  it('omits the focus point when none is given', async () => {
+    const fetchMock = mockFetch(okJson({ features: [] }));
+    await autocompleteAddress('Bondgenotenlaan 1');
+
+    const [url] = fetchMock.mock.calls[0];
+    expect(url.searchParams.has('focus.point.lat')).toBe(false);
   });
 
   it('does not call the API for queries shorter than 3 characters', async () => {
