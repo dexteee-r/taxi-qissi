@@ -5,6 +5,7 @@ import { seo } from '../../i18n/seo.js';
 import { BUSINESS } from '../../config/business.js';
 import { WHATSAPP_PLAIN_URL } from '../../lib/whatsapp.js';
 import ContactDetails from '../../components/ContactDetails.astro';
+import ServiceAreaMap from '../../components/ServiceAreaMap.astro';
 
 const locale = 'en';
 const s = t(locale);
@@ -33,12 +34,7 @@ const meta = seo[locale].contact;
       </div>
 
       <div>
-        <div class="contact-media">
-          <svg viewBox="0 0 340 150" width="100%" height="100%" style="display:block" aria-hidden="true">
-            <circle cx="170" cy="75" r="58" fill="var(--color-accent)" fill-opacity=".08" stroke="var(--color-accent)" stroke-width="2" stroke-dasharray="5 5"/>
-            <circle cx="170" cy="75" r="8" fill="var(--color-accent)"/>
-          </svg>
-        </div>
+        <ServiceAreaMap locale={locale} />
         <p class="sub" style="margin:12px 0 0">{s.zoneNote}</p>
       </div>
     </div>

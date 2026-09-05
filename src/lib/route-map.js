@@ -1,10 +1,12 @@
-// Route map for the simulator's result card.
+// Maps: the route on the simulator's result card, and the service area on
+// the contact page.
 //
 // Loaded on demand — brief §7 requires the map to be deferred and never to
 // block the initial render, so nothing here (Leaflet, its CSS, the stored
-// geometries, the tiles) is fetched until a visitor actually computes an
-// estimate. Everything is wrapped so a failure degrades to "no map" instead
-// of taking the price and the call button down with it (brief §5.3).
+// geometries, the tiles) is fetched until a visitor computes an estimate or
+// scrolls the contact map into view. Everything is wrapped so a failure
+// degrades to "no map" instead of taking the price and the call button down
+// with it (brief §5.3).
 //
 // Tiles are the only third-party request the site makes; they are disclosed
 // in the privacy policy. The provider is configurable so it can be swapped
@@ -16,6 +18,8 @@ import leafletCssUrl from 'leaflet/dist/leaflet.css?url';
 
 const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const TILE_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
+
+const ACCENT = '#0369a1';
 
 let leafletPromise;
 let mapInstance;
@@ -79,6 +83,64 @@ export async function showRoute(container, points, label) {
     // The container is only sized once it is visible, so Leaflet has to
     // re-measure after the result card is revealed.
     mapInstance.invalidateSize();
+
+    container.setAttribute('role', 'img');
+    container.setAttribute('aria-label', label);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Draws the served area on the contact page: the radius the business covers,
+ * centred on Tienen. Replaces the prototype's dashed-circle illustration
+ * with the same shape drawn to scale on a real map.
+ *
+ * Deliberately no address pin: the caption describes a zone, and the stored
+ * centre is the town, not the office door — a marker would claim a precision
+ * we do not have.
+ *
+ * @param {HTMLElement} container
+ * @param {{ lat: number, lon: number }} centre
+ * @param {number} radiusMeters
+ * @param {string} label accessible description
+ * @returns {Promise<boolean>} false when the map could not be shown
+ */
+export async function showServiceArea(container, centre, radiusMeters, label) {
+  if (!container || !centre) return false;
+
+  try {
+    const L = await loadLeaflet();
+    const map = L.map(container, {
+      zoomControl: true,
+      scrollWheelZoom: false,
+      attributionControl: true,
+    });
+    // A view has to be set before layers are added: until then Leaflet holds
+    // them back, and a circle with no map cannot report its bounds. The zoom
+    // is a starting point only — fitBounds() below settles the framing.
+    map.setView([centre.lat, centre.lon], 9);
+    L.tileLayer(TILE_URL, { attribution: TILE_ATTRIBUTION, maxZoom: 18 }).addTo(map);
+
+    const area = L.circle([centre.lat, centre.lon], {
+      radius: radiusMeters,
+      color: ACCENT,
+      weight: 2,
+      dashArray: '5 5',
+      fillColor: ACCENT,
+      fillOpacity: 0.08,
+    }).addTo(map);
+    L.circleMarker([centre.lat, centre.lon], {
+      radius: 8,
+      color: ACCENT,
+      weight: 2,
+      fillColor: ACCENT,
+      fillOpacity: 1,
+    }).addTo(map);
+
+    map.fitBounds(area.getBounds(), { padding: [12, 12] });
+    map.invalidateSize();
 
     container.setAttribute('role', 'img');
     container.setAttribute('aria-label', label);
