@@ -140,6 +140,90 @@ describe('address autocomplete', () => {
   });
 });
 
+// OpenRouteService ne connaît pas les noms francisés de communes flamandes
+// ("Tirlemont" pour Tienen, "Louvain" pour Leuven) : il répond avec succès,
+// mais une liste vide. Nominatim (OpenStreetMap) sert de filet de sécurité
+// dans ce cas précis — jamais à la place d'OpenRouteService, seulement en
+// complément quand celui-ci ne trouve rien.
+describe('filet de secours Nominatim', () => {
+  // Simule les deux services : le premier appel fetch() va à
+  // OpenRouteService, le second (s'il a lieu) à Nominatim.
+  function mockDeuxServices({ ors, nominatim }) {
+    const appels = [];
+    const fn = vi.fn().mockImplementation((url) => {
+      const u = url.toString();
+      appels.push(u);
+      if (u.includes('openrouteservice.org')) return Promise.resolve(okJson(ors));
+      if (u.includes('nominatim.openstreetmap.org')) return Promise.resolve(okJson(nominatim));
+      throw new Error('URL inattendue : ' + u);
+    });
+    vi.stubGlobal('fetch', fn);
+    return { fn, appels };
+  }
+
+  it("interroge Nominatim quand OpenRouteService ne trouve rien, et traduit le résultat", async () => {
+    const { fn } = mockDeuxServices({
+      ors: { features: [] },
+      nominatim: [{ display_name: 'Tienen, Vlaams-Brabant, België', lat: '50.8064', lon: '4.9403' }],
+    });
+
+    const resultats = await autocompleteAddress('Tirlemont');
+
+    expect(fn).toHaveBeenCalledTimes(2);
+    expect(resultats).toEqual([{ label: 'Tienen, Vlaams-Brabant, België', lon: 4.9403, lat: 50.8064 }]);
+  });
+
+  it("n'interroge pas Nominatim quand OpenRouteService a déjà trouvé quelque chose", async () => {
+    const { fn } = mockDeuxServices({
+      ors: { features: [{ properties: { label: 'Tienen' }, geometry: { coordinates: [4.94, 50.8] } }] },
+      nominatim: [{ display_name: 'ne devrait jamais être lu', lat: '0', lon: '0' }],
+    });
+
+    await autocompleteAddress('Tienen');
+
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it("n'interroge pas Nominatim quand OpenRouteService échoue plutôt que de renvoyer une liste vide", async () => {
+    const fn = vi.fn().mockRejectedValue(new TypeError('offline'));
+    vi.stubGlobal('fetch', fn);
+
+    await expect(autocompleteAddress('Tienen')).rejects.toBeInstanceOf(MapServiceError);
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it('renvoie une liste vide, sans erreur, si aucun des deux services ne trouve rien', async () => {
+    mockDeuxServices({ ors: { features: [] }, nominatim: [] });
+    await expect(autocompleteAddress('zzzzzzzzzz')).resolves.toEqual([]);
+  });
+
+  it('renvoie une liste vide plutôt que de faire échouer la recherche si Nominatim est en panne', async () => {
+    const fn = vi.fn().mockImplementation((url) => {
+      const u = url.toString();
+      if (u.includes('openrouteservice.org')) return Promise.resolve(okJson({ features: [] }));
+      return Promise.reject(new TypeError('offline'));
+    });
+    vi.stubGlobal('fetch', fn);
+
+    await expect(autocompleteAddress('Tirlemont')).resolves.toEqual([]);
+  });
+
+  it('cherche aussi parmi les noms alternatifs (accept-language) et se limite à la Belgique et ses voisins', async () => {
+    const { fn, appels } = mockDeuxServices({
+      ors: { features: [] },
+      nominatim: [],
+    });
+
+    await autocompleteAddress('Tirlemont');
+
+    const appelNominatim = appels.find((u) => u.includes('nominatim'));
+    const url = new URL(appelNominatim);
+    expect(url.searchParams.get('q')).toBe('Tirlemont');
+    expect(url.searchParams.get('accept-language')).toBe('fr,nl,en');
+    expect(url.searchParams.get('countrycodes')).toBe('be,nl,fr,de,lu');
+  });
+});
+
 describe('route distance', () => {
   const from = { lon: 4.9403, lat: 50.8064 };
   const to = { lon: 4.7005, lat: 50.8798 };

@@ -12,8 +12,16 @@
 // 2. La clé est forcément visible dans le code envoyé au navigateur : le
 //    site n'a pas de serveur pour la cacher. La vraie protection est le
 //    quota journalier, à plafonner sur le tableau de bord OpenRouteService.
+//
+// Un deuxième service, Nominatim (OpenStreetMap, sans clé), sert de filet
+// de sécurité : voir searchNominatim() plus bas. Il ne remplace pas
+// OpenRouteService, il rattrape les cas où celui-ci ne trouve rien —
+// notamment les noms francisés de communes flamandes ("Tirlemont" pour
+// Tienen, "Louvain" pour Leuven), qu'OpenRouteService ne reconnaît pas du
+// tout mais que la base communautaire d'OpenStreetMap connaît.
 
 const ORS_BASE_URL = 'https://api.openrouteservice.org';
+const NOMINATIM_BASE_URL = 'https://nominatim.openstreetmap.org';
 
 export class MapServiceError extends Error {
   /** @param {string} message @param {'not_found'|'network'|'config'} kind */
@@ -87,11 +95,20 @@ export async function autocompleteAddress(query, focus) {
   }
 
   const data = await response.json();
-  const results = (data.features ?? []).map((feature) => ({
+  let results = (data.features ?? []).map((feature) => ({
     label: feature.properties.label,
     lon: feature.geometry.coordinates[0],
     lat: feature.geometry.coordinates[1],
   }));
+
+  // OpenRouteService ne renvoie parfois rien pour un nom pourtant valide :
+  // c'est le cas systématique des noms francisés de communes flamandes.
+  // Nominatim, adossé à OpenStreetMap, les connaît. On ne le tente qu'en
+  // dernier recours — jamais à la place d'OpenRouteService — pour ne
+  // solliciter ce service communautaire que quand c'est vraiment utile.
+  if (results.length === 0) {
+    results = await searchNominatim(text);
+  }
 
   // On ne mémorise que les recherches réussies : un échec doit pouvoir
   // être retenté.
@@ -100,6 +117,49 @@ export async function autocompleteAddress(query, focus) {
   }
   suggestionCache.set(cacheKey, results);
   return results;
+}
+
+// Respecte la politique d'usage de Nominatim (une requête par seconde) même
+// si plusieurs recherches sans résultat s'enchaînent rapidement.
+let dernierAppelNominatim = 0;
+const DELAI_MIN_NOMINATIM_MS = 1100;
+
+/**
+ * Filet de sécurité pour les adresses qu'OpenRouteService ne trouve pas.
+ * Ne lève jamais d'erreur : un souci ici ne doit pas casser une recherche
+ * qui a déjà échoué une fois.
+ *
+ * @param {string} text
+ * @returns {Promise<Array<{ label: string, lon: number, lat: number }>>}
+ */
+async function searchNominatim(text) {
+  const attente = DELAI_MIN_NOMINATIM_MS - (Date.now() - dernierAppelNominatim);
+  if (attente > 0) await new Promise((resolve) => setTimeout(resolve, attente));
+  dernierAppelNominatim = Date.now();
+
+  const url = new URL(`${NOMINATIM_BASE_URL}/search`);
+  url.searchParams.set('q', text);
+  url.searchParams.set('format', 'jsonv2');
+  url.searchParams.set('limit', '5');
+  url.searchParams.set('countrycodes', 'be,nl,fr,de,lu');
+  // "accept-language" fait répondre Nominatim dans la langue demandée quand
+  // elle existe pour ce lieu, mais surtout lui fait chercher aussi parmi les
+  // noms alternatifs dans ces langues — c'est ce qui trouve "Tienen" pour
+  // une recherche "Tirlemont".
+  url.searchParams.set('accept-language', 'fr,nl,en');
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return [];
+    const data = await response.json();
+    return (Array.isArray(data) ? data : []).map((lieu) => ({
+      label: lieu.display_name,
+      lon: Number(lieu.lon),
+      lat: Number(lieu.lat),
+    }));
+  } catch {
+    return [];
+  }
 }
 
 /**
