@@ -49,6 +49,42 @@ Les aéroports sont marqués `tbc: true` dans `destinations.js` — prix et
 distance "à confirmer", exactement comme dans le prototype ; le simulateur
 affiche alors un CTA d'appel au lieu d'un prix.
 
+### Les deux champs d'adresse : une adresse « résolue », pas du texte
+
+Le départ et la destination sont tous deux des combobox construits par la
+même fabrique (`createAddressField` dans `PriceSimulator.astro`). Règle
+unique, dont tout le reste découle : **un champ n'est valide que lorsque son
+texte correspond à une coordonnée que le visiteur a choisie dans les
+suggestions.** Taper une adresse n'est pas la choisir — on ne mesure pas un
+itinéraire depuis une chaîne de caractères. Modifier le texte annule le
+choix ; changer de destination ne l'annule pas.
+
+Conséquences concrètes :
+
+- **Le départ est réellement utilisé.** Tant que le visiteur garde l'adresse
+  pré-remplie (`BUSINESS.defaultPickup`, dont la coordonnée est connue), les
+  distances stockées s'appliquent et **aucune requête n'est émise**. Dès
+  qu'il choisit son propre point de départ, le trajet est **re-mesuré en
+  direct**, y compris vers une destination de la liste : c'est pour ça que
+  chaque entrée de `destinations.js` porte désormais un `lat`/`lon`.
+- **Les messages d'erreur disent ce qui s'est réellement passé.** « Adresse
+  introuvable » est réservé à un vrai `not_found` ; une adresse tapée mais
+  non choisie renvoie « choisissez une adresse dans la liste » et rouvre les
+  suggestions ; un quota épuisé ou une panne réseau renvoient « calcul
+  d'itinéraire indisponible ». Envoyer tout le monde chercher une faute de
+  frappe parce que notre quota est épuisé masquait le vrai problème.
+- **Au-delà de la destination la plus lointaine que le client propose**
+  (`FURTHEST_PRESET_KM`, dérivé de la liste elle-même), le prix reste
+  affiché mais un encart invite à appeler pour un tarif ferme.
+- **L'autocomplétion couvre `BE,NL,FR,DE,LU`**, avec `focus.point` sur
+  Tienen pour garder les résultats locaux en tête. La Belgique seule rendait
+  Maastricht et Eindhoven — pourtant dans la liste déroulante —
+  impossibles à saisir.
+- **Le `?from=` de la page d'accueil est traité comme du texte saisi** :
+  tronqué à 120 caractères, et non résolu tant qu'il diffère de l'adresse
+  par défaut. Le calcul automatique ne se déclenche donc que si le point de
+  départ est connu ; sinon les suggestions s'ouvrent dessus.
+
 ### Distances : vérifiées, pas devinées
 
 Les distances livrées avec le prototype étaient des estimations de maquette,
