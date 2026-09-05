@@ -126,12 +126,26 @@ Avant mise en ligne :
 
 1. Confirmer `BUSINESS.domain` et renseigner `BUSINESS.licenseNumber`.
 2. Vérifier que `site` dans `astro.config.mjs` correspond au domaine réel.
-3. Déclarer `PUBLIC_ORS_API_KEY` **dans les variables d'environnement Vercel**
-   (Settings → Environment Variables) : le `.env` local n'est pas déployé, donc
-   sans ça l'option « Autre adresse » échoue en production alors qu'elle
-   fonctionne en local. Puis **restreindre la clé par domaine référent et
-   plafonner le quota** sur le dashboard OpenRouteService avant d'ouvrir
-   l'accès public (sinon facturation/abus possible).
+3. Déclarer `ORS_API_KEY` **dans les variables d'environnement de l'hébergeur**
+   (sur Vercel : Settings → Environment Variables). Le `.env` local n'est pas
+   déployé : sans ça, l'option « Autre adresse » fonctionne en local et échoue
+   en production. Puis **plafonner le quota journalier** sur le dashboard
+   OpenRouteService avant d'ouvrir l'accès public.
+
+### Pourquoi la clé n'a pas de préfixe `PUBLIC_`
+
+Elle finit forcément dans le bundle navigateur — le brief §1.1 interdit tout
+proxy serveur, donc l'appel de routage part du client (§5.4 l'anticipe).
+Astro n'expose côté client que les variables `PUBLIC_*`, mais les
+hébergeurs signalent ce préfixe comme une fuite. `astro.config.mjs` injecte
+donc la valeur au moment du build, ce qui permet de nommer la variable
+`ORS_API_KEY` sans préfixe. `PUBLIC_ORS_API_KEY` reste lue en repli.
+
+⚠️ Renommer ne change **rien** à l'exposition : quel que soit le nom, la clé
+est lisible dans le JavaScript livré. Les vraies protections sont le quota
+journalier du fournisseur (pas de facture possible sur le plan gratuit) et le
+repli sur le bouton d'appel si l'API ne répond plus. Ne jamais mettre dans
+cette variable une clé qui donnerait accès à autre chose qu'au routage.
 
 ## Contenus
 
