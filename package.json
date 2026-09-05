@@ -19,7 +19,8 @@
     "verify:distances:write": "node scripts/verify-distances.mjs --ors --write"
   },
   "dependencies": {
-    "astro": "^7.3.1"
+    "astro": "^7.3.1",
+    "leaflet": "^1.9.4"
   },
   "allowScripts": {
     "esbuild": true

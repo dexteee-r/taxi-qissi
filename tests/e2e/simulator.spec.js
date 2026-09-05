@@ -136,6 +136,60 @@ test.describe('price simulator', () => {
   });
 });
 
+test.describe('route map', () => {
+  test('loads nothing third-party until an estimate is asked for (brief §7)', async ({ page }) => {
+    const external = [];
+    page.on('request', (req) => {
+      const host = new URL(req.url()).host;
+      if (!host.startsWith('localhost')) external.push(host);
+    });
+
+    await page.goto('/nl/tarieven/');
+    await page.waitForLoadState('networkidle');
+
+    // The map is deferred: no tiles, no Leaflet, nothing external on load.
+    expect(external).toEqual([]);
+    await expect(page.locator('#route-map')).toBeHidden();
+  });
+
+  test('draws the real route for a preset destination', async ({ page }) => {
+    await page.goto('/nl/tarieven/');
+    await page.selectOption('#dest', 'leu');
+    await page.click('#compute-btn');
+    await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
+
+    const map = page.locator('#route-map');
+    await expect(map).toBeVisible({ timeout: 15_000 });
+    // Leaflet marks the element it mounts into, rather than nesting one.
+    await expect(map).toHaveClass(/leaflet-container/, { timeout: 15_000 });
+
+    // A real route, not the straight line the brief forbids: the polyline
+    // has many segments because it follows the road.
+    const segments = await map
+      .locator('path[stroke="#0369a1"]')
+      .first()
+      .evaluate((el) => (el.getAttribute('d')?.match(/L/g) ?? []).length);
+    expect(segments).toBeGreaterThan(5);
+
+    // OpenStreetMap's licence requires visible attribution.
+    await expect(map.locator('.leaflet-control-attribution')).toContainText('OpenStreetMap');
+    await expect(map).toHaveAttribute('aria-label', /→/);
+  });
+
+  test('keeps the price and the call button when the map fails (brief §5.3)', async ({ page }) => {
+    // Simulate the tile provider being unreachable.
+    await page.route('**://tile.openstreetmap.org/**', (route) => route.abort());
+    await page.goto('/nl/tarieven/');
+    await page.selectOption('#dest', 'leu');
+    await page.click('#compute-btn');
+
+    await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator('#price-label')).not.toBeEmpty();
+    await expect(page.locator('#whatsapp-send')).toBeVisible();
+    await expect(page.locator('.mobile-action-bar a[href^="tel:"], .header-call a[href^="tel:"]').first()).toBeAttached();
+  });
+});
+
 test.describe('receipt layout follows the prototype at each breakpoint', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/nl/tarieven/');

@@ -618,6 +618,24 @@ summary:focus-visible {
   background: #f4f4f5;
   border-radius: var(--radius);
   overflow: hidden;
+  /* Leaflet paints controls and popups above the page otherwise; keep the
+     map under the sticky header and the mobile action bar. */
+  z-index: 0;
+  isolation: isolate;
+}
+/* Leaflet's own defaults are heavier than the rest of the card. */
+.receipt-map .leaflet-container {
+  height: 100%;
+  width: 100%;
+  background: #f4f4f5;
+  font: 400 11px/1.4 var(--font-body);
+}
+.receipt-map .leaflet-control-attribution {
+  font-size: 10px;
+  background: rgba(255, 255, 255, 0.8);
+}
+.receipt-map .leaflet-control-zoom a {
+  color: var(--color-text);
 }
 .receipt-route {
   font: 600 14.5px/1.35 var(--font-body);

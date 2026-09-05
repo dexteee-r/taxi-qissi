@@ -23,7 +23,7 @@
 // the prototype's original "always show error" behavior for that option —
 // per the hybrid architecture the user asked for.
 
-// Distances verified against OpenRouteService on 2026-09-04
+// Distances verified against OpenRouteService on 2026-09-05
 // via scripts/verify-distances.mjs, measured from Grote Markt, Tienen, Belgium.
 export const DESTINATIONS = [
   { id: 'zav', km: 42.8, min: 33, tbc: true, nl: 'Brussels Airport (Zaventem)', fr: 'Brussels Airport (Zaventem)', en: 'Brussels Airport (Zaventem)' },
@@ -34,7 +34,7 @@ export const DESTINATIONS = [
   { id: 'bru', km: 47.7, min: 44, nl: 'Brussel — centrum', fr: 'Bruxelles — centre', en: 'Brussels — city centre' },
   { id: 'leu', km: 33.6, min: 30, nl: 'Leuven', fr: 'Leuven', en: 'Leuven' },
   { id: 'has', km: 47, min: 50, nl: 'Hasselt', fr: 'Hasselt', en: 'Hasselt' },
-  { id: 'stt', km: 22.3, min: 40, nl: 'Sint-Truiden', fr: 'Sint-Truiden', en: 'Sint-Truiden' },
+  { id: 'stt', km: 21.2, min: 38, nl: 'Sint-Truiden', fr: 'Sint-Truiden', en: 'Sint-Truiden' },
   { id: 'jod', km: 12.4, min: 21, nl: 'Geldenaken', fr: 'Jodoigne', en: 'Jodoigne' },
   { id: 'aar', km: 22.8, min: 33, nl: 'Aarschot', fr: 'Aarschot', en: 'Aarschot' },
   { id: 'wav', km: 43.3, min: 44, nl: 'Waver', fr: 'Wavre', en: 'Wavre' },
