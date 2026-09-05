@@ -23,6 +23,26 @@ import { loadEnv } from 'vite';
 const env = loadEnv(process.env.NODE_ENV ?? 'production', process.cwd(), '');
 const orsApiKey = env.ORS_API_KEY || env.PUBLIC_ORS_API_KEY || '';
 
+// Both address fields are free text since 2026-09-05, so without this key
+// the simulator cannot produce a single estimate — it is not a degraded
+// feature, it is a dead one. A build has already shipped to production
+// without it, silently, so say it loudly here. The build is deliberately
+// not failed: the phone number, the WhatsApp button and every page of
+// content still work, and those matter more than the simulator.
+if (!orsApiKey) {
+  const line = '─'.repeat(68);
+  console.warn(
+    `\n\x1b[33m${line}\n` +
+      '  ATTENTION — aucune clé OpenRouteService dans ce build.\n' +
+      '  Le simulateur de prix ne pourra proposer aucune adresse ni calculer\n' +
+      '  aucun prix : les deux champs sont en saisie libre et dépendent de\n' +
+      "  l'API. Définissez ORS_API_KEY dans l'environnement de build\n" +
+      '  (Vercel : Settings → Environment Variables → Production), puis\n' +
+      '  redéployez. En local : voir .env.example.\n' +
+      `${line}\x1b[0m\n`
+  );
+}
+
 export default defineConfig({
   site: 'https://taxiqissi.be',
   trailingSlash: 'always',

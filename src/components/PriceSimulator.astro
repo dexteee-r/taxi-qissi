@@ -326,6 +326,9 @@ const s = t(locale);
       let activeIndex = -1;
       let debounceTimer;
       let resolved = null;
+      // True once a lookup failed rather than merely finding nothing: the
+      // two deserve different answers when the visitor then hits compute.
+      let unavailable = false;
 
       function closeList() {
         listbox.hidden = true;
@@ -386,11 +389,19 @@ const s = t(locale);
         try {
           items = await autocompleteAddress(query, BUSINESS.routingOrigin);
           activeIndex = -1;
+          unavailable = false;
           if (items.length === 0) renderStatus(s.acNoResult);
           else renderList();
-        } catch {
+        } catch (err) {
+          // Closing the list here would be indistinguishable from "nothing
+          // happened" — which is exactly how a production deploy with no API
+          // key looked from the outside: no suggestions, no message, no clue.
           items = [];
-          closeList();
+          unavailable = true;
+          renderStatus(s.acUnavailable);
+          if (err instanceof MapServiceError && err.kind === 'config') {
+            console.error('Taxi QISSI: no OpenRouteService key in this build — see README.');
+          }
         }
       }
 
@@ -438,6 +449,9 @@ const s = t(locale);
         get value() {
           return resolved;
         },
+        get unavailable() {
+          return unavailable;
+        },
         set(coord) {
           resolved = coord;
           if (coord) input.value = coord.label;
@@ -480,10 +494,15 @@ const s = t(locale);
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
 
+      // An unresolved field means "pick one of the suggestions" — unless the
+      // lookup itself is down, in which case there are no suggestions to
+      // pick and saying so would send the visitor in circles.
+      const unresolved = (field) => (field.unavailable ? s.errService : s.errPickAddress);
+
       if (!fromInput.value.trim()) return fail(s.errNoFrom, fromField);
-      if (!fromField.value) return fail(s.errPickAddress, fromField);
+      if (!fromField.value) return fail(unresolved(fromField), fromField);
       if (!destInput.value.trim()) return fail(s.errBody, destField);
-      if (!destField.value) return fail(s.errPickAddress, destField);
+      if (!destField.value) return fail(unresolved(destField), destField);
 
       const time = /** @type {HTMLInputElement} */ (document.getElementById('time')).value;
       const hour = time ? parseInt(time.slice(0, 2), 10) : new Date().getHours();

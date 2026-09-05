@@ -160,6 +160,27 @@ test.describe('destination address', () => {
     await expect(page.locator('#dest')).toHaveAttribute('aria-expanded', 'false');
   });
 
+  test('says the lookup is unavailable rather than going quiet', async ({ page }) => {
+    // A production build once shipped with no API key: every lookup threw,
+    // the list closed, and the page looked like it had simply ignored the
+    // typing. Silence and "no such address" must never look the same.
+    await page.route('**://api.openrouteservice.org/geocode/**', (r) =>
+      r.fulfill({ status: 403, contentType: 'application/json', body: '{"error":"quota exceeded"}' })
+    );
+    await page.goto('/fr/tarifs/');
+    await page.fill('#dest', 'Leuven');
+
+    await expect(page.locator('#dest-listbox .suggestion-status')).toHaveText(/indisponible/i, {
+      timeout: 5000,
+    });
+
+    // And computing then blames the service, not the visitor's address.
+    await page.click('#compute-btn');
+    await expect(page.locator('#error-text')).toHaveText(/indisponible/i);
+    await expect(page.locator('#error-text')).not.toHaveText(/liste des suggestions/i);
+    await expect(page.locator('#state-error a[href^="tel:"]')).toBeVisible();
+  });
+
   test('warns when the trip is longer than anything the dropdown offers', async ({ page }) => {
     await mockOrs(page, { km: 312.7, min: 190 });
     await page.goto('/fr/tarifs/');
