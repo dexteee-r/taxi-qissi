@@ -1,0 +1,297 @@
+/* Carte du simulateur ---------------------------------------------------- */
+.sim-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-card);
+  padding: 20px 18px;
+  box-shadow: 0 20px 40px -15px rgba(9, 9, 11, 0.05), 0 1px 2px rgba(9, 9, 11, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+@media (min-width: 900px) {
+  .sim-card {
+    border-radius: 16px;
+    padding: 32px 30px;
+    gap: 18px;
+  }
+}
+
+/* Le bouton "Calculer" reste collé en bas de la carte sur mobile, avec le
+   un dégradé blanc derrière lui. */
+.compute-wrap {
+  position: sticky;
+  bottom: 78px;
+  z-index: 7;
+  margin: 0 -18px -20px;
+  padding: 12px 18px 20px;
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  background: linear-gradient(to top, #fff 66%, rgba(255, 255, 255, 0));
+}
+.compute-wrap .btn {
+  width: 100%;
+  min-height: 54px;
+}
+@media (min-width: 900px) {
+  .compute-wrap {
+    position: static;
+    margin: 0;
+    padding: 0;
+    background: none;
+  }
+  .compute-wrap .btn {
+    width: auto;
+    align-self: flex-start;
+    min-height: 56px;
+    padding: 0 28px;
+  }
+}
+
+.counter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+  border-bottom: 1px solid var(--color-border-strong);
+  padding-left: 2px;
+}
+.counter-value {
+  font: 500 18px/1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  min-width: 2ch;
+}
+.counter button {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  font: 400 20px/1 var(--font-body);
+  color: var(--color-text-faint);
+  cursor: pointer;
+}
+
+.sim-loading {
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius);
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  background: #fff;
+}
+.sim-loading .bar-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 3px;
+  background: #f4f4f5;
+  overflow: hidden;
+}
+.sim-loading .bar-fill {
+  width: 60%;
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: 6px;
+}
+.sim-loading span {
+  font: 500 14px/1.4 var(--font-body);
+  color: var(--color-text-muted);
+}
+
+/* Reçu de prix (le résultat du calcul) ----------------------------------- */
+.receipt-map {
+  height: 132px;
+  background: #f4f4f5;
+  border-radius: var(--radius);
+  overflow: hidden;
+  /* Leaflet paints controls and popups above the page otherwise; keep the
+     map under the sticky header and the mobile action bar. */
+  z-index: 0;
+  isolation: isolate;
+}
+/* Les réglages par défaut de Leaflet sont plus lourds que le reste. */
+.receipt-map .leaflet-container {
+  height: 100%;
+  width: 100%;
+  background: #f4f4f5;
+  font: 400 11px/1.4 var(--font-body);
+}
+.receipt-map .leaflet-control-attribution {
+  font-size: 10px;
+  background: rgba(255, 255, 255, 0.8);
+}
+.receipt-map .leaflet-control-zoom a {
+  color: var(--color-text);
+}
+.receipt-route {
+  font: 600 14.5px/1.35 var(--font-body);
+  color: var(--color-text);
+}
+.receipt-distance {
+  font: 400 13px/1.35 var(--font-mono);
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.receipt-price-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid var(--color-border-strong);
+  padding-top: 14px;
+}
+.receipt-price {
+  font: 700 44px/0.9 var(--font-display);
+  color: var(--color-price);
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+.receipt-price.is-tbc {
+  font-size: 24px;
+  line-height: 1.1;
+}
+.receipt-indicative {
+  font: 600 11px/1 var(--font-body);
+  color: var(--color-accent-hover);
+  letter-spacing: 0.05em;
+}
+.receipt-breakdown {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--color-border-strong);
+  padding-bottom: 12px;
+}
+.receipt-breakdown > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font: 400 12.5px/1.75 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+}
+.receipt-breakdown .night {
+  color: var(--color-accent-hover);
+}
+.receipt-msg {
+  border-left: 2px solid var(--color-border-strong);
+  padding: 2px 0 2px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.receipt-msg dt {
+  font: 600 11.5px/1 var(--font-body);
+  color: var(--color-text-faint);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.receipt-msg dd {
+  margin: 0;
+  font: 400 13px/1.55 var(--font-body);
+  color: var(--color-text-muted);
+}
+/* Mobile : bouton WhatsApp pleine largeur, "modifier ma course" en dernier. */
+.receipt-actions {
+  display: contents;
+}
+.receipt-wa {
+  min-height: 60px;
+  width: 100%;
+  font-size: 16px;
+  box-shadow: 0 2px 0 var(--color-whatsapp-shadow);
+  order: 1;
+}
+.receipt-reset {
+  align-self: flex-start;
+  order: 3;
+}
+.receipt-msg {
+  order: 2;
+}
+@media (min-width: 900px) {
+  .receipt-map {
+    height: 190px;
+  }
+  .receipt-route {
+    font-size: 15px;
+  }
+  .receipt-distance {
+    font-size: 13.5px;
+  }
+  .receipt-price {
+    font-size: 62px;
+    line-height: 0.86;
+  }
+  .receipt-price.is-tbc {
+    font-size: 26px;
+  }
+  .receipt-breakdown > div {
+    font-size: 13px;
+    line-height: 1.8;
+  }
+  .receipt-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    order: 1;
+  }
+  .receipt-wa {
+    width: auto;
+    min-height: 56px;
+    box-shadow: none;
+    order: 0;
+  }
+  .receipt-reset {
+    min-height: 56px;
+    order: 0;
+  }
+  .receipt-msg {
+    order: 2;
+    font-size: 13.5px;
+    padding-left: 14px;
+  }
+}
+
+/* Suggestions d'adresse (la liste qui s'ouvre sous les champs) ---------- */
+.autocomplete-field {
+  position: relative;
+}
+.suggestions {
+  position: absolute;
+  z-index: 20;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius);
+  max-height: 14rem;
+  overflow-y: auto;
+  box-shadow: 0 12px 24px -12px rgba(9, 9, 11, 0.18);
+}
+.suggestions li {
+  padding: 0.6rem 0.75rem;
+  cursor: pointer;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+/* "Recherche…" / "Aucune adresse trouvée" : une ligne qui informe, pas un choix. */
+.suggestions li.suggestion-status {
+  color: var(--color-text-muted);
+  font-style: italic;
+  cursor: default;
+  background: transparent;
+}
+.suggestions li[aria-selected='true'],
+.suggestions li:hover {
+  background: var(--color-accent-tint);
+}
+.receipt-disclosure {
+  order: 1;
+}

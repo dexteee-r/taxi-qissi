@@ -1,5 +1,7 @@
+// Vérifie le décodage des tracés d'itinéraire, utilisé uniquement par le
+// script de maintenance scripts/verify-distances.mjs.
 import { describe, it, expect } from 'vitest';
-import { decodePolyline } from '../../src/lib/polyline.js';
+import { decodePolyline } from '../../scripts/polyline.js';
 
 describe('decodePolyline', () => {
   it('decodes the reference example from the format specification', () => {

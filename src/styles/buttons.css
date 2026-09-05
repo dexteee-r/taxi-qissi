@@ -1,0 +1,56 @@
+/* Boutons ---------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 50px;
+  padding: 0 22px;
+  border-radius: var(--radius);
+  border: 0;
+  font: 700 15.5px/1.2 var(--font-display);
+  text-decoration: none;
+  cursor: pointer;
+}
+.btn svg {
+  flex: none;
+}
+.btn-call {
+  background: var(--color-accent);
+  color: #fff;
+}
+.btn-call:hover {
+  color: #fff;
+}
+.btn-call .call-label {
+  font: 700 14.5px/1.1 var(--font-display);
+  color: #fff;
+}
+.btn-call .call-phone {
+  font: 500 10.5px/1.1 var(--font-body);
+  color: rgba(255, 255, 255, 0.85);
+}
+.btn-whatsapp {
+  background: var(--color-whatsapp);
+  color: #fff;
+}
+.btn-whatsapp:hover {
+  color: #fff;
+}
+.btn-dark {
+  background: var(--color-ink);
+  color: #fff;
+  font-size: 16px;
+  min-height: 52px;
+}
+.btn-dark:hover {
+  color: #fff;
+}
+.btn-outline {
+  background: #fff;
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text);
+  font-weight: 600;
+  font-size: 14px;
+  min-height: 48px;
+}

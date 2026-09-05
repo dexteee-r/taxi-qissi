@@ -1,9 +1,8 @@
-// Builds the pre-filled WhatsApp message and wa.me URL — entirely
-// client-side, nothing here ever reaches a server (brief §1.1 / CDC §7.2).
-// Message wording ported from the validated prototype's sentence-style
-// template (claude design template/TaxiDesktop.dc.html), not the brief's
-// itemized example — the prototype takes precedence for the user-facing
-// flow (brief §1.3). EN wording is our own translation.
+// Compose le message WhatsApp pré-rempli et le lien wa.me.
+//
+// Le message est construit dans le navigateur et rien n'est envoyé : c'est
+// le visiteur qui appuie sur "envoyer" dans WhatsApp. Le site n'a donc
+// jamais connaissance de la demande.
 import { BUSINESS } from '../config/business.js';
 import { formatEuro } from './format.js';
 

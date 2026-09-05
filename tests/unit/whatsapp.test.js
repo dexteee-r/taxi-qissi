@@ -1,3 +1,5 @@
+// Vérifie le message WhatsApp pré-rempli (src/lib/whatsapp.js) : contenu,
+// traduction et encodage du lien.
 import { describe, it, expect } from 'vitest';
 import { buildWhatsAppMessage, buildWhatsAppUrl, WHATSAPP_PLAIN_URL } from '../../src/lib/whatsapp.js';
 import { BUSINESS } from '../../src/config/business.js';

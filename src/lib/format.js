@@ -1,10 +1,8 @@
-// Locale-aware number formatting (CDC §5 rule 7: "formats localisés").
+// Affichage des nombres selon la langue.
 //
-// Belgium uses a comma as the decimal separator, so `toFixed(2)` produced
-// "64.00 €" on the NL and FR pages, which reads as broken to a local
-// visitor. The prototype showed whole amounts ("64 €"), so cents are only
-// shown when there actually are any — which happens for the "other address"
-// route, where the distance comes back fractional.
+// En Belgique la virgule sépare les décimales : écrire "64.00 €" sur les
+// pages NL et FR fait amateur. Et les centimes ne s'affichent que s'il y en
+// a vraiment — "64 €" plutôt que "64,00 €".
 
 const LOCALE_TAGS = { nl: 'nl-BE', fr: 'fr-BE', en: 'en-GB' };
 
@@ -13,7 +11,7 @@ function tagFor(locale) {
 }
 
 /**
- * "64 €" / "42,10 €" in NL and FR, "€64" / "€42.10" in EN.
+ * "64 €" / "42,10 €" en NL et FR, "€64" / "€42.10" en EN.
  * @param {number} amount
  * @param {'nl'|'fr'|'en'} locale
  */
@@ -23,12 +21,12 @@ export function formatEuro(amount, locale) {
     minimumFractionDigits: hasCents ? 2 : 0,
     maximumFractionDigits: 2,
   }).format(amount);
-  // English puts the symbol first; French and Dutch put it after the amount.
+  // L'anglais met le symbole devant, le français et le néerlandais derrière.
   return locale === 'en' ? `€${number}` : `${number} €`;
 }
 
 /**
- * "20 km" / "12,7 km" — same decimal-separator rule as above.
+ * "20 km" / "12,7 km" — même règle de virgule décimale.
  * @param {number} km
  * @param {'nl'|'fr'|'en'} locale
  */

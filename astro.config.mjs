@@ -2,42 +2,31 @@
 import { defineConfig } from 'astro/config';
 import { loadEnv } from 'vite';
 
-// Domain inferred from the confirmed email (info@taxiqissi.be) in the
-// prototype — see src/config/business.js. Not independently confirmed by
-// the client; update here too if that turns out to be wrong.
+// Configuration du site. Voir le GUIDE.md pour les modifications courantes.
 
-// The routing key has to reach the browser: brief §1.1 rules out any server
-// handling the visitor's addresses, so the call is made client-side and the
-// key is in the shipped bundle by design (brief §5.4 anticipates this).
+// La clé OpenRouteService doit arriver jusqu'au navigateur : le site n'a pas
+// de serveur pour l'utiliser à sa place. On l'insère donc dans le code au
+// moment du build, ce qui permet de nommer la variable ORS_API_KEY sans le
+// préfixe PUBLIC_ que les hébergeurs signalent comme une fuite.
 //
-// Astro only exposes PUBLIC_*-prefixed variables to client code, but hosting
-// dashboards flag that prefix as a leak. Injecting the value here at build
-// time lets the variable be named either way:
+// Le nom n'y change rien : la clé est lisible dans le JavaScript quoi qu'il
+// arrive. La vraie protection est le quota journalier.
 //
-//   ORS_API_KEY          preferred — no "public" prefix to alarm the host
-//   PUBLIC_ORS_API_KEY   still honoured, so nothing breaks mid-migration
-//
-// Renaming changes nothing about the exposure: whichever name is used, the
-// key ends up readable in the JavaScript. The real guard rails are the
-// provider's daily quota and the graceful fallback to the call button.
-// process.env first, .env file second: on a host the variable is injected
-// into the environment, and reading it directly leaves no room for doubt
-// about how loadEnv treats an empty prefix.
+// process.env d'abord, fichier .env ensuite : sur un hébergeur la variable
+// est dans l'environnement, et la lire directement évite toute ambiguïté.
 const env = loadEnv(process.env.NODE_ENV ?? 'production', process.cwd(), '');
 const keySources = ['ORS_API_KEY', 'PUBLIC_ORS_API_KEY'];
 const keyFrom = keySources.find((name) => (process.env[name] ?? env[name] ?? '').trim());
 const orsApiKey = keyFrom ? (process.env[keyFrom] ?? env[keyFrom]).trim() : '';
 
-// Both address fields are free text since 2026-09-05, so without this key
-// the simulator cannot produce a single estimate — it is not a degraded
-// feature, it is a dead one. A build has already shipped to production
-// without it, silently, so say it loudly here. The build is deliberately
-// not failed: the phone number, the WhatsApp button and every page of
-// content still work, and those matter more than the simulator.
-// The build log has to answer "is the key there?" on its own — on a hosting
-// dashboard it is the only window into what the build actually saw. Names
-// only, never values: a wrong or empty variable is a naming problem far more
-// often than a value problem.
+// Sans cette clé, le simulateur ne peut produire aucune estimation. Un
+// build est déjà parti en production sans elle, en silence : d'où ce
+// message. On ne fait volontairement PAS échouer le build — le téléphone,
+// WhatsApp et tout le contenu comptent plus que le simulateur.
+//
+// Le journal de build doit répondre tout seul à "la clé est-elle là ?" :
+// sur un hébergeur, c'est la seule fenêtre sur ce que le build a vraiment
+// vu. On n'affiche que des noms de variables, jamais leur valeur.
 const line = '─'.repeat(68);
 if (orsApiKey) {
   console.log(
@@ -69,8 +58,7 @@ export default defineConfig({
     format: 'directory',
   },
   redirects: {
-    // Static-build fallback (meta refresh). For a real HTTP 301, also
-    // configure the reverse proxy — see README.md "Hosting notes".
+    // La racine du site renvoie vers le néerlandais, langue par défaut.
     '/': '/nl/',
   },
   vite: {

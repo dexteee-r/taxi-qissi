@@ -1,3 +1,5 @@
+// Vérifie les trois langues : mêmes clés partout, adresses traduites, et
+// aucune page qui manquerait dans une langue.
 import { describe, it, expect } from 'vitest';
 import { LOCALES, DEFAULT_LOCALE, ROUTES, localePath, alternates, LOCALE_NAMES } from '../../src/i18n/routes.js';
 import { dictionary } from '../../src/i18n/dictionary.js';
@@ -142,14 +144,10 @@ describe('destinations dataset', () => {
     }
   });
 
-  it('has exactly one open-ended "other" entry, with no fixed distance', () => {
-    const others = DESTINATIONS.filter((d) => d.km === null);
-    expect(others).toHaveLength(1);
-    expect(others[0].id).toBe('other');
-  });
-
-  it('gives every non-"other" destination a positive distance and duration', () => {
-    for (const dest of DESTINATIONS.filter((d) => d.id !== 'other')) {
+  it('gives every destination a positive distance and duration', () => {
+    // Plus d'entree "Autre adresse" depuis que le champ est libre : une
+    // destination sans distance n'aurait plus rien pour l'alimenter.
+    for (const dest of DESTINATIONS) {
       expect(dest.km, dest.id).toBeGreaterThan(0);
       expect(dest.min, dest.id).toBeGreaterThan(0);
     }

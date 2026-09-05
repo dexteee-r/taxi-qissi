@@ -1,0 +1,213 @@
+/*
+ * Couleurs, polices, tailles de texte : les réglages de base dont tout le
+ * reste dépend. Les couleurs sont des variables (--color-accent…) : en
+ * changer une ici la change partout sur le site.
+ *
+ * Le site est pensé mobile d'abord : les règles normales sont celles du
+ * téléphone, et celles dans @media (min-width: 900px) celles de l'ordinateur.
+ */
+/* Les polices sont hébergées par nous (dossier public/fonts/) au lieu d'être
+   chargées depuis un site extérieur : la page s'affiche plus vite, et
+   l'adresse IP des visiteurs n'est envoyée à personne. */
+@font-face {
+  font-family: 'Cabinet Grotesk';
+  src: url('/fonts/cabinet-grotesk-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Cabinet Grotesk';
+  src: url('/fonts/cabinet-grotesk-800.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/satoshi-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/satoshi-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/satoshi-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --color-bg: #f9fafb;
+  --color-surface: #ffffff;
+  --color-text: #09090b;
+  --color-text-muted: #52525b;
+  --color-text-faint: #71717a;
+  --color-border: #e4e4e7;
+  --color-border-strong: #d4d4d8;
+  --color-accent: #0369a1;
+  --color-accent-hover: #075985;
+  --color-accent-tint: #f0f7fb;
+  --color-price: #0284c7;
+  --color-whatsapp: #0f7a6d;
+  --color-whatsapp-shadow: #0a5c52;
+  --color-danger: #9f2d24;
+  --color-ink: #18181b;
+  --color-dark-bg: #09090b;
+  --color-dark-border: #27272a;
+  --color-dark-text: #d4d4d8;
+  --color-dark-faint: #a1a1aa;
+  --font-display: 'Cabinet Grotesk', system-ui, sans-serif;
+  --font-body: 'Satoshi', system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --radius: 8px;
+  --radius-card: 14px;
+  --container-width: 1120px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Plusieurs règles définissent `display`, ce qui l'emporterait sinon sur
+   la règle [hidden]{display:none} du navigateur et laisser visible ce qui
+   devrait être masqué. */
+[hidden] {
+  display: none !important;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+picture,
+video {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: var(--color-accent);
+}
+a:hover {
+  color: var(--color-accent-hover);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  color: var(--color-text);
+  text-wrap: pretty;
+  margin: 0 0 8px;
+}
+
+p {
+  margin: 0 0 1em;
+  text-wrap: pretty;
+}
+
+/* Tailles de texte ------------------------------------------------------ */
+.h-hero {
+  font: 800 34px/0.98 var(--font-display);
+  letter-spacing: -0.045em;
+  margin: 0 0 10px;
+}
+.h-page {
+  font: 800 28px/1 var(--font-display);
+  letter-spacing: -0.04em;
+  margin: 0 0 8px;
+}
+.h-legal {
+  font: 800 26px/1 var(--font-display);
+  letter-spacing: -0.038em;
+  margin: 0 0 18px;
+}
+.h-section {
+  font: 700 21px/1.08 var(--font-display);
+  letter-spacing: -0.026em;
+  margin: 0 0 8px;
+}
+.h-card {
+  font: 700 21px/1.08 var(--font-display);
+  letter-spacing: -0.026em;
+  margin: 0 0 4px;
+}
+.lead {
+  font: 400 15px/1.55 var(--font-body);
+  color: var(--color-text-muted);
+  margin: 0 0 18px;
+}
+.lead-hero {
+  font: 400 15.5px/1.55 var(--font-body);
+  color: var(--color-text-muted);
+  margin: 0 0 4px;
+}
+.sub {
+  font: 400 14.5px/1.55 var(--font-body);
+  color: var(--color-text-muted);
+  margin: 0 0 14px;
+}
+@media (min-width: 900px) {
+  .h-hero {
+    font-size: 58px;
+    line-height: 0.96;
+    letter-spacing: -0.042em;
+    margin-bottom: 18px;
+  }
+  .h-page {
+    font-size: 44px;
+    letter-spacing: -0.038em;
+    margin-bottom: 12px;
+  }
+  .h-legal {
+    font-size: 40px;
+    letter-spacing: -0.035em;
+    margin-bottom: 28px;
+  }
+  .h-section {
+    font-weight: 800;
+    font-size: 30px;
+    line-height: 1.02;
+    letter-spacing: -0.032em;
+  }
+  .h-card {
+    font-size: 22px;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    margin-bottom: 4px;
+  }
+  .lead {
+    font-size: 17px;
+    margin-bottom: 28px;
+  }
+  .lead-hero {
+    font-size: 18.5px;
+    margin-bottom: 24px;
+  }
+  .sub {
+    font-size: 16px;
+    margin-bottom: 28px;
+  }
+}

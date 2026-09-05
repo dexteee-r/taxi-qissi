@@ -1,0 +1,303 @@
+/* En-tête ---------------------------------------------------------------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  /* No backdrop-filter here: it would make this element the CSS containing
+     block for any position:fixed descendant (the mobile menu panel below),
+     collapsing that full-screen overlay down to the header's own height. */
+  background: rgba(255, 255, 255, 0.94);
+  border-bottom: 1px solid rgba(9, 9, 11, 0.06);
+}
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 58px;
+  padding-block: 9px;
+}
+@media (min-width: 900px) {
+  .header-inner {
+    min-height: 78px;
+    gap: 16px;
+    padding-block: 0;
+  }
+}
+.brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-decoration: none;
+  flex: none;
+}
+.brand .name {
+  font: 700 15px/1 var(--font-display);
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.brand .tag {
+  font: 500 10.5px/1 var(--font-body);
+  color: var(--color-text-faint);
+  letter-spacing: 0.05em;
+}
+@media (min-width: 900px) {
+  .brand .name {
+    font-size: 17px;
+    letter-spacing: -0.012em;
+  }
+  .brand {
+    gap: 3px;
+  }
+}
+
+.main-nav {
+  display: none;
+  align-items: center;
+  gap: 2px;
+}
+@media (min-width: 900px) {
+  .main-nav {
+    display: flex;
+  }
+}
+.main-nav a {
+  border-bottom: 2px solid transparent;
+  min-height: 44px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  font: 600 14.5px/1.1 var(--font-body);
+  color: var(--color-text);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.main-nav a:hover {
+  color: var(--color-accent);
+}
+.main-nav a[aria-current='page'] {
+  color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
+}
+@media (max-width: 1180px) {
+  .main-nav a {
+    padding: 0 9px;
+    font-size: 13.5px;
+  }
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+@media (min-width: 900px) {
+  .header-actions {
+    gap: 12px;
+  }
+}
+.header-call {
+  display: none;
+}
+@media (min-width: 900px) {
+  .header-call {
+    display: block;
+  }
+  .header-call .btn {
+    flex-direction: row;
+    padding: 0 20px;
+  }
+}
+
+/* Sélecteur de langue (en <details>, sans JavaScript) -------------------- */
+.lang-switcher {
+  position: relative;
+}
+.lang-switcher > summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 9px;
+  background: #fff;
+  padding: 0 11px;
+  font: 600 12.5px/1 var(--font-body);
+  color: var(--color-text);
+  white-space: nowrap;
+}
+.lang-switcher[open] > summary {
+  border-color: var(--color-accent);
+}
+@media (min-width: 900px) {
+  .lang-switcher > summary {
+    gap: 7px;
+    padding: 0 13px;
+    font-size: 13px;
+  }
+}
+.lang-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 30;
+  background: #fff;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 9px;
+  overflow: hidden;
+  min-width: 168px;
+}
+.lang-panel a {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 50px;
+  padding: 0 14px;
+  font: 600 14px/1 var(--font-body);
+  color: var(--color-text);
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-border);
+}
+.lang-panel a:last-child {
+  border-bottom: 0;
+}
+.lang-panel a[aria-current='page'] {
+  color: var(--color-accent);
+  background: var(--color-accent-tint);
+}
+
+/* Menu mobile plein écran (en <details>, sans JavaScript) ---------------- */
+.mobile-menu-toggle {
+  display: inline-flex;
+}
+@media (min-width: 900px) {
+  .mobile-menu-toggle {
+    display: none;
+  }
+}
+.mobile-menu-toggle > summary {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 9px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.mobile-menu-toggle > summary .bar {
+  display: block;
+  width: 17px;
+  height: 2px;
+  background: var(--color-text);
+  border-radius: 2px;
+}
+.mobile-menu-panel {
+  display: none;
+}
+.mobile-menu-toggle[open] .mobile-menu-panel {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: var(--color-bg);
+}
+.mobile-menu-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 16px;
+  min-height: 58px;
+  border-bottom: 1px solid var(--color-border);
+}
+.mobile-menu-head span {
+  font: 600 13px/1 var(--font-body);
+  color: var(--color-text-faint);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.mobile-menu-close {
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 9px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.mobile-menu-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 16px;
+  overflow-y: auto;
+}
+.mobile-menu-nav a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 60px;
+  border-bottom: 1px solid var(--color-border);
+  font: 600 19px/1.2 var(--font-display);
+  color: var(--color-text);
+  text-decoration: none;
+}
+.mobile-menu-nav a .left {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+.mobile-menu-nav a .arrow {
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid var(--color-dark-faint);
+  border-bottom: 2px solid var(--color-dark-faint);
+  transform: rotate(-45deg);
+  flex: none;
+}
+.mobile-menu-foot {
+  margin-top: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid var(--color-border);
+}
+.mobile-menu-foot .btn-call {
+  width: 100%;
+  min-height: 56px;
+}
+.mobile-menu-foot .call-label {
+  font-size: 17px;
+}
+.mobile-menu-langs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.mobile-menu-langs > span {
+  font: 500 12px/1 var(--font-body);
+  color: var(--color-text-faint);
+}
+.mobile-menu-langs a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--color-text);
+  font: 600 13px/1 var(--font-body);
+  padding: 0 13px;
+  text-decoration: none;
+}
+.mobile-menu-langs a[aria-current='page'] {
+  background: var(--color-accent-tint);
+  color: var(--color-accent);
+}

@@ -9,10 +9,11 @@ const { locale } = Astro.props;
 
 const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? '';
 
-// Note: the CDC §11.4 sample puts priceRange and openingHoursSpecification
-// directly on TaxiService. schema.org's validator rejects both there — they
-// are LocalBusiness properties — so they live on `provider` instead. Verified
-// with validator.schema.org: 0 errors, 0 warnings.
+// Les données structurées lues par Google (elles ne s'affichent pas).
+//
+// PIEGE : priceRange et openingHoursSpecification ne sont PAS valides sur
+// TaxiService, seulement sur une entreprise locale. Ils sont donc placés
+// dans `provider`. Vérifié sur validator.schema.org : 0 erreur.
 const schema = {
   '@context': 'https://schema.org',
   '@type': 'TaxiService',

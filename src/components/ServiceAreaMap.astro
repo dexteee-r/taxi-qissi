@@ -1,11 +1,10 @@
 ---
-// Contact page map: the ~20 km radius the business serves.
+// La carte de la page Contact : le rayon d'environ 20 km desservi.
 //
-// Unlike the simulator's map, nothing here is behind a click, so it is
-// loaded when it scrolls into view rather than on page load (brief §7: the
-// map must never block the initial render). The prototype's dashed-circle
-// illustration stays in the markup as the fallback — it is what a visitor
-// sees without JavaScript, or if Leaflet or the tiles fail.
+// Contrairement à celle du simulateur, elle n'est pas derrière un clic. Elle
+// se charge donc quand elle entre dans l'écran, pas au chargement de la page.
+// Le dessin en pointillés reste dans le HTML : c'est ce qu'on voit sans
+// JavaScript, ou si la carte échoue.
 import { BUSINESS } from '../config/business.js';
 import { t } from '../i18n/dictionary.js';
 
@@ -32,44 +31,41 @@ const radiusKm = Math.round(BUSINESS.serviceRadiusMeters / 1000);
 </div>
 
 <script>
-  const container = document.getElementById('service-area-map');
-  if (container) {
-    const mount = async () => {
-      try {
-        const { showServiceArea } = await import('../lib/route-map.js');
-        const centre = {
-          lat: Number(container.dataset.lat),
-          lon: Number(container.dataset.lon),
-        };
-        // Clear the placeholder only once Leaflet is ready to take over, so a
-        // failed import leaves the illustration in place.
-        const svg = container.querySelector('svg');
-        svg?.remove();
-        const shown = await showServiceArea(
-          container,
-          centre,
-          Number(container.dataset.radius),
-          container.dataset.label ?? ''
-        );
-        if (!shown && svg) container.appendChild(svg);
-      } catch {
-        /* the illustration stays */
-      }
-    };
+  const conteneur = document.getElementById('service-area-map');
 
-    if ('IntersectionObserver' in window) {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          if (entries.some((entry) => entry.isIntersecting)) {
-            observer.disconnect();
-            mount();
-          }
-        },
-        { rootMargin: '200px' }
+  // Remplace le dessin par la vraie carte. Si quoi que ce soit échoue, le
+  // dessin reste (ou revient) : on ne laisse jamais un cadre vide.
+  async function afficherLaCarte() {
+    if (!conteneur) return;
+    const dessin = conteneur.querySelector('svg');
+    try {
+      const { showServiceArea } = await import('../lib/route-map.js');
+      // On n'enlève le dessin qu'une fois Leaflet prêt à prendre le relais.
+      dessin?.remove();
+      const affichee = await showServiceArea(
+        conteneur,
+        { lat: Number(conteneur.dataset.lat), lon: Number(conteneur.dataset.lon) },
+        Number(conteneur.dataset.radius),
+        conteneur.dataset.label ?? ''
       );
-      observer.observe(container);
-    } else {
-      mount();
+      if (!affichee && dessin) conteneur.appendChild(dessin);
+    } catch {
+      if (dessin && !conteneur.contains(dessin)) conteneur.appendChild(dessin);
     }
+  }
+
+  // On attend que la carte approche de l'écran avant de charger quoi que ce
+  // soit : les autres pages ne demandent ainsi aucune tuile.
+  if (conteneur) {
+    const observateur = new IntersectionObserver(
+      (entrees) => {
+        if (entrees.some((entree) => entree.isIntersecting)) {
+          observateur.disconnect();
+          afficherLaCarte();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    observateur.observe(conteneur);
   }
 </script>

@@ -1,9 +1,12 @@
 ---
-// A static site serves exactly one physical 404 page regardless of URL
-// prefix. To satisfy "page 404 traduite dans les trois langues"
-// (brief §4 / CDC §5), all three translations are pre-rendered here and a
-// small inline script shows the one matching the /nl|fr|en/ prefix the
-// visitor was on. No-JS fallback: NL content, with links to switch.
+// La page 404.
+//
+// Un site statique ne sert qu'une seule page 404, quelle que soit l'adresse
+// demandée. Les trois traductions sont donc écrites ici, et un petit script
+// affiche celle qui correspond au /nl/, /fr/ ou /en/ d'où venait le
+// visiteur.
+// Sans JavaScript, c'est le néerlandais qui s'affiche, avec les liens
+// pour changer de langue.
 import '../styles/global.css';
 import { dictionary } from '../i18n/dictionary.js';
 import { localePath, LOCALES, LOCALE_NAMES } from '../i18n/routes.js';

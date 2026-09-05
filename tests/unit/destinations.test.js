@@ -1,10 +1,12 @@
+// Vérifie la liste des destinations et la reconnaissance des aéroports
+// (src/data/destinations.js).
 import { describe, it, expect } from 'vitest';
 import { DESTINATIONS, FURTHEST_PRESET_KM, AIRPORT_IDS, airportAt } from '../../src/data/destinations.js';
 import { BUSINESS } from '../../src/config/business.js';
-import { ROUTE_GEOMETRIES } from '../../src/data/route-geometries.js';
-import { decodePolyline } from '../../src/lib/polyline.js';
+import { ROUTE_GEOMETRIES } from '../../scripts/route-geometries.js';
+import { decodePolyline } from '../../scripts/polyline.js';
 
-const presets = DESTINATIONS.filter((d) => d.id !== 'other');
+const presets = DESTINATIONS;
 
 describe('preset destinations', () => {
   it('every preset carries the coordinate the live router needs', () => {

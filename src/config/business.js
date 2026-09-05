@@ -1,18 +1,18 @@
-// config/business.js — values pending client confirmation.
-// Do NOT replace [TO_BE_CONFIRMED] markers with plausible-looking data.
-// A fake phone number reaching production is treated as a client incident
-// (brief_dev_taxi_qiss.md §1.2). If a value is missing, the render must show
-// the marker, never an invented value.
+// Toutes les informations de l'entreprise, à un seul endroit.
+// Changer le téléphone, l'adresse ou les tarifs se fait ici, et se répercute
+// partout sur le site.
+//
+// REGLE : ne jamais remplacer un [TO_BE_CONFIRMED] par une valeur
+// vraisemblable. Une fausse donnée en ligne est pire qu'un trou visible.
 
-// Where the simulator measures from by default. Geocoded from "Grote Markt,
-// Tienen" — the pickup address the form pre-fills — and deliberately the same
-// point scripts/verify-distances.mjs uses for the preset destinations, so the
-// dropdown and the live lookup stay consistent.
+// Le point de départ par défaut du simulateur (la Grote Markt de Tienen).
+// C'est aussi le point depuis lequel les distances de destinations.js ont
+// été mesurées : les deux doivent rester d'accord.
 const ROUTING_ORIGIN = { lat: 50.8075398, lon: 4.9371503 };
 
 export const BUSINESS = {
   legalName: 'Q.I.S.S SRL',
-  // Confirmed by the user (2026-09-04) from the validated Claude Design prototype.
+  // Confirmé par le client.
   commercialName: 'Taxi QISSI',
   vatNumber: 'BE1025231305',
   address: {
@@ -21,16 +21,16 @@ export const BUSINESS = {
     city: 'Tienen',
     country: 'BE',
   },
-  // Confirmed real contact info (source: prototype, validated by the user — not invented).
+  // Coordonnées réelles, confirmées par le client.
   phoneDisplay: '0469 23 00 17',
-  phone: '+32469230017', // international format, used in tel: links
-  whatsapp: '32469230017', // international format, digits only, no leading +
+  phone: '+32469230017', // format international, pour les liens tel:
+  whatsapp: '32469230017', // format international, chiffres seuls, sans +
   email: 'info@taxiqissi.be',
-  // Inferred from the confirmed email's domain — not explicitly confirmed on its own, flag if wrong.
+  // Déduit du domaine de l'e-mail, pas confirmé séparément.
   domain: 'taxiqissi.be',
-  licenseNumber: '[TO_BE_CONFIRMED]', // vergunning individueel bezoldigd personenvervoer (IBP) — not present in the prototype either
-  // "22 most-requested municipalities" subset shown in the prototype's zone section.
-  // CDC §3 lists a much longer working list — this is display content, not the full service-area definition.
+  licenseNumber: '[TO_BE_CONFIRMED]', // licence taxi (IBP), toujours attendue du client
+  // Les 22 communes affichées sur le site. C'est une liste d'affichage, pas
+  // la définition exacte de la zone desservie.
   servedMunicipalities: [
     'Tienen', 'Leuven', 'Kessel-Lo', 'Sint-Truiden', 'Heverlee', 'Wilsele',
     'Scherpenheuvel', 'Landen', 'Grez-Doiceau', 'Jodoigne', 'Lubbeek', 'Tielt',
@@ -38,31 +38,31 @@ export const BUSINESS = {
     'Korbeek-Lo', 'Bierbeek', 'Geetbets', 'Oud-Heverlee',
   ],
   serviceRadiusMeters: 20000,
-  // Approximate geographic center of Tienen for the GeoCircle areaServed schema.
-  // Precision to be confirmed once the domain/business listing is finalized.
-  // Note the property names: schema.org spells them out, so this object is
-  // NOT interchangeable with routingOrigin below.
+  // Centre approximatif de Tienen, pour les données structurées Google.
+  // ATTENTION : les noms de propriétés sont écrits en entier (latitude,
+  // longitude) parce que schema.org l'exige. Cet objet n'est donc PAS
+  // interchangeable avec routingOrigin, qui utilise lat/lon.
   geoMidpoint: {
     latitude: 50.8064,
     longitude: 4.9403,
   },
   routingOrigin: ROUTING_ORIGIN,
-  // What the simulator's pickup field starts with. It is a resolved address,
-  // not just placeholder text: the visitor may replace it with their own and
-  // the route is then measured from whatever they pick — but leaving it
-  // alone costs no geocoding request, since its coordinate is already known.
+  // L'adresse pré-remplie dans le champ "départ". Ses coordonnées étant
+  // connues, la garder ne coûte aucune recherche d'adresse.
   defaultPickup: {
     label: 'Grote Markt, Tienen',
     ...ROUTING_ORIGIN,
   },
 };
 
+// La grille tarifaire. Modifier un chiffre ici change le prix affiché
+// partout : simulateur, page Tarifs et message WhatsApp.
 export const FARE = {
-  baseFare: 4.0, // EUR, pickup
-  perKmRate: 3.0, // EUR per km
-  nightSurcharge: 3.0, // EUR, flat, once per ride
-  nightStartHour: 22, // 22:00
-  nightEndHour: 4, // 04:00
-  waitingRatePerHour: 36.0, // EUR/hour — DISPLAY ONLY, never computed
+  baseFare: 4.0, // € de prise en charge
+  perKmRate: 3.0, // € par kilomètre
+  nightSurcharge: 3.0, // € de supplément de nuit, une seule fois par course
+  nightStartHour: 22, // la nuit commence à 22h
+  nightEndHour: 4, // et finit à 4h
+  waitingRatePerHour: 36.0, // €/h d'attente — AFFICHE SEULEMENT, jamais calculé
   currency: 'EUR',
 };

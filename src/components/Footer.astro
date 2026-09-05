@@ -11,7 +11,7 @@ const { locale, pageKey } = Astro.props;
 const s = t(locale);
 const langAlternates = alternates(/** @type {any} */ (pageKey));
 
-// Footer order differs from the header's in the prototype.
+// Le pied de page. L'ordre des liens y diffère volontairement de celui du menu.
 const navItems = [
   { key: 'home', label: s.navHome },
   { key: 'services', label: s.navServices },

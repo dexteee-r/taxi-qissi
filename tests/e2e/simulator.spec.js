@@ -1,3 +1,5 @@
+// Le parcours complet du simulateur de prix, de la saisie au message
+// WhatsApp. OpenRouteService est simulé (voir ors-mock.js).
 import { test, expect } from '@playwright/test';
 import { DESTINATIONS } from '../../src/data/destinations.js';
 import { estimateFare } from '../../src/lib/fare.js';

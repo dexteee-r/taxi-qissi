@@ -1,9 +1,8 @@
+// Vérifie les appels à OpenRouteService (src/lib/geocoding.js) : la forme
+// des requêtes et le comportement en cas de panne. Les réponses sont
+// simulées — aucun appel réel n'est fait ici.
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// The "other address" branch of the simulator talks to OpenRouteService.
-// No API key is configured yet, so these tests pin the request shape and the
-// response parsing against realistic ORS payloads — that is what would break
-// silently if the provider changed, or if we misread their schema.
 const ORS_KEY = 'test-key';
 
 let autocompleteAddress, routeDistance, MapServiceError;

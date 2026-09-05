@@ -1,11 +1,10 @@
-// Legal notice / privacy policy copy — NL/FR approved from the prototype
-// (claude design template/*.dc.html, LEGAL constant); EN is our own
-// translation (2026-09-04, not yet client-reviewed).
+// Le texte des mentions légales et de la politique de confidentialité.
 //
-// One addition beyond the prototype: a note on the OpenRouteService address
-// lookup used by the simulator's "other address" option, which the
-// prototype's original (dropdown-only, no third-party calls) design didn't
-// need to disclose. Marked inline below.
+// A RELIRE dès que le simulateur change de comportement : ce texte décrit
+// précisément ce qui est envoyé à OpenRouteService et à OpenStreetMap. Une
+// promesse fausse ici est un problème juridique, pas une coquille.
+//
+// Reste à ajouter avant la mise en ligne : le nom de l'hébergeur.
 import { BUSINESS } from '../config/business.js';
 
 const ADDRESS = `${BUSINESS.address.street}, ${BUSINESS.address.postalCode} ${BUSINESS.address.city}`;

@@ -1,6 +1,9 @@
-// Single source of truth for the trilingual URL structure.
-// brief_dev_taxi_qiss.md §4 / cdc_v1_taxi_qiss.md §5 — translated slugs,
-// never an NL slug served under /fr/ or /en/.
+// La structure des adresses du site, dans les trois langues.
+//
+// C'est le seul endroit qui décide des URL : le menu, le sélecteur de
+// langue, le plan du site et les balises hreflang lisent tous ce fichier.
+// Chaque langue a ses propres mots dans l'adresse — jamais un mot
+// néerlandais sous /fr/.
 
 export const LOCALES = /** @type {const} */ (['nl', 'fr', 'en']);
 export const DEFAULT_LOCALE = 'nl';
@@ -23,6 +26,8 @@ export const ROUTES = {
 };
 
 /**
+ * L'adresse d'une page dans une langue. Exemple : ('fr', 'rates') donne
+ * "/fr/tarifs/".
  * @param {typeof LOCALES[number]} locale
  * @param {keyof typeof ROUTES} pageKey
  */
@@ -32,7 +37,8 @@ export function localePath(locale, pageKey) {
 }
 
 /**
- * All locale variants of a page, for hreflang / language switcher.
+ * La même page dans les trois langues, pour le sélecteur de langue et les
+ * balises hreflang.
  * @param {keyof typeof ROUTES} pageKey
  */
 export function alternates(pageKey) {

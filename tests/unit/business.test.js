@@ -1,3 +1,6 @@
+// Vérifie les informations de l'entreprise (src/config/business.js).
+// Surtout : qu'aucune valeur [TO_BE_CONFIRMED] n'a été remplacée par une
+// donnée inventée, et que téléphone et WhatsApp restent cohérents.
 import { describe, it, expect } from 'vitest';
 import { BUSINESS, FARE } from '../../src/config/business.js';
 

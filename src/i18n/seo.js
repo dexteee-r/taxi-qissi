@@ -1,7 +1,7 @@
-// Technical SEO metadata (title/description) — factual, keyword-grounded per
-// cdc_v1_taxi_qiss.md §11.2 (axe géographique: Tienen + 20 km ; axe service:
-// taxi, transport, gare, aéroport). This is metadata, not marketing prose —
-// distinct from the hero/body copy still pending in src/content/.
+// Les titres et descriptions que Google affiche dans ses résultats.
+//
+// Un titre par page et par langue, tous différents. Ce ne sont pas des
+// textes affichés sur le site : pour ceux-là, voir src/i18n/fr.js.
 
 const BRAND = 'Taxi QISSI';
 

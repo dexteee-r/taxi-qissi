@@ -1,30 +1,26 @@
-// Verifies the fixed distances in src/data/destinations.js against real road
-// routing, and prints a comparison table.
+// Mesure les distances réelles des destinations de src/data/destinations.js.
 //
-// The values shipped with the prototype were design estimates, but the brief
-// (§5.1) requires real road distance — so they need checking, and re-checking
-// whenever the destination list changes.
+// A relancer si on ajoute ou modifie une destination. Le site ne s'en sert
+// plus pour calculer un prix (les deux champs d'adresse sont libres), mais
+// ces données alimentent les pages aéroport, la liste de la page d'accueil
+// et la reconnaissance des aéroports.
 //
-//   node scripts/verify-distances.mjs                  # OSRM public demo, no key
-//   node scripts/verify-distances.mjs --ors            # OpenRouteService (needs a key)
-//   node scripts/verify-distances.mjs --ors --write    # ...and update destinations.js
-//   node scripts/verify-distances.mjs --json           # machine-readable output
+//   node scripts/verify-distances.mjs                  # compare seulement
+//   node scripts/verify-distances.mjs --ors --write    # met à jour le fichier
+//   node scripts/verify-distances.mjs --json           # sortie machine
 //
-// With --ors it reads PUBLIC_ORS_API_KEY from the environment or .env, so the
-// numbers come from the very provider the site queries at runtime. That
-// matters: the dropdown's fixed distances and the live "other address"
-// lookup must agree, or the same destination gets two different prices.
-// --write is therefore only allowed together with --ors.
+// --write exige --ors : les distances stockées doivent venir du même routeur
+// que celui interrogé par le site.
 //
-// Geocoding uses Nominatim, rate-limited to one request per second per their
-// usage policy. Be a good citizen: this is a one-off maintenance script, not
-// something to run in CI.
+// La recherche d'adresses passe par Nominatim, limité à une requête par
+// seconde. C'est un script de maintenance, pas quelque chose à lancer en
+// boucle.
 import { readFileSync, writeFileSync } from 'node:fs';
 import { DESTINATIONS } from '../src/data/destinations.js';
 
-import { decodePolyline } from '../src/lib/polyline.js';
+import { decodePolyline } from './polyline.js';
 
-// Last point of an encoded route = where the router put the destination.
+// Le dernier point d'un itinéraire = là où le routeur a posé la destination.
 function endOf(encoded) {
   const points = encoded ? decodePolyline(encoded) : [];
   if (points.length === 0) return null;
@@ -38,25 +34,23 @@ const WRITE = process.argv.includes('--write');
 
 if (WRITE && !USE_ORS) {
   console.error(
-    '--write requires --ors: the stored distances must come from the same\n' +
-      'router the site queries at runtime, otherwise the dropdown and the\n' +
-      '"other address" lookup would disagree on the same destination.'
+    '--write exige --ors : les distances stockées doivent venir du même\n' +
+      'routeur que celui interrogé par le site.'
   );
   process.exit(1);
 }
 const UA = 'taxi-qissi-maintenance/1.0 (distance verification)';
 
-// The reference pickup point: what the simulator pre-fills as the departure
-// address, and therefore what the fixed distances should be measured from.
+// Le point de référence : l'adresse de départ pré-remplie du simulateur.
 const ORIGIN_QUERY = 'Grote Markt, Tienen, Belgium';
 
-// Explicit geocoding queries — the display labels are too ambiguous for a
-// geocoder ("Station Tienen", "Ander adres…").
+// Les requêtes envoyées au géocodeur : les libellés affichés sur le site
+// sont trop ambigus pour lui.
 const QUERIES = {
   zav: 'Brussels Airport, Zaventem, Belgium',
   cri: 'Brussels South Charleroi Airport, Belgium',
-  // Airport centroids land on a runway, where ORS finds no routable road —
-  // aim at the terminal / access road instead.
+  // Le centre d'un aéroport tombe sur une piste, où aucune route n'existe :
+  // on vise le terminal ou la route d'accès.
   lgg: 'Liege Airport terminal, Belgium',
   maa: 'Maastricht Aachen Airport, Netherlands',
   ein: 'Luchthavenweg, Eindhoven, Netherlands',
@@ -69,7 +63,7 @@ const QUERIES = {
   wav: 'Wavre, Belgium',
   nam: 'Namur, Belgium',
   sta: 'Station Tienen, Tienen, Belgium',
-  // The hospital's name yields no Nominatim hit; its street address does.
+  // Le nom de l'hôpital ne donne aucun résultat ; son adresse si.
   hos: 'Kliniekstraat 45, Tienen, Belgium',
 };
 
@@ -151,8 +145,7 @@ if (!AS_JSON) {
 
 const rows = [];
 for (const dest of DESTINATIONS) {
-  if (dest.id === 'other') continue;
-  await sleep(1100); // Nominatim: max 1 request/second
+  await sleep(1100); // Nominatim : une requête par seconde maximum
   try {
     const target = await geocode(QUERIES[dest.id]);
     const route = USE_ORS ? await routeOrs(origin, target, key) : await routeOsrm(origin, target);
@@ -226,7 +219,7 @@ if (WRITE) {
     `// from ${ORIGIN_QUERY} with OpenRouteService. They ship with the rates page`,
     '// so the map can draw the real route with no runtime API call; the "other',
     '// address" option gets its geometry from the live lookup instead.',
-    '// Decode with src/lib/polyline.js.',
+    '// Decode with scripts/polyline.js.',
     '',
     `export const ORIGIN = { lat: ${origin.lat}, lon: ${origin.lon} };`,
     '',
@@ -236,10 +229,10 @@ if (WRITE) {
     '',
   ].join('\n');
 
-  const geometryPath = new URL('../src/data/route-geometries.js', import.meta.url);
+  const geometryPath = new URL('../scripts/route-geometries.js', import.meta.url);
   writeFileSync(geometryPath, generated);
   console.log(
-    `Wrote src/data/route-geometries.js (${withGeometry.length} routes, ` +
+    `Wrote scripts/route-geometries.js (${withGeometry.length} routes, ` +
       `${Math.round(generated.length / 1024)} KB).`
   );
   console.log('Review the diff, then re-run the tests: the fare tests assert specific totals.');

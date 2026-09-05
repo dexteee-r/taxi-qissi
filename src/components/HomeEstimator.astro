@@ -1,12 +1,10 @@
 ---
-// Homepage teaser: mirrors the prototype's "Estimate your ride" mini-card.
-// On submit it hands the chosen destination off to the rates/simulator page
-// via query string; PriceSimulator's script reads it on load and
-// auto-computes — the same "estimateFromHome" journey as the prototype,
-// adapted to a static multi-page site (no shared client-side router state).
+// Le petit bloc d'estimation de la page d'accueil.
 //
-// The heading sits outside the card on mobile and inside it on desktop,
-// as in the two artboards — hence the two copies below.
+// C'est un formulaire HTML classique (méthode GET) : il fonctionne même si
+// JavaScript est désactivé. C'est pourquoi il garde une liste déroulante de
+// villes, là où la page Tarifs a un champ libre. Il envoie son choix à la
+// page Tarifs, qui calcule le prix à l'arrivée.
 import { t } from '../i18n/dictionary.js';
 import { localePath } from '../i18n/routes.js';
 import { DESTINATIONS } from '../data/destinations.js';
@@ -40,7 +38,7 @@ const ratesUrl = localePath(locale, 'rates');
         <label class="field-label" for="home-dest">{s.fTo}</label>
         <select id="home-dest" name="dest">
           <option value="">{s.fToPh}</option>
-          {DESTINATIONS.filter((d) => d.id !== 'other').map((d) => <option value={d.id}>{d[locale]}</option>)}
+          {DESTINATIONS.map((d) => <option value={d.id}>{d[locale]}</option>)}
         </select>
       </div>
       <button type="submit" class="btn btn-dark qissi-tap estimator-btn">{s.estBtn}</button>

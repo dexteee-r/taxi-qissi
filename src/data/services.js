@@ -1,6 +1,5 @@
-// Service catalogue — NL/FR copy approved by the user from the validated
-// Claude Design prototype; EN is our own translation (explicitly authorized
-// by the user when adding English, 2026-09-04), not yet client-reviewed.
+// La liste des services proposés, utilisée par la page d'accueil (version
+// courte) et la page Services (version détaillée).
 
 export const SERVICE_ICONS = [
   'M4 16.5h16M6.2 16.5l1.6-5.4A2.5 2.5 0 0 1 10.2 9.3h3.6a2.5 2.5 0 0 1 2.4 1.8l1.6 5.4M7.5 16.5V19M16.5 16.5V19',

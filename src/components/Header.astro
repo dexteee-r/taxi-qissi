@@ -12,7 +12,7 @@ const { locale, pageKey } = Astro.props;
 const s = t(locale);
 const langAlternates = alternates(/** @type {any} */ (pageKey));
 
-// Nav order and drawer icons taken from the prototype.
+// L'en-tête : logo, menu, sélecteur de langue et bouton d'appel.
 const navItems = [
   { key: 'home', label: s.navHome, icon: 'M4 11.5 12 4l8 7.5M6.5 10v9h11v-9' },
   { key: 'rates', label: s.navPrices, icon: 'M13 3H5v8l8 8 8-8-8-8M8.5 7.5v.01' },
@@ -115,7 +115,7 @@ const navItems = [
     });
   });
 
-  // Close the language dropdown on outside click / Escape.
+  // Referme le sélecteur de langue si on clique ailleurs ou tape Echap.
   document.addEventListener('click', (event) => {
     document.querySelectorAll('details.lang-switcher[open]').forEach((el) => {
       if (!el.contains(/** @type {Node} */ (event.target))) el.removeAttribute('open');

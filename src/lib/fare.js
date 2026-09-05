@@ -1,10 +1,10 @@
-// Pure fare estimation logic — runs entirely in the browser.
-// See brief_dev_taxi_qiss.md §5.1 and cdc_v1_taxi_qiss.md §7.4.
+// Le calcul du prix : prise en charge + (kilomètres × tarif) + supplément
+// de nuit éventuel. Les montants sont dans src/config/business.js.
 import { FARE } from '../config/business.js';
 
 /**
- * @param {number} distanceKm real road distance in kilometers (never straight-line)
- * @param {number} rideHour hour of the ride, 0-23, local time
+ * @param {number} distanceKm distance réelle par la route (jamais à vol d'oiseau)
+ * @param {number} rideHour heure du trajet, de 0 à 23
  * @returns {{ total: number, isNight: boolean, breakdown: { base: number, distance: number, night: number } }}
  */
 export function estimateFare(distanceKm, rideHour) {

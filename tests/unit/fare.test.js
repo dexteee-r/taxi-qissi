@@ -1,3 +1,5 @@
+// Vérifie le calcul du prix (src/lib/fare.js) : prise en charge, prix au
+// kilomètre, et les bornes exactes du supplément de nuit.
 import { describe, it, expect } from 'vitest';
 import { estimateFare } from '../../src/lib/fare.js';
 import { FARE } from '../../src/config/business.js';

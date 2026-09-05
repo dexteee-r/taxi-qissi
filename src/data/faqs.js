@@ -1,5 +1,5 @@
-// FAQ content — NL/FR approved from the prototype; EN is our own translation
-// (2026-09-04, not yet client-reviewed). Also feeds the FAQPage JSON-LD.
+// Les questions/réponses de la FAQ, affichées sur la page d'accueil.
+// Elles alimentent aussi les données structurées lues par Google.
 
 export const FAQS = {
   fr: [

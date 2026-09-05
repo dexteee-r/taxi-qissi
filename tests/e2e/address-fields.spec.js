@@ -1,12 +1,11 @@
+// Les deux champs d'adresse du formulaire d'estimation.
+//
+// Chaque cas ci-dessous correspond à un défaut réellement rencontré. Si l'un
+// casse, c'est qu'un de ces défauts est revenu.
 import { test, expect } from '@playwright/test';
 import { DESTINATIONS } from '../../src/data/destinations.js';
 import { mockOrs, chooseAddress, LEUVEN } from './ors-mock.js';
 
-// The two address fields of the estimate form. Each case below is one that
-// used to behave wrongly: a pickup address that changed nothing, "address
-// not found" for addresses that were found, and a few dead ends with no way
-// out. OpenRouteService is mocked throughout — these assert our behaviour,
-// not theirs, and the real key has a daily quota to protect.
 
 test.describe('pickup address', () => {
   test('re-measures the trip when the visitor changes it', async ({ page }) => {

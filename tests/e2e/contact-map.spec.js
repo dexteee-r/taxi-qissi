@@ -1,9 +1,6 @@
+// La carte de la zone desservie, sur la page Contact.
 import { test, expect } from '@playwright/test';
 
-// The contact page's served-area map. Unlike the simulator's, it is not
-// behind a click, so what matters here is that it still loads late, that it
-// degrades to the prototype's illustration, and that the page's two ways of
-// reaching the driver survive a broken map (brief §5.3).
 const CONTACT = { nl: '/nl/contact/', fr: '/fr/contact/', en: '/en/contact/' };
 
 test.describe('service area map', () => {

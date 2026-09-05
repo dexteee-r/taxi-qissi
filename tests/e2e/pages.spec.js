@@ -1,3 +1,5 @@
+// Les 21 pages du site : elles répondent toutes, ont un titre unique, les
+// bonnes balises de langue, et le plan du site les liste toutes.
 import { test, expect } from '@playwright/test';
 
 const PAGES = {

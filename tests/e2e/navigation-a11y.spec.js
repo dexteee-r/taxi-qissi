@@ -1,3 +1,5 @@
+// La navigation et l'accessibilité : menu, sélecteur de langue, taille des
+// zones tactiles, contrastes, navigation au clavier.
 import { test, expect, devices } from '@playwright/test';
 
 const PHONE = '+32469230017';

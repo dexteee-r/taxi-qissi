@@ -1,3 +1,5 @@
+// Vérifie l'affichage des nombres (src/lib/format.js) : en Belgique on
+// écrit "64 €" et "42,10 €", jamais "64.00 €".
 import { describe, it, expect } from 'vitest';
 import { formatEuro, formatKm } from '../../src/lib/format.js';
 

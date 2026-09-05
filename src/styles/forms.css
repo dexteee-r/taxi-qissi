@@ -1,0 +1,96 @@
+/* Champs de formulaire --------------------------------------------------- */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 14px;
+}
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.field-label {
+  font: 600 11.5px/1 var(--font-body);
+  color: var(--color-text-faint);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.field input,
+.field select,
+.field textarea {
+  min-height: 48px;
+  border: 0;
+  border-bottom: 1px solid var(--color-border-strong);
+  border-radius: 0;
+  padding: 0 2px;
+  color: var(--color-text);
+  background: transparent;
+}
+.field input[type='date'],
+.field input[type='time'] {
+  font: 500 16px/1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  padding: 0;
+}
+.field textarea {
+  padding: 8px 2px;
+  resize: vertical;
+  line-height: 1.45;
+}
+@media (min-width: 900px) {
+  .field {
+    margin-bottom: 18px;
+  }
+  .field-row {
+    gap: 18px;
+  }
+  .field input,
+  .field select,
+  .field textarea {
+    min-height: 50px;
+  }
+}
+
+.notice {
+  font: 400 12px/1.45 var(--font-body);
+  color: var(--color-text-faint);
+}
+@media (min-width: 900px) {
+  .notice {
+    font-size: 12.5px;
+  }
+}
+
+.error-box {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-top: -6px;
+  margin-bottom: 14px;
+}
+.error-box .error-msg {
+  display: flex;
+  gap: 8px;
+  font: 500 13px/1.45 var(--font-body);
+  color: var(--color-danger);
+}
+.error-box .btn-call {
+  align-self: stretch;
+  min-height: 48px;
+}
+@media (min-width: 900px) {
+  .error-box .btn-call {
+    align-self: flex-start;
+  }
+}
+
+.placeholder-marker {
+  display: inline-block;
+  background: #fff3cd;
+  color: #664d03;
+  border: 1px dashed #997404;
+  border-radius: 4px;
+  padding: 0.1em 0.4em;
+  font-size: 0.85em;
+}
