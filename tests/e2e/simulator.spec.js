@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import { DESTINATIONS } from '../../src/data/destinations.js';
 import { estimateFare } from '../../src/lib/fare.js';
 import { formatEuro, formatKm } from '../../src/lib/format.js';
+import { mockOrs, chooseAddress } from './ors-mock.js';
 
 const PHONE = '+32469230017';
 const WHATSAPP = '32469230017';
@@ -9,16 +10,17 @@ const WHATSAPP = '32469230017';
 // Expectations are derived from the destination data rather than hard-coded,
 // so re-running `npm run verify:distances` cannot silently break the suite —
 // and the assertions keep checking the tariff rule, not a frozen number.
+// The dropdown those distances used to feed is gone, so the mocked router is
+// told to report the same figure the data holds.
 const dest = (id) => DESTINATIONS.find((d) => d.id === id);
 const priceFor = (id, hour, locale = 'nl') => formatEuro(estimateFare(dest(id).km, hour).total, locale);
 
 test.describe('price simulator', () => {
-  test.beforeEach(async ({ page }) => {
+  test('computes a destination and offers a pre-filled WhatsApp message', async ({ page }) => {
+    await mockOrs(page, { km: dest('leu').km, min: dest('leu').min });
     await page.goto('/nl/tarieven/');
-  });
 
-  test('computes a known destination and offers a pre-filled WhatsApp message', async ({ page }) => {
-    await page.selectOption('#dest', 'leu'); // Leuven, 20 km
+    await chooseAddress(page, '#dest', 'Leuven');
     await page.fill('#time', '15:00');
     await page.fill('#name', 'Jan Peeters');
     await page.click('#compute-btn');
@@ -46,7 +48,10 @@ test.describe('price simulator', () => {
   });
 
   test('applies the night surcharge once, between 22:00 and 04:00', async ({ page }) => {
-    await page.selectOption('#dest', 'leu');
+    await mockOrs(page, { km: dest('leu').km, min: dest('leu').min });
+    await page.goto('/nl/tarieven/');
+
+    await chooseAddress(page, '#dest', 'Leuven');
     await page.fill('#time', '23:30');
     await page.click('#compute-btn');
 
@@ -56,7 +61,18 @@ test.describe('price simulator', () => {
   });
 
   test('shows "to be confirmed" instead of a price for airport transfers', async ({ page }) => {
-    await page.selectOption('#dest', 'zav');
+    // The dropdown entry that carried the `tbc` flag is gone: the airport is
+    // now recognised from the coordinate the visitor picked, so a typed
+    // "Brussels Airport" must still refuse to quote a price (CDC §11.4).
+    const zaventem = dest('zav');
+    await mockOrs(page, {
+      km: zaventem.km,
+      min: zaventem.min,
+      pointFor: () => ({ lat: zaventem.lat, lon: zaventem.lon }),
+    });
+    await page.goto('/nl/tarieven/');
+
+    await chooseAddress(page, '#dest', 'Brussels Airport');
     await page.click('#compute-btn');
 
     await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
@@ -75,19 +91,21 @@ test.describe('price simulator', () => {
     expect(message).not.toMatch(/\d+\.\d\d €/);
   });
 
-  test('errors gracefully with the call button reachable when no destination is chosen', async ({ page }) => {
+  test('errors gracefully with the call button reachable when no destination is given', async ({ page }) => {
+    await page.goto('/nl/tarieven/');
     await page.click('#compute-btn');
+
     const error = page.locator('#state-error');
     await expect(error).toBeVisible();
     await expect(error.locator(`a[href="tel:${PHONE}"]`)).toBeVisible();
     await expect(page.locator('#state-result')).toBeHidden();
   });
 
-  test('reveals the address lookup for "other address" and fails safe without a match', async ({ page }) => {
-    await page.selectOption('#dest', 'other');
-    await expect(page.locator('#other-address-wrap')).toBeVisible();
+  test('fails safe when the destination was typed but never picked', async ({ page }) => {
+    await mockOrs(page);
+    await page.goto('/nl/tarieven/');
 
-    await page.fill('#other-address', 'Ergens in Vlaanderen');
+    await page.fill('#dest', 'Ergens in Vlaanderen');
     await page.click('#compute-btn');
 
     // No resolved coordinates → explicit error + call button, never a wrong price.
@@ -98,7 +116,10 @@ test.describe('price simulator', () => {
   });
 
   test('lets you change the ride and start over', async ({ page }) => {
-    await page.selectOption('#dest', 'leu');
+    await mockOrs(page);
+    await page.goto('/nl/tarieven/');
+
+    await chooseAddress(page, '#dest', 'Leuven');
     await page.click('#compute-btn');
     await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
 
@@ -108,6 +129,8 @@ test.describe('price simulator', () => {
   });
 
   test('passenger and luggage counters clamp to their bounds', async ({ page }) => {
+    await page.goto('/nl/tarieven/');
+
     await expect(page.locator('#pax-value')).toHaveText('2');
     for (let i = 0; i < 12; i++) await page.click('#pax-up');
     await expect(page.locator('#pax-value')).toHaveText('8');
@@ -118,20 +141,29 @@ test.describe('price simulator', () => {
     await expect(page.locator('#bags-value')).toHaveText('0'); // 0 bags is valid
   });
 
-  test('never posts form data anywhere', async ({ page }) => {
+  test('sends the addresses to the router and nothing else, anywhere', async ({ page }) => {
     const outbound = [];
+    const posts = [];
     page.on('request', (req) => {
-      if (['POST', 'PUT', 'PATCH'].includes(req.method())) outbound.push(req.url());
+      if (['POST', 'PUT', 'PATCH'].includes(req.method())) posts.push(req.url());
+      if (!new URL(req.url()).host.startsWith('localhost')) outbound.push(req.url());
     });
 
-    await page.selectOption('#dest', 'leu');
+    await mockOrs(page);
+    await page.goto('/nl/tarieven/');
+
+    await chooseAddress(page, '#dest', 'Leuven');
     await page.fill('#name', 'Jan Peeters');
     await page.fill('#note', 'Vlucht SN2104');
     await page.click('#compute-btn');
     await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
 
-    // brief §1.1: nothing typed into the form may leave the browser.
-    expect(outbound).toEqual([]);
+    // brief §1.1: the form is never submitted anywhere.
+    expect(posts).toEqual([]);
+    // The two addresses reach the router by design (disclosed in the privacy
+    // policy). Everything else the visitor types stays in the browser.
+    expect(outbound.every((url) => url.startsWith('https://api.openrouteservice.org/'))).toBe(true);
+    expect(outbound.some((url) => url.includes('Jan') || url.includes('SN2104'))).toBe(false);
     expect(page.url()).not.toContain('Jan');
   });
 });
@@ -152,9 +184,11 @@ test.describe('route map', () => {
     await expect(page.locator('#route-map')).toBeHidden();
   });
 
-  test('draws the real route for a preset destination', async ({ page }) => {
+  test('draws the measured route', async ({ page }) => {
+    await mockOrs(page);
     await page.goto('/nl/tarieven/');
-    await page.selectOption('#dest', 'leu');
+
+    await chooseAddress(page, '#dest', 'Leuven');
     await page.click('#compute-btn');
     await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
 
@@ -177,10 +211,12 @@ test.describe('route map', () => {
   });
 
   test('keeps the price and the call button when the map fails (brief §5.3)', async ({ page }) => {
+    await mockOrs(page);
     // Simulate the tile provider being unreachable.
     await page.route('**://tile.openstreetmap.org/**', (route) => route.abort());
     await page.goto('/nl/tarieven/');
-    await page.selectOption('#dest', 'leu');
+
+    await chooseAddress(page, '#dest', 'Leuven');
     await page.click('#compute-btn');
 
     await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
@@ -192,8 +228,9 @@ test.describe('route map', () => {
 
 test.describe('receipt layout follows the prototype at each breakpoint', () => {
   test.beforeEach(async ({ page }) => {
+    await mockOrs(page);
     await page.goto('/nl/tarieven/');
-    await page.selectOption('#dest', 'leu');
+    await chooseAddress(page, '#dest', 'Leuven');
     await page.click('#compute-btn');
     await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
   });
@@ -252,12 +289,18 @@ test.describe('receipt layout follows the prototype at each breakpoint', () => {
 
 test.describe('homepage estimator hand-off', () => {
   test('carries the chosen destination into the simulator and auto-computes', async ({ page }) => {
+    // The teaser keeps its short list of towns: it is a plain GET form that
+    // has to work without JavaScript. The simulator resolves the id it
+    // passes into a real coordinate, which is what lets the two survive
+    // together now that the destination field is free text.
+    await mockOrs(page, { km: dest('stt').km, min: dest('stt').min });
     await page.goto('/nl/');
-    await page.selectOption('#home-dest', 'stt'); // Sint-Truiden, 18 km
+    await page.selectOption('#home-dest', 'stt'); // Sint-Truiden
     await page.click('.estimator button[type="submit"]');
 
     await page.waitForURL('**/nl/tarieven/**');
     await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator('#dest')).toHaveValue('Sint-Truiden');
     await expect(page.locator('#route-label')).toContainText('Sint-Truiden');
     await expect(page.locator('#distance-label')).toContainText(formatKm(dest('stt').km, 'nl'));
 
@@ -270,9 +313,17 @@ test.describe('homepage estimator hand-off', () => {
 
 test.describe('simulator accessibility', () => {
   test('is operable with the keyboard alone', async ({ page }) => {
+    await mockOrs(page);
     await page.goto('/nl/tarieven/');
+
+    // Type, walk the suggestions with the arrow keys, take one with Enter.
     await page.locator('#dest').focus();
-    await page.keyboard.press('ArrowDown'); // pick the first real option
+    await page.keyboard.type('Leuven');
+    await page.locator('#dest-listbox li[role="option"]').first().waitFor({ timeout: 5000 });
+    await page.keyboard.press('ArrowDown');
+    await expect(page.locator('#dest')).toHaveAttribute('aria-activedescendant', 'dest-opt-0');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#dest-listbox')).toBeHidden();
     await expect(page.locator('#dest')).not.toHaveValue('');
 
     // Tab to the submit button and activate it without a mouse.
@@ -287,6 +338,17 @@ test.describe('simulator accessibility', () => {
       const label = page.locator(`label[for="${id}"]`);
       await expect(label, id).toHaveCount(1);
       expect((await label.innerText()).trim().length).toBeGreaterThan(0);
+    }
+  });
+
+  test('announces both address fields as comboboxes', async ({ page }) => {
+    await page.goto('/nl/tarieven/');
+    for (const id of ['from', 'dest']) {
+      const field = page.locator(`#${id}`);
+      await expect(field, id).toHaveAttribute('role', 'combobox');
+      await expect(field, id).toHaveAttribute('aria-autocomplete', 'list');
+      await expect(field, id).toHaveAttribute('aria-controls', `${id}-listbox`);
+      await expect(field, id).toHaveAttribute('aria-expanded', 'false');
     }
   });
 });

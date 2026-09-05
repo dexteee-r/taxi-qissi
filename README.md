@@ -25,29 +25,40 @@ de données. Voir `src/lib/geocoding.js`, `src/lib/fare.js`,
   expédié, cible LCP < 2,5 s
 - Polices Cabinet Grotesk + Satoshi via Fontshare (CDN utilisé par le
   prototype)
-- [OpenRouteService](https://openrouteservice.org) pour le seul cas qui
-  nécessite un lookup d'adresse en direct (voir "Simulateur" ci-dessous)
+- [OpenRouteService](https://openrouteservice.org) pour la recherche
+  d'adresse et le calcul d'itinéraire — appelé à chaque estimation (voir
+  "Simulateur" ci-dessous)
 
-## Simulateur de prix — architecture hybride
+## Simulateur de prix — deux adresses libres
 
-Le prototype validé utilise une **liste déroulante de destinations
-prédéfinies** (communes proches, gares, hôpital, 5 aéroports) avec des
-distances fixes (`src/data/destinations.js`), au lieu de l'autocomplétion
-libre + itinéraire temps réel décrite dans le brief/CDC (§5.4 / §7.7). Ce
-choix de design a été confirmé par l'utilisateur.
+Historique du choix, parce qu'il explique la forme du code :
 
-Architecture retenue (2026-09-04, décision explicite de l'utilisateur) :
-**hybride**. La liste déroulante du prototype reste le chemin principal
-(rapide, gratuit, aucune donnée envoyée à un tiers). L'option « Autre
-adresse » — qui dans le prototype menait systématiquement à un message
-d'erreur — déclenche à la place une recherche d'adresse réelle via
-OpenRouteService (autocomplétion + distance routière depuis la base de
-Taxi QISSI). C'est le seul flux qui envoie une donnée saisie à un tiers ;
-c'est documenté dans `src/data/legal.js` (section confidentialité).
+1. Le prototype validé proposait une **liste déroulante de quinze
+   destinations** avec des distances fixes, au lieu de l'autocomplétion
+   libre du brief/CDC (§5.4 / §7.7).
+2. Le 2026-09-04, architecture **hybride** : la liste pour le cas courant,
+   plus une entrée « Autre adresse » ouvrant une recherche réelle.
+3. Le 2026-09-05, décision de l'utilisateur : **la liste disparaît**. Départ
+   et destination sont deux champs libres à suggestions, et chaque
+   estimation est une mesure routière réelle entre deux adresses choisies.
 
-Les aéroports sont marqués `tbc: true` dans `destinations.js` — prix et
-distance "à confirmer", exactement comme dans le prototype ; le simulateur
-affiche alors un CTA d'appel au lieu d'un prix.
+Ce que ça implique, et qu'il faut assumer :
+
+⚠️ **Il n'existe plus de chemin qui produise un prix sans appeler l'API.**
+Avant, la liste déroulante servait un prix hors ligne ; maintenant, toute
+estimation coûte au minimum une requête d'itinéraire, plus une recherche
+d'adresse par pause de frappe dans chaque champ. Le débounce de 500 ms, le
+cache de session et le minimum de 3 caractères limitent la casse, mais
+**plafonner le quota journalier sur le dashboard OpenRouteService n'est plus
+une précaution, c'est une condition de mise en ligne** — et une panne de
+l'API n'est plus dégradée par une liste de secours : elle affiche le message
+« service indisponible » et le bouton d'appel.
+
+`src/data/destinations.js` reste, avec un rôle différent : il alimente les
+pages transferts aéroport, la courte liste du bloc d'estimation de la page
+d'accueil (formulaire GET qui doit fonctionner sans JavaScript), et la
+reconnaissance des aéroports décrite plus bas. Ses distances ne servent plus
+au calcul.
 
 ### Les deux champs d'adresse : une adresse « résolue », pas du texte
 
@@ -61,12 +72,10 @@ choix ; changer de destination ne l'annule pas.
 
 Conséquences concrètes :
 
-- **Le départ est réellement utilisé.** Tant que le visiteur garde l'adresse
-  pré-remplie (`BUSINESS.defaultPickup`, dont la coordonnée est connue), les
-  distances stockées s'appliquent et **aucune requête n'est émise**. Dès
-  qu'il choisit son propre point de départ, le trajet est **re-mesuré en
-  direct**, y compris vers une destination de la liste : c'est pour ça que
-  chaque entrée de `destinations.js` porte désormais un `lat`/`lon`.
+- **Le départ est réellement utilisé.** Il est résolu comme la destination,
+  et c'est lui qui sert de point de départ à la mesure. L'adresse
+  pré-remplie (`BUSINESS.defaultPickup`) a sa coordonnée déjà connue : la
+  garder évite la recherche d'adresse, mais plus le calcul d'itinéraire.
 - **Les messages d'erreur disent ce qui s'est réellement passé.** « Adresse
   introuvable » est réservé à un vrai `not_found` ; une adresse tapée mais
   non choisie renvoie « choisissez une adresse dans la liste » et rouvre les
@@ -78,39 +87,55 @@ Conséquences concrètes :
   affiché mais un encart invite à appeler pour un tarif ferme.
 - **L'autocomplétion couvre `BE,NL,FR,DE,LU`**, avec `focus.point` sur
   Tienen pour garder les résultats locaux en tête. La Belgique seule rendait
-  Maastricht et Eindhoven — pourtant dans la liste déroulante —
+  Maastricht et Eindhoven — pourtant proposés comme transferts aéroport —
   impossibles à saisir.
+- **La règle « pas de prix aéroport » a survécu à la liste déroulante.**
+  C'était l'entrée du menu qui portait le drapeau `tbc` ; l'aéroport est
+  maintenant reconnu à la coordonnée choisie (`airportAt()`, rayon de 3 km
+  autour des cinq aéroports connus). Taper « Brussels Airport » affiche donc
+  toujours « à confirmer » et le bouton d'appel, jamais un prix que le
+  client n'a pas validé (CDC §11.4).
 - **Le `?from=` de la page d'accueil est traité comme du texte saisi** :
   tronqué à 120 caractères, et non résolu tant qu'il diffère de l'adresse
   par défaut. Le calcul automatique ne se déclenche donc que si le point de
   départ est connu ; sinon les suggestions s'ouvrent dessus.
 
-### Distances : vérifiées, pas devinées
+### Distances mesurées : à quoi elles servent encore
 
 Les distances livrées avec le prototype étaient des estimations de maquette,
-fausses de −60 % à +68 %. Elles sont désormais mesurées via OpenRouteService :
+fausses de −60 % à +68 %. Elles ont été mesurées via OpenRouteService :
 
 ```sh
 npm run verify:distances         # compare, sans rien modifier
 npm run verify:distances:write   # met à jour src/data/destinations.js
 ```
 
-Le script refuse d'écrire sans `--ors` : les distances stockées doivent venir
-du même routeur que celui interrogé à l'exécution, sinon la même destination
-serait facturée différemment selon le chemin emprunté par le visiteur.
+Le script refuse d'écrire sans `--ors` : ces données doivent venir du même
+routeur que celui interrogé à l'exécution.
 
-⚠️ **À faire valider par le chauffeur.** Ce sont des trajets de centre à
-centre, et un routeur optimise le *temps*, pas la distance. Viser la grand-
-place plutôt que la gare ajoute plusieurs kilomètres à cause des zones
-piétonnes (Leuven : 33,6 km vers la Grote Markt contre 26 km vers la gare).
-Comme le tarif est kilométrique, le point de référence déplace le prix
-annoncé.
+Depuis la suppression de la liste déroulante, **aucune de ces distances
+n'est plus affichée à un visiteur** — le simulateur mesure tout en direct.
+Ce que le script produit reste utile pour trois choses :
+
+- le `lat`/`lon` de chaque destination, pris au bout de l'itinéraire mesuré,
+  qui sert à reconnaître les aéroports et à résoudre le `?dest=` de la page
+  d'accueil ;
+- `src/data/route-geometries.js`, qui n'est plus envoyé au navigateur mais
+  reste la provenance vérifiable de ces coordonnées ;
+- un point de comparaison si un jour les prix affichés paraissent faux.
+
+⚠️ **Le biais reste à connaître.** Ce sont des trajets de centre à centre, et
+un routeur optimise le *temps*, pas la distance. Viser la grand-place plutôt
+que la gare ajoute plusieurs kilomètres à cause des zones piétonnes (Leuven :
+33,6 km vers la Grote Markt contre 26 km vers la gare). Comme le tarif est
+kilométrique, le point de référence déplace le prix annoncé — c'est vrai
+aussi des adresses que les visiteurs saisissent eux-mêmes.
 
 ## Développement
 
 ```sh
 npm install
-cp .env.example .env   # puis renseigner PUBLIC_ORS_API_KEY (nécessaire uniquement pour "Autre adresse")
+cp .env.example .env   # puis renseigner ORS_API_KEY (sans elle, aucune estimation n'est possible)
 npm run dev
 ```
 
@@ -135,8 +160,8 @@ npm run test:e2e   # Playwright — desktop + mobile, sur le build réel
 - **E2E (`tests/e2e/`)** : les 21 pages répondent avec un seul `h1`, des
   `hreflang` réciproques et des métadonnées uniques ; le changement de langue
   reste sur la même page ; parcours complet du simulateur (destination
-  connue, aéroport « à confirmer », nuit, « autre adresse » sans résultat,
-  recalcul) ; **vérification qu'aucune donnée de formulaire ne quitte le
+  saisie et choisie, aéroport « à confirmer », nuit, adresse tapée mais
+  jamais choisie, recherche sans résultat, panne de l'API, recalcul) ; **vérification qu'aucune donnée de formulaire ne quitte le
   navigateur** ; menu mobile plein écran ; cibles tactiles ≥ 44 px ; absence
   de débordement horizontal ; sitemap/robots/404 ; JSON-LD.
 
@@ -164,8 +189,8 @@ Avant mise en ligne :
 2. Vérifier que `site` dans `astro.config.mjs` correspond au domaine réel.
 3. Déclarer `ORS_API_KEY` **dans les variables d'environnement de l'hébergeur**
    (sur Vercel : Settings → Environment Variables). Le `.env` local n'est pas
-   déployé : sans ça, l'option « Autre adresse » fonctionne en local et échoue
-   en production. Puis **plafonner le quota journalier** sur le dashboard
+   déployé : sans ça, le simulateur fonctionne en local et échoue en
+   production — plus aucune estimation n'est possible sans la clé. Puis **plafonner le quota journalier** sur le dashboard
    OpenRouteService avant d'ouvrir l'accès public.
 
 ### Carte de l'itinéraire
@@ -173,16 +198,14 @@ Avant mise en ligne :
 Le résultat du simulateur affiche l'itinéraire réel sur une carte (Leaflet +
 fonds OpenStreetMap), conformément au CDC §7.1. Trois points de conception :
 
-- **Chargement différé** (brief §7) : Leaflet, sa CSS, les tracés et les
-  tuiles ne sont récupérés qu'après le calcul d'une estimation. Rien n'est
-  préchargé — `npm run build` place Leaflet (145 Ko) et les tracés (20 Ko)
-  dans des chunks séparés, et la CSS est importée en `?url` pour ne pas
-  finir en `<link>` bloquant dans le `<head>`.
-- **Zéro appel supplémentaire** : le tracé des 15 destinations est
-  pré-calculé dans `src/data/route-geometries.js` (polylignes encodées,
-  générées par le script de vérification) ; l'option « Autre adresse »
-  réutilise la géométrie déjà présente dans la réponse de son calcul
-  d'itinéraire.
+- **Chargement différé** (brief §7) : Leaflet, sa CSS et les tuiles ne sont
+  récupérés qu'après le calcul d'une estimation. Rien n'est préchargé —
+  `npm run build` place Leaflet (145 Ko) dans un chunk séparé, et la CSS est
+  importée en `?url` pour ne pas finir en `<link>` bloquant dans le `<head>`.
+- **Zéro appel supplémentaire** : le tracé arrive dans la réponse du calcul
+  d'itinéraire déjà payé pour obtenir la distance. Les polylignes
+  pré-calculées de `src/data/route-geometries.js` ne sont plus envoyées au
+  navigateur depuis que les deux champs sont libres.
 - **Dégradation propre** (brief §5.3) : si Leaflet ou les tuiles échouent,
   la carte reste masquée et le prix, le message WhatsApp et le bouton
   d'appel fonctionnent normalement. Testé en coupant le fournisseur de
@@ -261,7 +284,7 @@ valider avant mise en ligne si l'anglais reste dans le périmètre V1.
 La politique de confidentialité (`src/data/legal.js`) suit la structure du
 prototype ; une section a été ajoutée (non présente dans le prototype, qui
 n'utilisait aucun service tiers) pour documenter l'envoi de données à
-OpenRouteService via le chemin "Autre adresse".
+OpenRouteService (les deux adresses saisies).
 
 ## Structure trilingue
 

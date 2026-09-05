@@ -1,45 +1,12 @@
 import { test, expect } from '@playwright/test';
+import { DESTINATIONS } from '../../src/data/destinations.js';
+import { mockOrs, chooseAddress, LEUVEN } from './ors-mock.js';
 
 // The two address fields of the estimate form. Each case below is one that
 // used to behave wrongly: a pickup address that changed nothing, "address
 // not found" for addresses that were found, and a few dead ends with no way
 // out. OpenRouteService is mocked throughout — these assert our behaviour,
 // not theirs, and the real key has a daily quota to protect.
-const SUGGESTIONS = [
-  { label: 'Kerkstraat 1, Diest, Belgie', lon: 5.0507, lat: 50.9853 },
-  { label: 'Kerkstraat 5, Aarschot, Belgie', lon: 4.8362, lat: 50.9861 },
-];
-
-const geoBody = (items = SUGGESTIONS) => ({
-  features: items.map((i) => ({ properties: { label: i.label }, geometry: { coordinates: [i.lon, i.lat] } })),
-});
-const routeBody = (km, min) => ({
-  features: [
-    {
-      properties: { summary: { distance: km * 1000, duration: min * 60 } },
-      geometry: { coordinates: [[4.937, 50.807], [5.0, 50.9], [5.0507, 50.9853]] },
-    },
-  ],
-});
-
-async function mockOrs(page, { km = 25, min = 25, suggestions = SUGGESTIONS } = {}) {
-  const calls = [];
-  await page.route('**://api.openrouteservice.org/**', (r) => {
-    const url = r.request().url();
-    calls.push(url);
-    const body = url.includes('/geocode/') ? geoBody(suggestions) : routeBody(km, min);
-    return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
-  });
-  return calls;
-}
-
-async function pick(page, selector, text = 'Kerkstraat', index = 0) {
-  if (selector === '#other-address') await page.selectOption('#dest', 'other');
-  await page.fill(selector, text);
-  const listbox = page.locator(`${selector === '#from' ? '#from-listbox' : '#other-address-listbox'} li[role="option"]`);
-  await listbox.nth(index).waitFor({ timeout: 5000 });
-  await listbox.nth(index).click();
-}
 
 test.describe('pickup address', () => {
   test('re-measures the trip when the visitor changes it', async ({ page }) => {
@@ -48,27 +15,31 @@ test.describe('pickup address', () => {
     const calls = await mockOrs(page, { km: 25, min: 25 });
     await page.goto('/fr/tarifs/');
 
-    await page.selectOption('#dest', 'leu');
+    await chooseAddress(page, '#dest', 'Leuven');
     await page.click('#compute-btn');
     await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
-    const storedPrice = await page.locator('#price-label').innerText();
-    expect(calls).toHaveLength(0); // the default pickup costs no request
+
+    const routes = calls.filter((u) => u.includes('/v2/directions/'));
+    expect(routes).toHaveLength(1);
+    // The default pickup point travels as the route's start, unchanged.
+    expect(routes[0]).toContain('start=4.9371503%2C50.8075398');
 
     await page.click('#recompute-btn');
-    await pick(page, '#from');
+    await chooseAddress(page, '#from', 'Kerkstraat, Diest');
     await page.click('#compute-btn');
     await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
 
-    expect(await page.locator('#price-label').innerText()).not.toBe(storedPrice);
-    await expect(page.locator('#distance-label')).toContainText('25');
-    await expect(page.locator('#route-label')).toContainText('Kerkstraat 1, Diest');
-    expect(calls.some((u) => u.includes('/v2/directions/'))).toBe(true);
+    const rerouted = calls.filter((u) => u.includes('/v2/directions/'));
+    expect(rerouted).toHaveLength(2);
+    expect(rerouted[1]).not.toContain('start=4.9371503%2C50.8075398');
+    await expect(page.locator('#route-label')).toContainText('Kerkstraat, Diest');
   });
 
   test('asks for a confirmed address instead of claiming it does not exist', async ({ page }) => {
     await mockOrs(page);
     await page.goto('/fr/tarifs/');
-    await page.selectOption('#dest', 'leu');
+
+    await chooseAddress(page, '#dest', 'Leuven');
     await page.fill('#from', 'Kerkstraat 1, Diest');
     await page.waitForTimeout(900);
     await page.click('#compute-btn');
@@ -80,9 +51,11 @@ test.describe('pickup address', () => {
   });
 
   test('refuses an empty pickup address rather than messaging a driver without one', async ({ page }) => {
+    await mockOrs(page);
     await page.goto('/fr/tarifs/');
+
+    await chooseAddress(page, '#dest', 'Leuven');
     await page.fill('#from', '');
-    await page.selectOption('#dest', 'leu');
     await page.click('#compute-btn');
 
     await expect(page.locator('#error-text')).toHaveText(/adresse de départ/i);
@@ -101,36 +74,38 @@ test.describe('pickup address', () => {
   });
 
   test('still auto-computes when the link keeps the default pickup', async ({ page }) => {
+    await mockOrs(page);
     await page.goto('/fr/tarifs/?from=' + encodeURIComponent('Grote Markt, Tienen') + '&dest=leu');
+
     await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
     await expect(page.locator('#price-label')).toContainText('€');
+    // The id from the teaser is resolved into the destination field.
+    await expect(page.locator('#dest')).toHaveValue(DESTINATIONS.find((d) => d.id === 'leu').fr);
   });
 });
 
 test.describe('destination address', () => {
-  test('keeps the chosen address when the destination select is toggled', async ({ page }) => {
-    // Coming back to "other address" used to leave the address on screen
-    // while the form no longer considered it chosen — and then said it could
-    // not be found.
-    await mockOrs(page, { km: 25, min: 25 });
+  test('accepts any address, not only the fifteen the dropdown used to list', async ({ page }) => {
+    // The whole point of dropping the list: a visitor going somewhere else
+    // no longer has to find an "other address" entry at the bottom of it.
+    await mockOrs(page, { km: 18.4, min: 22 });
     await page.goto('/fr/tarifs/');
-    await pick(page, '#other-address');
-    const chosen = await page.locator('#other-address').inputValue();
 
-    await page.selectOption('#dest', 'leu');
-    await page.selectOption('#dest', 'other');
-    expect(await page.locator('#other-address').inputValue()).toBe(chosen);
-
+    await expect(page.locator('select#dest')).toHaveCount(0);
+    await chooseAddress(page, '#dest', 'Rue de la Station 12, Hoegaarden');
     await page.click('#compute-btn');
+
     await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator('#route-label')).toContainText(chosen);
+    await expect(page.locator('#route-label')).toContainText('Hoegaarden');
+    await expect(page.locator('#distance-label')).toContainText('18,4');
   });
 
   test('un-resolves the address once its text is edited', async ({ page }) => {
     await mockOrs(page);
     await page.goto('/fr/tarifs/');
-    await pick(page, '#other-address');
-    await page.fill('#other-address', 'Kerkstraat 1, Diest — modifié');
+
+    await chooseAddress(page, '#dest', 'Leuven');
+    await page.fill('#dest', 'Leuven — modifié');
     await page.waitForTimeout(900);
     await page.click('#compute-btn');
 
@@ -139,52 +114,57 @@ test.describe('destination address', () => {
   });
 
   test('Enter on an open list picks a suggestion instead of submitting', async ({ page }) => {
-    await mockOrs(page, { km: 25, min: 25 });
+    await mockOrs(page);
     await page.goto('/fr/tarifs/');
-    await page.selectOption('#dest', 'other');
-    await page.fill('#other-address', 'Kerkstraat');
-    await page.locator('#other-address-listbox li[role="option"]').first().waitFor({ timeout: 5000 });
-    await page.locator('#other-address').press('Enter');
 
-    expect(await page.locator('#other-address').inputValue()).toBe(SUGGESTIONS[0].label);
+    await page.fill('#dest', 'Leuven');
+    await page.locator('#dest-listbox li[role="option"]').first().waitFor({ timeout: 5000 });
+    await page.locator('#dest').press('Enter');
+
+    expect(await page.locator('#dest').inputValue()).toBe('Leuven');
     await expect(page.locator('#state-error')).toBeHidden();
-    await expect(page.locator('#other-address-listbox')).toBeHidden();
+    await expect(page.locator('#dest-listbox')).toBeHidden();
   });
 
   test('says it is searching while the lookup is in flight', async ({ page }) => {
     // Silence during the lookup reads as "nothing happened".
     await page.route('**://api.openrouteservice.org/geocode/**', async (r) => {
       await new Promise((resolve) => setTimeout(resolve, 1500));
-      return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(geoBody()) });
+      return r.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          features: [{ properties: { label: 'Leuven' }, geometry: { coordinates: [LEUVEN.lon, LEUVEN.lat] } }],
+        }),
+      });
     });
     await page.goto('/fr/tarifs/');
-    await page.selectOption('#dest', 'other');
-    await page.fill('#other-address', 'Kerkstraat');
+    await page.fill('#dest', 'Leuven');
 
-    await expect(page.locator('#other-address-listbox .suggestion-status')).toHaveText(/recherche/i, {
+    await expect(page.locator('#dest-listbox .suggestion-status')).toHaveText(/recherche/i, {
       timeout: 5000,
     });
-    await expect(page.locator('#other-address-listbox li[role="option"]').first()).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('#dest-listbox li[role="option"]').first()).toBeVisible({ timeout: 5000 });
   });
 
   test('says when a search returns nothing', async ({ page }) => {
-    await mockOrs(page, { suggestions: [] });
+    await mockOrs(page, { noResults: true });
     await page.goto('/fr/tarifs/');
-    await page.selectOption('#dest', 'other');
-    await page.fill('#other-address', 'zzzzzzzzzz');
+    await page.fill('#dest', 'zzzzzzzzzz');
 
-    await expect(page.locator('#other-address-listbox .suggestion-status')).toHaveText(/aucune adresse/i, {
+    await expect(page.locator('#dest-listbox .suggestion-status')).toHaveText(/aucune adresse/i, {
       timeout: 5000,
     });
     // A status row is not an option: it must never be selectable.
-    await expect(page.locator('#other-address-listbox li[role="option"]')).toHaveCount(0);
-    await expect(page.locator('#other-address')).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.locator('#dest-listbox li[role="option"]')).toHaveCount(0);
+    await expect(page.locator('#dest')).toHaveAttribute('aria-expanded', 'false');
   });
 
   test('warns when the trip is longer than anything the dropdown offers', async ({ page }) => {
     await mockOrs(page, { km: 312.7, min: 190 });
     await page.goto('/fr/tarifs/');
-    await pick(page, '#other-address');
+
+    await chooseAddress(page, '#dest', 'Quelque part très loin');
     await page.click('#compute-btn');
     await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
 
@@ -198,10 +178,31 @@ test.describe('destination address', () => {
   test('stays quiet for a normal trip', async ({ page }) => {
     await mockOrs(page, { km: 25, min: 25 });
     await page.goto('/fr/tarifs/');
-    await pick(page, '#other-address');
+
+    await chooseAddress(page, '#dest', 'Leuven');
     await page.click('#compute-btn');
     await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
     await expect(page.locator('#long-distance-note')).toBeHidden();
+  });
+
+  test('refuses to price an airport however the visitor got there', async ({ page }) => {
+    // No dropdown entry carries the `tbc` flag any more, so a typed airport
+    // address has to be recognised from its coordinate (CDC §11.4).
+    const liege = DESTINATIONS.find((d) => d.id === 'lgg');
+    await mockOrs(page, {
+      km: liege.km,
+      min: liege.min,
+      pointFor: () => ({ lat: liege.lat, lon: liege.lon }),
+    });
+    await page.goto('/fr/tarifs/');
+
+    await chooseAddress(page, '#dest', 'Aéroport de Liège');
+    await page.click('#compute-btn');
+    await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
+
+    await expect(page.locator('#price-label')).toHaveText(/confirmer/i);
+    await expect(page.locator('#tbc-note')).toBeVisible();
+    await expect(page.locator('#breakdown')).toBeHidden();
   });
 });
 
@@ -218,7 +219,8 @@ test.describe('when OpenRouteService fails', () => {
       // out sends them chasing a typo that is not there.
       await mockOrs(page);
       await page.goto('/fr/tarifs/');
-      await pick(page, '#other-address');
+      await chooseAddress(page, '#dest', 'Leuven');
+
       await page.unroute('**://api.openrouteservice.org/**');
       await page.route('**://api.openrouteservice.org/v2/directions/**', (r) =>
         r.fulfill({ status, contentType: 'application/json', body })

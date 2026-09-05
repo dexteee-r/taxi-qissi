@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { DESTINATIONS, FURTHEST_PRESET_KM, AIRPORT_IDS } from '../../src/data/destinations.js';
+import { DESTINATIONS, FURTHEST_PRESET_KM, AIRPORT_IDS, airportAt } from '../../src/data/destinations.js';
 import { BUSINESS } from '../../src/config/business.js';
 import { ROUTE_GEOMETRIES } from '../../src/data/route-geometries.js';
 import { decodePolyline } from '../../src/lib/polyline.js';
@@ -48,5 +48,36 @@ describe('preset destinations', () => {
     for (const id of AIRPORT_IDS) {
       expect(DESTINATIONS.find((d) => d.id === id)?.tbc, id).toBe(true);
     }
+  });
+});
+
+describe('airportAt', () => {
+  it('recognises each airport from its own coordinate', () => {
+    // The dropdown that used to carry the `tbc` flag is gone, so this is now
+    // the only thing keeping an unapproved airport price off the screen.
+    for (const id of AIRPORT_IDS) {
+      const airport = DESTINATIONS.find((d) => d.id === id);
+      expect(airportAt({ lat: airport.lat, lon: airport.lon })?.id, id).toBe(id);
+    }
+  });
+
+  it('covers the terminals and car parks around an airport', () => {
+    const zaventem = DESTINATIONS.find((d) => d.id === 'zav');
+    // ~1.5 km north: still airport grounds.
+    expect(airportAt({ lat: zaventem.lat + 0.0135, lon: zaventem.lon })?.id).toBe('zav');
+  });
+
+  it('does not catch the towns next door', () => {
+    const zaventem = DESTINATIONS.find((d) => d.id === 'zav');
+    // ~11 km away — Zaventem village and beyond must be priced normally.
+    expect(airportAt({ lat: zaventem.lat + 0.1, lon: zaventem.lon })).toBeNull();
+    expect(airportAt({ lat: 50.8798, lon: 4.7005 })).toBeNull(); // Leuven
+    expect(airportAt(BUSINESS.routingOrigin)).toBeNull(); // Tienen
+  });
+
+  it('answers null rather than throwing on a missing coordinate', () => {
+    expect(airportAt(null)).toBeNull();
+    expect(airportAt({})).toBeNull();
+    expect(airportAt({ lat: 'x', lon: 4 })).toBeNull();
   });
 });

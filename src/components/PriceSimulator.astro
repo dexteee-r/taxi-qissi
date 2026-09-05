@@ -1,16 +1,20 @@
 ---
-// Price simulator — hybrid architecture per the user's direction (2026-09-04):
-// a dropdown of preset destinations (from the validated prototype, fixed
-// km/min, airports marked "tbc") for the common case, plus a live address
-// lookup via OpenRouteService for "other address" — reusing the geocoding
-// module built for the CDC's original free-text-address design. Everything
-// still runs entirely client-side (brief §1.1).
+// Price simulator — two free-text address fields with live suggestions, per
+// the user's direction (2026-09-05). Both ends are looked up through
+// OpenRouteService, and every estimate is a real road measurement between
+// two addresses the visitor picked. Everything still runs entirely
+// client-side (brief §1.1).
+//
+// This replaces the prototype's dropdown of fifteen preset towns, and with
+// it the last path that produced an estimate without calling the API — see
+// the README on what that means for the daily quota. The preset data stays:
+// it still feeds the airport pages, the homepage teaser's short list, and
+// the rule that no airport price may be shown (CDC §11.4).
 //
 // Layout follows both prototype artboards: heading outside the card on
 // mobile / inside on desktop, sticky compute button on mobile, and a
 // receipt whose action order differs per breakpoint (see global.css).
 import { t } from '../i18n/dictionary.js';
-import { DESTINATIONS } from '../data/destinations.js';
 import { BUSINESS } from '../config/business.js';
 
 interface Props {
@@ -56,28 +60,26 @@ const s = t(locale);
         <ul id="from-listbox" role="listbox" class="suggestions" hidden></ul>
       </div>
 
-      <div class="field">
+      {/* Free-text destination with suggestions, like the pickup field.
+          The dropdown of preset towns it replaces (2026-09-05, user's
+          direction) covered fifteen destinations; a visitor going anywhere
+          else had to find the "other address" entry hidden at the bottom
+          of the list. */}
+      <div class="field autocomplete-field">
         <label class="field-label" for="dest">{s.fTo}</label>
-        <select id="dest" name="dest">
-          <option value="">{s.fToPh}</option>
-          {DESTINATIONS.map((d) => <option value={d.id}>{d[locale]}</option>)}
-        </select>
-      </div>
-
-      <div class="field autocomplete-field" id="other-address-wrap" hidden>
-        <label class="field-label" for="other-address">{s.fOtherAddress}</label>
         <input
           type="text"
-          id="other-address"
+          id="dest"
+          name="dest"
           role="combobox"
           aria-expanded="false"
           aria-autocomplete="list"
-          aria-controls="other-address-listbox"
+          aria-controls="dest-listbox"
           autocomplete="off"
           maxlength="120"
-          placeholder={s.fOtherAddressPh}
+          placeholder={s.fDestPh}
         />
-        <ul id="other-address-listbox" role="listbox" class="suggestions" hidden></ul>
+        <ul id="dest-listbox" role="listbox" class="suggestions" hidden></ul>
       </div>
 
       <div id="state-error" class="error-box" hidden>
@@ -270,7 +272,7 @@ const s = t(locale);
   import { buildWhatsAppMessage, buildWhatsAppUrl } from '../lib/whatsapp.js';
   import { formatEuro, formatKm } from '../lib/format.js';
   import { t } from '../i18n/dictionary.js';
-  import { DESTINATIONS, FURTHEST_PRESET_KM } from '../data/destinations.js';
+  import { DESTINATIONS, FURTHEST_PRESET_KM, airportAt } from '../data/destinations.js';
   import { BUSINESS, FARE } from '../config/business.js';
   import { trackEvent } from '../lib/analytics.js';
 
@@ -279,12 +281,10 @@ const s = t(locale);
     const locale = /** @type {'nl'|'fr'|'en'} */ (section.getAttribute('data-locale') ?? 'nl');
     const s = t(locale);
     const form = /** @type {HTMLFormElement} */ (document.getElementById('sim-form'));
-    const destSelect = /** @type {HTMLSelectElement} */ (document.getElementById('dest'));
     const fromInput = /** @type {HTMLInputElement} */ (document.getElementById('from'));
     const fromListbox = /** @type {HTMLUListElement} */ (document.getElementById('from-listbox'));
-    const otherWrap = document.getElementById('other-address-wrap');
-    const otherInput = /** @type {HTMLInputElement} */ (document.getElementById('other-address'));
-    const otherListbox = /** @type {HTMLUListElement} */ (document.getElementById('other-address-listbox'));
+    const destInput = /** @type {HTMLInputElement} */ (document.getElementById('dest'));
+    const destListbox = /** @type {HTMLUListElement} */ (document.getElementById('dest-listbox'));
 
     const errorEl = document.getElementById('state-error');
     const loadingEl = document.getElementById('state-loading');
@@ -456,21 +456,11 @@ const s = t(locale);
     }
 
     const fromField = createAddressField(fromInput, fromListbox, 'from');
-    const otherField = createAddressField(otherInput, otherListbox, 'other-address');
+    const destField = createAddressField(destInput, destListbox, 'dest');
     // The pre-filled pickup address is already resolved: its coordinate is
     // the one every stored distance was measured from.
     fromField.set({ ...BUSINESS.defaultPickup });
 
-    // --- destination select: reveal "other address" field --------------
-    destSelect.addEventListener('change', () => {
-      const isOther = destSelect.value === 'other';
-      otherWrap.hidden = !isOther;
-      showState(null);
-      // The chosen address is deliberately kept: leaving "other" and coming
-      // back used to leave the field showing an address the form no longer
-      // considered chosen, and the site then claimed it could not find it.
-      if (isOther) otherInput.focus();
-    });
 
     // --- compute --------------------------------------------------------
     function fail(message, field) {
@@ -489,58 +479,40 @@ const s = t(locale);
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
-      const destId = destSelect.value;
 
       if (!fromInput.value.trim()) return fail(s.errNoFrom, fromField);
       if (!fromField.value) return fail(s.errPickAddress, fromField);
-      if (!destId) return fail(s.errBody);
-      if (destId === 'other' && !otherField.value) return fail(s.errPickAddress, otherField);
+      if (!destInput.value.trim()) return fail(s.errBody, destField);
+      if (!destField.value) return fail(s.errPickAddress, destField);
 
       const time = /** @type {HTMLInputElement} */ (document.getElementById('time')).value;
       const hour = time ? parseInt(time.slice(0, 2), 10) : new Date().getHours();
 
       const origin = fromField.value;
-      const dest = DESTINATIONS.find((d) => d.id === destId);
-      // The stored distances were all measured from the pre-filled pickup
-      // point, so they are only usable while the visitor keeps it. Change the
-      // pickup address and the trip has to be measured for real — otherwise
-      // someone starting three towns away is quoted a Tienen price.
-      const fromDefault =
-        origin.lat === BUSINESS.defaultPickup.lat && origin.lon === BUSINESS.defaultPickup.lon;
-      const needsLiveRoute = destId === 'other' || !fromDefault;
+      const target = destField.value;
 
-      let km, min, destLabel, isTbc;
-      // Route shape for the map, as [lat, lon] pairs. The live lookup returns
-      // them directly; preset destinations decode theirs from the generated
-      // data file instead.
-      let livePoints = null;
-
-      if (needsLiveRoute) {
-        const target = destId === 'other' ? otherField.value : { lat: dest.lat, lon: dest.lon };
-        showState('loading');
-        document.getElementById('loading-text').textContent =
-          destId === 'other' ? s.lookupLoading : s.loading;
-        try {
-          const route = await routeDistance(origin, target);
-          km = Math.round(route.km * 10) / 10;
-          min = route.min;
-          destLabel = destId === 'other' ? otherField.value.label : dest[locale];
-          isTbc = destId === 'other' ? false : !!dest.tbc;
-          livePoints = route.points;
-        } catch (err) {
-          fail(serviceMessage(err));
-          if (!(err instanceof MapServiceError)) console.error(err);
-          return;
-        }
-      } else {
-        showState('loading');
-        document.getElementById('loading-text').textContent = s.loading;
-        await new Promise((r) => setTimeout(r, 700));
-        km = dest.km;
-        min = dest.min;
-        destLabel = dest[locale];
-        isTbc = !!dest.tbc;
+      // Both ends are now addresses the visitor picked, so every estimate is
+      // measured for real — there is no stored distance left to fall back on.
+      let km, min, livePoints;
+      showState('loading');
+      document.getElementById('loading-text').textContent = s.loading;
+      try {
+        const route = await routeDistance(origin, target);
+        km = Math.round(route.km * 10) / 10;
+        min = route.min;
+        livePoints = route.points;
+      } catch (err) {
+        fail(serviceMessage(err));
+        if (!(err instanceof MapServiceError)) console.error(err);
+        return;
       }
+
+      const destLabel = target.label;
+      // The airport rule outlived the dropdown that used to carry it: a
+      // price the client has not set must never be shown, whether the
+      // visitor picked "Brussels Airport" from a list or typed it (CDC
+      // §11.4).
+      const isTbc = airportAt(target) !== null;
 
       const fare = estimateFare(km, ((hour % 24) + 24) % 24);
       // The confirmed label, not the raw field: what is priced and what the
@@ -593,8 +565,11 @@ const s = t(locale);
       // hidden (brief §5.3 — the call button must survive).
       const mapEl = document.getElementById('route-map');
       try {
-        const { routePoints, showRoute } = await import('../lib/route-map.js');
-        const points = await routePoints(destId, livePoints);
+        const { showRoute } = await import('../lib/route-map.js');
+        // The shape always comes from the route we just measured now that
+        // both ends are free text — there is no stored geometry to fall
+        // back on, and it costs no extra request either way.
+        const points = livePoints ?? [];
         mapEl.hidden = points.length < 2;
         if (!mapEl.hidden) {
           const shown = await showRoute(mapEl, points, `${fromVal} → ${destLabel}`);
@@ -622,11 +597,16 @@ const s = t(locale);
       fromInput.value = text;
       if (text !== BUSINESS.defaultPickup.label) fromField.clear();
     }
-    if (qDest && DESTINATIONS.some((d) => d.id === qDest)) {
-      destSelect.value = qDest;
-      // Only compute straight away when the pickup point is known. Otherwise
-      // offer the suggestions for what was passed in, rather than opening
-      // the page on an error the visitor did not cause.
+    // The homepage teaser still hands over a destination id: it is a plain
+    // GET form that has to work without JavaScript, so it keeps its short
+    // list of towns. Resolving the id here is what lets that list survive
+    // the free-text field it now lands in.
+    const preset = qDest ? DESTINATIONS.find((d) => d.id === qDest && d.lat) : null;
+    if (preset) {
+      destField.set({ lat: preset.lat, lon: preset.lon, label: preset[locale] });
+      // Only compute straight away when the pickup point is known too.
+      // Otherwise offer the suggestions for what was passed in, rather than
+      // opening the page on an error the visitor did not cause.
       if (fromField.value) {
         if (typeof form.requestSubmit === 'function') form.requestSubmit();
         else form.dispatchEvent(new Event('submit', { cancelable: true }));

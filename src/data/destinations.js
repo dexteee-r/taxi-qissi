@@ -58,3 +58,42 @@ export const AIRPORT_IDS = ['zav', 'cri', 'lgg', 'maa', 'ein'];
 // long-distance fare silently. Derived, not hard-coded, so extending the
 // list moves the threshold on its own.
 export const FURTHEST_PRESET_KM = Math.max(...DESTINATIONS.map((d) => d.km ?? 0));
+
+// How close a destination has to be to an airport for the CDC's "no airport
+// price until the client sets one" rule to apply. Airport grounds are large,
+// so this covers the terminals, the car parks and the access roads without
+// catching the neighbouring towns.
+const AIRPORT_RADIUS_KM = 3;
+
+/**
+ * The airport a destination belongs to, if any.
+ *
+ * With free-text destinations there is no dropdown entry left to carry the
+ * `tbc` flag, so it has to be recognised from the coordinate instead:
+ * someone typing "Brussels Airport" must still be told to call, never quoted
+ * a price the client has not approved (CDC §11.4).
+ *
+ * @param {{ lat: number, lon: number }} point
+ * @returns {object|null} the matching airport entry
+ */
+export function airportAt(point) {
+  if (!point || typeof point.lat !== 'number' || typeof point.lon !== 'number') return null;
+  return (
+    DESTINATIONS.filter((d) => AIRPORT_IDS.includes(d.id)).find(
+      (airport) => haversineKm(point, airport) <= AIRPORT_RADIUS_KM
+    ) ?? null
+  );
+}
+
+// Straight-line distance, only ever used to answer "is this the airport?".
+// Road distance always comes from the router.
+function haversineKm(a, b) {
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  const R = 6371;
+  const dLat = toRad(b.lat - a.lat);
+  const dLon = toRad(b.lon - a.lon);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
