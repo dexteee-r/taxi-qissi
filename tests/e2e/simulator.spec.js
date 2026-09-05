@@ -49,6 +49,36 @@ test.describe('price simulator', () => {
     expect(message).toContain('indicatief');
   });
 
+  test('met le message WhatsApp en forme, une information par ligne', async ({ page }) => {
+    await mockOrs(page, { km: dest('leu').km, min: dest('leu').min });
+    await page.goto('/nl/tarieven/');
+
+    await chooseAddress(page, '#dest', 'Leuven');
+    await page.fill('#name', 'Jan Peeters');
+    await page.fill('#note', 'Vlucht SN2104');
+    await page.click('#compute-btn');
+    await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
+
+    const message = decodeURIComponent(
+      (await page.locator('#whatsapp-send').getAttribute('href')).split('?text=')[1]
+    );
+    const lignes = message.split('\n').filter(Boolean);
+    expect(lignes).toContain('Vertrek: Grote Markt, Tienen');
+    expect(lignes).toContain('Passagiers: 2');
+    expect(lignes).toContain('Naam: Jan Peeters');
+    expect(lignes).toContain('Opmerking: Vlucht SN2104');
+    // Plus de "passagier(s)" : l'etiquette porte le pluriel.
+    expect(message).not.toContain('(s)');
+
+    // L'apercu affiche a l'ecran doit garder ces retours a la ligne, sinon
+    // il montre autre chose que ce qui sera envoye.
+    const apercu = page.locator('#wa-message-preview');
+    await expect(apercu).toHaveCSS('white-space', 'pre-line');
+    const hauteur = (await apercu.boundingBox()).height;
+    const uneLigne = await apercu.evaluate((el) => parseFloat(getComputedStyle(el).lineHeight));
+    expect(hauteur).toBeGreaterThan(uneLigne * 5);
+  });
+
   test('applies the night surcharge once, between 22:00 and 04:00', async ({ page }) => {
     await mockOrs(page, { km: dest('leu').km, min: dest('leu').min });
     await page.goto('/nl/tarieven/');

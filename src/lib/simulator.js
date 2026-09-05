@@ -179,7 +179,7 @@ export function startSimulator() {
       },
       fare: { total: tarif.total, isTbc: prixAConfirmer },
     });
-    el('wa-message-preview').textContent = `« ${message} »`;
+    el('wa-message-preview').textContent = message;
     el('whatsapp-send').href = buildWhatsAppUrl(message);
   }
 

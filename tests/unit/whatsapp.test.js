@@ -16,17 +16,47 @@ const baseForm = {
 };
 
 describe('buildWhatsAppMessage', () => {
-  it('builds the NL message in the prototype’s sentence form', () => {
+  it('écrit une information par ligne, avec son étiquette', () => {
     const msg = buildWhatsAppMessage({
       locale: 'nl',
       form: baseForm,
       fare: { total: 64, isTbc: false },
     });
     expect(msg).toBe(
-      'Hallo, ik wil graag een taxi bestellen op 12/09/2026 om 15:30. ' +
-        'Grote Markt, Tienen → Leuven. 2 passagier(s), 1 stuk(s) bagage. ' +
-        'Naam: Jan Peeters. Schatting op de site: 64 € (indicatief).'
+      [
+        'Hallo, ik wil graag een taxi bestellen.',
+        '',
+        'Vertrek: Grote Markt, Tienen',
+        'Bestemming: Leuven',
+        'Wanneer: 12/09/2026 om 15:30',
+        'Passagiers: 2',
+        'Bagage: 1',
+        'Naam: Jan Peeters',
+        '',
+        'Schatting op de site: 64 € (indicatief)',
+      ].join('\n')
     );
+  });
+
+  it("n'écrit pas de ligne pour un champ laissé vide", () => {
+    // Une ligne "Opmerking:" vide ferait croire à une information perdue.
+    const msg = buildWhatsAppMessage({
+      locale: 'fr',
+      form: { ...baseForm, name: '', note: '' },
+      fare: { total: 64, isTbc: false },
+    });
+    expect(msg).not.toContain('Nom');
+    expect(msg).not.toContain('Remarque');
+    expect(msg).toContain('Passagers : 2');
+  });
+
+  it('ajoute la remarque du client quand elle est remplie', () => {
+    const msg = buildWhatsAppMessage({
+      locale: 'fr',
+      form: { ...baseForm, note: 'Vol SN2104' },
+      fare: { total: 64, isTbc: false },
+    });
+    expect(msg).toContain('Remarque : Vol SN2104');
   });
 
   it('writes the amount the Belgian way, with a comma for cents', () => {
@@ -36,15 +66,21 @@ describe('buildWhatsAppMessage', () => {
     expect(buildWhatsAppMessage({ locale: 'en', form: baseForm, fare })).toContain('€42.10');
   });
 
-  it('builds the FR and EN variants', () => {
+  it('traduit les étiquettes en FR et en EN', () => {
     const fr = buildWhatsAppMessage({ locale: 'fr', form: baseForm, fare: { total: 64, isTbc: false } });
-    expect(fr).toContain('Bonjour, je souhaite un taxi le 12/09/2026 à 15:30.');
-    expect(fr).toContain('2 passager(s), 1 bagage(s).');
-    expect(fr).toContain('Estimation vue sur le site : 64 € (indicatif).');
+    expect(fr).toContain('Départ : Grote Markt, Tienen');
+    expect(fr).toContain('Quand : le 12/09/2026 à 15:30');
+    // Etiquette au pluriel et valeur chiffrée : plus de "passager(s)".
+    expect(fr).toContain('Passagers : 2');
+    expect(fr).toContain('Bagages : 1');
+    expect(fr).not.toContain('(s)');
+    expect(fr).toContain('Estimation vue sur le site : 64 € (indicatif)');
 
     const en = buildWhatsAppMessage({ locale: 'en', form: baseForm, fare: { total: 64, isTbc: false } });
-    expect(en).toContain('Hello, I would like to book a taxi on 12/09/2026 at 15:30.');
-    expect(en).toContain('Estimate from the website: €64 (indicative).');
+    expect(en).toContain('Pickup: Grote Markt, Tienen');
+    expect(en).toContain('When: 12/09/2026 at 15:30');
+    expect(en).toContain('Estimate from the website: €64 (indicative)');
+    expect(en).not.toContain('(s)');
   });
 
   it('always carries the "indicative" wording with a price (CDC §4 rule 2)', () => {

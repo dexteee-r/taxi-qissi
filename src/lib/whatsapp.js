@@ -3,73 +3,110 @@
 // Le message est construit dans le navigateur et rien n'est envoyé : c'est
 // le visiteur qui appuie sur "envoyer" dans WhatsApp. Le site n'a donc
 // jamais connaissance de la demande.
+//
+// Format : une information par ligne, avec son étiquette. Le chauffeur lit
+// ça sur son téléphone, souvent en travaillant : il doit trouver l'adresse
+// sans lire une phrase en entier.
 import { BUSINESS } from '../config/business.js';
 import { formatEuro } from './format.js';
 
-function dmy(isoDate) {
-  if (!isoDate) return '';
-  const [y, m, d] = isoDate.split('-');
-  return `${d}/${m}/${y}`;
+// Les étiquettes sont au pluriel et la valeur est un simple nombre
+// ("Passagers : 1") : ça évite les "passager(s)" disgracieux.
+const LIBELLES = {
+  fr: {
+    separateur: ' : ',
+    intro: 'Bonjour, je voudrais réserver un taxi.',
+    depart: 'Départ',
+    destination: 'Destination',
+    quand: 'Quand',
+    passagers: 'Passagers',
+    bagages: 'Bagages',
+    nom: 'Nom',
+    remarque: 'Remarque',
+    estimation: (prix) => `Estimation vue sur le site : ${prix} (indicatif)`,
+    aConfirmer: 'Merci de me confirmer le prix.',
+  },
+  nl: {
+    separateur: ': ',
+    intro: 'Hallo, ik wil graag een taxi bestellen.',
+    depart: 'Vertrek',
+    destination: 'Bestemming',
+    quand: 'Wanneer',
+    passagers: 'Passagiers',
+    bagages: 'Bagage',
+    nom: 'Naam',
+    remarque: 'Opmerking',
+    estimation: (prix) => `Schatting op de site: ${prix} (indicatief)`,
+    aConfirmer: 'Graag de prijs bevestigen.',
+  },
+  en: {
+    separateur: ': ',
+    intro: 'Hello, I would like to book a taxi.',
+    depart: 'Pickup',
+    destination: 'Destination',
+    quand: 'When',
+    passagers: 'Passengers',
+    bagages: 'Luggage',
+    nom: 'Name',
+    remarque: 'Note',
+    estimation: (prix) => `Estimate from the website: ${prix} (indicative)`,
+    aConfirmer: 'Please confirm the price.',
+  },
+};
+
+/** "2026-09-06" devient "06/09/2026". */
+function enJourMoisAnnee(dateIso) {
+  if (!dateIso) return '';
+  const [annee, mois, jour] = dateIso.split('-');
+  return `${jour}/${mois}/${annee}`;
 }
 
-function whenPhrase(locale, isoDate, time) {
-  const date = dmy(isoDate);
+/** Le moment de la course, en toutes lettres. */
+function quandPhrase(locale, dateIso, heure) {
+  const date = enJourMoisAnnee(dateIso);
   if (locale === 'fr') {
-    if (isoDate) return `le ${date}` + (time ? ` à ${time}` : '');
-    return time ? `aujourd'hui à ${time}` : 'dès que possible';
+    if (dateIso) return `le ${date}` + (heure ? ` à ${heure}` : '');
+    return heure ? `aujourd'hui à ${heure}` : 'dès que possible';
   }
   if (locale === 'nl') {
-    if (isoDate) return `op ${date}` + (time ? ` om ${time}` : '');
-    return time ? `vandaag om ${time}` : 'zo snel mogelijk';
+    if (dateIso) return date + (heure ? ` om ${heure}` : '');
+    return heure ? `vandaag om ${heure}` : 'zo snel mogelijk';
   }
-  if (isoDate) return `on ${date}` + (time ? ` at ${time}` : '');
-  return time ? `today at ${time}` : 'as soon as possible';
+  if (dateIso) return date + (heure ? ` at ${heure}` : '');
+  return heure ? `today at ${heure}` : 'as soon as possible';
 }
 
 /**
+ * Le message pré-rempli, prêt à être envoyé par le visiteur.
+ *
  * @param {object} params
  * @param {'nl'|'fr'|'en'} params.locale
  * @param {{ from: string, destLabel: string, date: string, time: string, pax: number|string, bags: number|string, name: string, note: string }} params.form
  * @param {{ total: number, isTbc: boolean }} params.fare
  */
 export function buildWhatsAppMessage({ locale, form, fare }) {
-  const when = whenPhrase(locale, form.date, form.time);
-  const priceLine = fare.isTbc
-    ? { fr: 'Merci de me confirmer le prix.', nl: 'Graag de prijs bevestigen.', en: 'Please confirm the price.' }[locale]
-    : {
-        fr: `Estimation vue sur le site : ${formatEuro(fare.total, 'fr')} (indicatif).`,
-        nl: `Schatting op de site: ${formatEuro(fare.total, 'nl')} (indicatief).`,
-        en: `Estimate from the website: ${formatEuro(fare.total, 'en')} (indicative).`,
-      }[locale];
+  const mots = LIBELLES[locale] ?? LIBELLES.nl;
+  const ligne = (etiquette, valeur) => `${etiquette}${mots.separateur}${valeur}`;
 
-  if (locale === 'fr') {
-    return (
-      `Bonjour, je souhaite un taxi ${when}. ${form.from} → ${form.destLabel}. ` +
-      `${form.pax} passager(s), ${form.bags} bagage(s).` +
-      (form.name ? ` Nom : ${form.name}.` : '') +
-      (form.note ? ` ${form.note}` : '') +
-      ` ${priceLine}`
-    );
-  }
-  if (locale === 'nl') {
-    return (
-      `Hallo, ik wil graag een taxi bestellen ${when}. ${form.from} → ${form.destLabel}. ` +
-      `${form.pax} passagier(s), ${form.bags} stuk(s) bagage.` +
-      (form.name ? ` Naam: ${form.name}.` : '') +
-      (form.note ? ` ${form.note}` : '') +
-      ` ${priceLine}`
-    );
-  }
-  return (
-    `Hello, I would like to book a taxi ${when}. ${form.from} → ${form.destLabel}. ` +
-    `${form.pax} passenger(s), ${form.bags} bag(s).` +
-    (form.name ? ` Name: ${form.name}.` : '') +
-    (form.note ? ` ${form.note}` : '') +
-    ` ${priceLine}`
-  );
+  const lignes = [
+    ligne(mots.depart, form.from),
+    ligne(mots.destination, form.destLabel),
+    ligne(mots.quand, quandPhrase(locale, form.date, form.time)),
+    ligne(mots.passagers, form.pax),
+    ligne(mots.bagages, form.bags),
+  ];
+  // Nom et remarque ne s'affichent que s'ils ont été remplis : une ligne
+  // "Remarque :" vide ferait croire à une information perdue.
+  if (form.name) lignes.push(ligne(mots.nom, form.name));
+  if (form.note) lignes.push(ligne(mots.remarque, form.note));
+
+  const prix = fare.isTbc ? mots.aConfirmer : mots.estimation(formatEuro(fare.total, locale));
+
+  // Lignes séparées par des retours à la ligne : WhatsApp les conserve.
+  return `${mots.intro}\n\n${lignes.join('\n')}\n\n${prix}`;
 }
 
-/** @param {string} message plain text, not yet encoded */
+/** @param {string} message texte brut, pas encore encodé */
 export function buildWhatsAppUrl(message) {
   return `https://wa.me/${BUSINESS.whatsapp}?text=${encodeURIComponent(message)}`;
 }
