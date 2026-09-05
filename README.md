@@ -132,6 +132,43 @@ Avant mise en ligne :
    en production. Puis **plafonner le quota journalier** sur le dashboard
    OpenRouteService avant d'ouvrir l'accès public.
 
+### Carte de l'itinéraire
+
+Le résultat du simulateur affiche l'itinéraire réel sur une carte (Leaflet +
+fonds OpenStreetMap), conformément au CDC §7.1. Trois points de conception :
+
+- **Chargement différé** (brief §7) : Leaflet, sa CSS, les tracés et les
+  tuiles ne sont récupérés qu'après le calcul d'une estimation. Rien n'est
+  préchargé — `npm run build` place Leaflet (145 Ko) et les tracés (20 Ko)
+  dans des chunks séparés, et la CSS est importée en `?url` pour ne pas
+  finir en `<link>` bloquant dans le `<head>`.
+- **Zéro appel supplémentaire** : le tracé des 15 destinations est
+  pré-calculé dans `src/data/route-geometries.js` (polylignes encodées,
+  générées par le script de vérification) ; l'option « Autre adresse »
+  réutilise la géométrie déjà présente dans la réponse de son calcul
+  d'itinéraire.
+- **Dégradation propre** (brief §5.3) : si Leaflet ou les tuiles échouent,
+  la carte reste masquée et le prix, le message WhatsApp et le bouton
+  d'appel fonctionnent normalement. Testé en coupant le fournisseur de
+  tuiles.
+
+⚠️ Les tuiles sont **la seule requête tierce du site**. Elles envoient l'IP
+du visiteur et la zone consultée à OpenStreetMap — c'est déclaré dans la
+politique de confidentialité. Le fournisseur est une constante dans
+`src/lib/route-map.js` : la politique d'usage d'OSM déconseille les tuiles
+en production à fort trafic, prévoyez un fournisseur dédié si l'audience
+grandit.
+
+### Contrainte API : la clé passe par l'URL, pas par un en-tête
+
+OpenRouteService **rejette l'en-tête `Authorization` en CORS** (« Request
+header field authorization is not allowed by Access-Control-Allow-Headers »).
+La forme documentée pour les serveurs ne fonctionne donc jamais depuis un
+navigateur. Les deux appels sont des `GET` avec `api_key` en paramètre, ce
+qui évite aussi tout preflight. Ne pas « corriger » ça en repassant à un
+POST JSON avec en-tête : ça casserait le simulateur en production alors que
+les tests unitaires, qui simulent `fetch`, continueraient de passer.
+
 ### Pourquoi la clé n'a pas de préfixe `PUBLIC_`
 
 Elle finit forcément dans le bundle navigateur — le brief §1.1 interdit tout

@@ -25,7 +25,7 @@ export const LEGAL = {
     privacy: {
       title: 'Politique de confidentialité',
       h1: 'Données collectées',
-      p1: "Le site ne conserve aucune donnée saisie dans l'outil d'estimation. Les adresses, la date et le nom que vous entrez restent dans votre navigateur et servent uniquement à composer le message WhatsApp que vous envoyez vous-même. Exception : si vous choisissez « Autre adresse », le texte que vous tapez est envoyé à OpenRouteService (notre service de calcul d'itinéraire) pour retrouver l'adresse et calculer la distance réelle — les destinations de la liste déroulante n'entraînent aucun envoi à un tiers.",
+      p1: "Le site ne conserve aucune donnée saisie dans l'outil d'estimation. Les adresses, la date et le nom que vous entrez restent dans votre navigateur et servent uniquement à composer le message WhatsApp que vous envoyez vous-même. Deux exceptions : si vous choisissez « Autre adresse », le texte que vous tapez est envoyé à OpenRouteService (notre service de calcul d'itinéraire) pour retrouver l'adresse et calculer la distance réelle ; et la carte affichée avec votre estimation charge ses fonds de plan depuis OpenStreetMap, qui reçoit alors votre adresse IP et la zone consultée. La carte n'apparaît qu'après le calcul : tant que vous ne demandez pas d'estimation, aucune donnée ne quitte votre navigateur.",
       h2: "Mesure d'audience",
       p2: "Aucun profilage publicitaire et aucun cookie de suivi. Nous utilisons Umami, un outil de statistiques hébergé sur notre propre serveur : il compte les visites de façon anonyme (pages vues, clics sur les boutons d'appel et WhatsApp) sans identifier les visiteurs et sans transmettre de données à un tiers. Aucune donnée saisie dans le simulateur n'y est envoyée.",
       h3: 'Vos droits',
@@ -45,7 +45,7 @@ export const LEGAL = {
     privacy: {
       title: 'Privacybeleid',
       h1: 'Welke gegevens',
-      p1: 'De site bewaart niets van wat u in de prijsberekening invult. Adressen, datum en naam blijven in uw browser en dienen enkel om het WhatsApp-bericht op te stellen dat u zelf verstuurt. Uitzondering: kiest u "Ander adres", dan wordt de tekst die u typt naar OpenRouteService (onze routedienst) gestuurd om het adres te herkennen en de werkelijke afstand te berekenen — de bestemmingen uit de keuzelijst worden nooit naar een derde partij gestuurd.',
+      p1: 'De site bewaart niets van wat u in de prijsberekening invult. Adressen, datum en naam blijven in uw browser en dienen enkel om het WhatsApp-bericht op te stellen dat u zelf verstuurt. Twee uitzonderingen: kiest u "Ander adres", dan wordt de tekst die u typt naar OpenRouteService (onze routedienst) gestuurd om het adres te herkennen en de werkelijke afstand te berekenen; en de kaart bij uw schatting laadt haar achtergrond bij OpenStreetMap, dat daarbij uw IP-adres en het bekeken gebied ontvangt. De kaart verschijnt pas na de berekening: zolang u geen schatting vraagt, verlaat er niets uw browser.',
       h2: 'Statistieken',
       p2: 'Geen advertentieprofilering en geen trackingcookies. We gebruiken Umami, een statistiektool op onze eigen server: die telt bezoeken anoniem (paginaweergaves, klikken op de bel- en WhatsApp-knoppen) zonder bezoekers te identificeren en zonder gegevens door te geven aan derden. Wat u in de prijssimulator invult, wordt er nooit naartoe gestuurd.',
       h3: 'Uw rechten',
@@ -65,7 +65,7 @@ export const LEGAL = {
     privacy: {
       title: 'Privacy policy',
       h1: 'Data collected',
-      p1: 'The site does not retain any data entered into the estimation tool. The addresses, date and name you enter stay in your browser and are used only to compose the WhatsApp message you send yourself. Exception: if you choose "Other address", the text you type is sent to OpenRouteService (our routing provider) to look up the address and calculate the real distance — destinations picked from the dropdown list are never sent to a third party.',
+      p1: 'The site does not retain any data entered into the estimation tool. The addresses, date and name you enter stay in your browser and are used only to compose the WhatsApp message you send yourself. Two exceptions: if you choose "Other address", the text you type is sent to OpenRouteService (our routing provider) to look up the address and calculate the real distance; and the map shown with your estimate loads its background from OpenStreetMap, which then receives your IP address and the area being viewed. The map only appears once you ask for an estimate — until then, nothing leaves your browser.',
       h2: 'Analytics',
       p2: 'No advertising profiling and no tracking cookies. We use Umami, an analytics tool hosted on our own server: it counts visits anonymously (page views, clicks on the call and WhatsApp buttons) without identifying visitors and without passing data to any third party. Nothing you type into the price simulator is ever sent to it.',
       h3: 'Your rights',
