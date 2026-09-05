@@ -1,5 +1,9 @@
 # Taxi Q.I.S.S — site web
 
+> **Pour modifier le site (un texte, un prix, une couleur), commence par le
+> [GUIDE.md](GUIDE.md).** Ce README-ci explique les décisions techniques et
+> les pourquoi ; le guide dit où aller.
+
 Site statique trilingue (NL/FR/EN) pour Q.I.S.S SRL (service de taxi, Tienen).
 Design et parcours utilisateur repris du prototype Claude Design validé
 (`../claude design template/TaxiDesktop.dc.html` + `TaxiScreen.dc.html`,
