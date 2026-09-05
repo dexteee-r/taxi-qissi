@@ -20,8 +20,13 @@ import { loadEnv } from 'vite';
 // Renaming changes nothing about the exposure: whichever name is used, the
 // key ends up readable in the JavaScript. The real guard rails are the
 // provider's daily quota and the graceful fallback to the call button.
+// process.env first, .env file second: on a host the variable is injected
+// into the environment, and reading it directly leaves no room for doubt
+// about how loadEnv treats an empty prefix.
 const env = loadEnv(process.env.NODE_ENV ?? 'production', process.cwd(), '');
-const orsApiKey = env.ORS_API_KEY || env.PUBLIC_ORS_API_KEY || '';
+const keySources = ['ORS_API_KEY', 'PUBLIC_ORS_API_KEY'];
+const keyFrom = keySources.find((name) => (process.env[name] ?? env[name] ?? '').trim());
+const orsApiKey = keyFrom ? (process.env[keyFrom] ?? env[keyFrom]).trim() : '';
 
 // Both address fields are free text since 2026-09-05, so without this key
 // the simulator cannot produce a single estimate — it is not a degraded
@@ -29,16 +34,30 @@ const orsApiKey = env.ORS_API_KEY || env.PUBLIC_ORS_API_KEY || '';
 // without it, silently, so say it loudly here. The build is deliberately
 // not failed: the phone number, the WhatsApp button and every page of
 // content still work, and those matter more than the simulator.
-if (!orsApiKey) {
-  const line = '─'.repeat(68);
+// The build log has to answer "is the key there?" on its own — on a hosting
+// dashboard it is the only window into what the build actually saw. Names
+// only, never values: a wrong or empty variable is a naming problem far more
+// often than a value problem.
+const line = '─'.repeat(68);
+if (orsApiKey) {
+  console.log(
+    `\x1b[32m✓ Clé OpenRouteService trouvée via ${keyFrom} (${orsApiKey.length} caractères).\x1b[0m`
+  );
+} else {
+  const seen = Object.keys(process.env)
+    .filter((name) => /ors|route|api.?key/i.test(name))
+    .sort();
   console.warn(
     `\n\x1b[33m${line}\n` +
       '  ATTENTION — aucune clé OpenRouteService dans ce build.\n' +
       '  Le simulateur de prix ne pourra proposer aucune adresse ni calculer\n' +
       '  aucun prix : les deux champs sont en saisie libre et dépendent de\n' +
       "  l'API. Définissez ORS_API_KEY dans l'environnement de build\n" +
-      '  (Vercel : Settings → Environment Variables → Production), puis\n' +
-      '  redéployez. En local : voir .env.example.\n' +
+      '  (Vercel : Settings → Environment Variables, en cochant Production),\n' +
+      '  puis redéployez. En local : voir .env.example.\n' +
+      '\n' +
+      '  Variables ressemblantes vues par ce build :\n' +
+      (seen.length ? seen.map((name) => `    - ${name}\n`).join('') : '    (aucune)\n') +
       `${line}\x1b[0m\n`
   );
 }
