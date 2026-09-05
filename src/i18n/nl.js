@@ -87,6 +87,7 @@ export const nl = {
   aTitle: 'Luchthavenvervoer',
   aSub: "Vertrek van thuis, op tijd, ook om 4 uur 's nachts. Bij terugkomst volgen we uw vlucht als u het nummer doorgeeft.",
   aListTitle: 'Luchthavens',
+  aPhotoAlt: 'Zwarte taxi met TAXI-bord, geparkeerd voor een vliegtuig op de luchthaven.',
   tbcPrice: 'te bevestigen',
   tbcDist: 'afstand te bevestigen',
   tbcNote: 'De prijs van luchthaventransfers is nog niet bevestigd: bel ons voor de exacte schatting.',

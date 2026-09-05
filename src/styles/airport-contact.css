@@ -30,11 +30,9 @@
   height: 170px;
   background: var(--color-border);
   border-radius: var(--radius);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-faint);
-  font-size: 13px;
+  /* La photo remplit le cadre en gardant ses proportions : elle est
+     recadrée, jamais déformée. */
+  object-fit: cover;
 }
 .airport-cta {
   margin-top: 26px;

@@ -1,5 +1,7 @@
 ---
+import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import photoAeroport from '../../assets/taxi-aeroport.webp';
 import { t } from '../../i18n/dictionary.js';
 import { seo } from '../../i18n/seo.js';
 import { localePath } from '../../i18n/routes.js';
@@ -19,7 +21,19 @@ const airports = DESTINATIONS.filter((d) => AIRPORT_IDS.includes(d.id));
         <p class="lead" style="max-width:46ch">{s.aSub}</p>
         <a class="btn btn-dark qissi-tap airport-hero-cta" href={localePath(locale, 'rates')}>{s.aCtaBtn}</a>
       </div>
-      <div class="airport-media">Foto voertuig + bagage</div>
+      {/* Astro fabrique les versions WebP et les tailles au build : le PNG
+          d'origine (2 Mo) n'est jamais envoyé au visiteur, seulement la
+          taille adaptée à l'écran. Chargement immédiat et non différé :
+          l'image est visible dès l'ouverture de la page. */}
+      <Image
+        class="airport-media"
+        src={photoAeroport}
+        alt={s.aPhotoAlt}
+        widths={[400, 800, 1200]}
+        sizes="(min-width: 900px) 600px, 100vw"
+        format="webp"
+        loading="eager"
+      />
     </div>
 
     <h2 class="h-section" style="margin-top:24px">{s.aListTitle}</h2>

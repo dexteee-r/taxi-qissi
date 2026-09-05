@@ -87,6 +87,7 @@ export const en = {
   aTitle: 'Airport transfer',
   aSub: 'Pickup from your door, on time, even at 4am. On the way back, we track your flight if you give us the number.',
   aListTitle: 'Airports served',
+  aPhotoAlt: 'Black saloon car with a TAXI sign, parked in front of an aircraft on the airport apron.',
   tbcPrice: 'to be confirmed',
   tbcDist: 'distance to be confirmed',
   tbcNote: "Airport transfer pricing isn't confirmed yet: call us for the exact estimate.",

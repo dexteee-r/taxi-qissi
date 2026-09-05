@@ -80,6 +80,50 @@ test.describe('language switching keeps you on the same page', () => {
   }
 });
 
+test.describe("photo de la page transport aéroport", () => {
+  const PAGES = {
+    nl: '/nl/luchthavenvervoer/',
+    fr: '/fr/transport-aeroport/',
+    en: '/en/airport-transfer/',
+  };
+
+  for (const [locale, path] of Object.entries(PAGES)) {
+    test(`${locale}: la photo s'affiche et reste légère`, async ({ page }) => {
+      await page.goto(path);
+      const photo = page.locator('img.airport-media');
+      await expect(photo).toBeVisible();
+
+      // Le PNG source pèse 2 Mo : seule une version WebP redimensionnée
+      // doit partir chez le visiteur.
+      const servi = await photo.evaluate((img) => img.currentSrc);
+      expect(servi).toMatch(/\.webp$/);
+      expect(servi).not.toMatch(/\.png$/);
+
+      const reponse = await page.request.get(servi);
+      const poids = Number((await reponse.body()).byteLength);
+      expect(poids).toBeLessThan(200 * 1024);
+
+      // Elle doit être réellement décodée, pas seulement présente.
+      const chargee = await photo.evaluate((img) => img.complete && img.naturalWidth > 0);
+      expect(chargee).toBe(true);
+
+      // Une image porteuse de sens a besoin d'un texte alternatif.
+      const alt = await photo.getAttribute('alt');
+      expect(alt?.length ?? 0).toBeGreaterThan(20);
+    });
+  }
+
+  test('propose plusieurs tailles et charge la plus petite sur mobile', async ({ page, isMobile }) => {
+    await page.goto(PAGES.fr);
+    const photo = page.locator('img.airport-media');
+    await expect(photo).toHaveAttribute('srcset', /400w.*800w.*1200w/);
+
+    // Un téléphone ne doit pas télécharger la version grand écran.
+    const largeurServie = await photo.evaluate((img) => Number(img.currentSrc.match(/_(\d+)?/) && img.naturalWidth));
+    if (isMobile) expect(largeurServie).toBeLessThanOrEqual(800);
+  });
+});
+
 test.describe('site plumbing', () => {
   test('/ redirects to /nl/', async ({ page }) => {
     await page.goto('/');

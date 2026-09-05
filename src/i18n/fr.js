@@ -87,6 +87,7 @@ export const fr = {
   aTitle: 'Transport aéroport',
   aSub: "Départ de chez vous, à l'heure, même à 4h du matin. Au retour, nous suivons votre vol si vous nous donnez le numéro.",
   aListTitle: 'Aéroports desservis',
+  aPhotoAlt: 'Berline noire avec enseigne TAXI, stationnée devant un avion sur le tarmac d’un aéroport.',
   tbcPrice: 'à confirmer',
   tbcDist: 'distance à confirmer',
   tbcNote: "Le prix des transferts aéroport n'est pas encore confirmé : appelez-nous pour l'estimation exacte.",
