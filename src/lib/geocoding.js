@@ -21,11 +21,16 @@ export class MapServiceError extends Error {
   }
 }
 
+// __ORS_API_KEY__ is injected at build time from ORS_API_KEY (or the legacy
+// PUBLIC_ORS_API_KEY) — see astro.config.mjs for why it is not read straight
+// from import.meta.env. The typeof guard keeps the module loadable anywhere
+// the define is absent; import.meta.env stays as the fallback.
 function getApiKey() {
-  const key = import.meta.env.PUBLIC_ORS_API_KEY;
+  const injected = typeof __ORS_API_KEY__ === 'string' ? __ORS_API_KEY__ : '';
+  const key = injected || import.meta.env.PUBLIC_ORS_API_KEY;
   if (!key) {
     throw new MapServiceError(
-      'PUBLIC_ORS_API_KEY is not configured — see .env.example',
+      'No routing API key configured — set ORS_API_KEY (see .env.example)',
       'config'
     );
   }

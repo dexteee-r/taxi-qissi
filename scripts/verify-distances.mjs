@@ -66,10 +66,16 @@ const QUERIES = {
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function orsKey() {
+  // PUBLIC_ORS_API_KEY is the legacy name, still accepted — see astro.config.mjs.
+  if (process.env.ORS_API_KEY) return process.env.ORS_API_KEY;
   if (process.env.PUBLIC_ORS_API_KEY) return process.env.PUBLIC_ORS_API_KEY;
   try {
     const env = readFileSync(new URL('../.env', import.meta.url), 'utf8');
-    return env.match(/^PUBLIC_ORS_API_KEY=(.+)$/m)?.[1]?.trim() || '';
+    return (
+      env.match(/^ORS_API_KEY=(.+)$/m)?.[1]?.trim() ||
+      env.match(/^PUBLIC_ORS_API_KEY=(.+)$/m)?.[1]?.trim() ||
+      ''
+    );
   } catch {
     return '';
   }
