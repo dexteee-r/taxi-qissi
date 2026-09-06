@@ -4,11 +4,21 @@
 // précisément ce qui est envoyé à OpenRouteService et à OpenStreetMap. Une
 // promesse fausse ici est un problème juridique, pas une coquille.
 //
-// Reste à ajouter avant la mise en ligne : le nom de l'hébergeur.
+// L'hébergeur (Vercel Inc., une société américaine) est donc hors UE : la
+// politique de confidentialité devra probablement le dire explicitement,
+// pas seulement le nommer dans les mentions légales — à faire valider par
+// un juriste, comme le reste de cette page (voir README, "Points en
+// attente côté client").
 import { BUSINESS } from '../config/business.js';
 
 const ADDRESS = `${BUSINESS.address.street}, ${BUSINESS.address.postalCode} ${BUSINESS.address.city}`;
 const EMAIL = BUSINESS.email;
+// Adresse légale publiée par Vercel lui-même (vercel.com/legal/privacy-policy,
+// vérifiée le 2026-09-06). À reconfirmer avant mise en ligne : ce genre
+// d'adresse peut changer sans préavis particulier pour les tiers.
+const HOST_ADDRESS = 'Vercel Inc., 440 N Barranca Avenue #4133, Covina, CA 91723, États-Unis';
+const HOST_ADDRESS_NL = 'Vercel Inc., 440 N Barranca Avenue #4133, Covina, CA 91723, Verenigde Staten';
+const HOST_ADDRESS_EN = 'Vercel Inc., 440 N Barranca Avenue #4133, Covina, CA 91723, United States';
 
 export const LEGAL = {
   fr: {
@@ -17,7 +27,7 @@ export const LEGAL = {
       h1: 'Éditeur du site',
       p1: `Taxi QISSI — ${ADDRESS}. Service de taxi agréé par la ville de Tienen.`,
       h2: 'Hébergement',
-      p2: "Le site est hébergé chez un prestataire européen ; son nom et son adresse figurent ici avant la mise en ligne.",
+      p2: `Le site est hébergé par ${HOST_ADDRESS}.`,
       h3: 'Prix et responsabilité',
       p3: "Les montants affichés par l'outil d'estimation sont indicatifs et ne constituent pas une offre contractuelle. Le prix définitif est celui du compteur, conformément à la réglementation taxi en vigueur.",
     },
@@ -37,7 +47,7 @@ export const LEGAL = {
       h1: 'Uitgever van de site',
       p1: `Taxi QISSI — ${ADDRESS}. Erkende taxidienst van de stad Tienen.`,
       h2: 'Hosting',
-      p2: 'De site wordt gehost bij een Europese partij; naam en adres staan hier vóór de livegang.',
+      p2: `De site wordt gehost door ${HOST_ADDRESS_NL}.`,
       h3: 'Prijs en aansprakelijkheid',
       p3: 'De bedragen van de prijsberekening zijn indicatief en vormen geen contractueel aanbod. De definitieve prijs is die van de meter, volgens de geldende taxireglementering.',
     },
@@ -57,7 +67,7 @@ export const LEGAL = {
       h1: 'Website publisher',
       p1: `Taxi QISSI — ${ADDRESS}. Taxi service licensed by the city of Tienen.`,
       h2: 'Hosting',
-      p2: 'The site is hosted with a European provider; its name and address will appear here before go-live.',
+      p2: `The site is hosted by ${HOST_ADDRESS_EN}.`,
       h3: 'Price and liability',
       p3: "Amounts shown by the estimation tool are indicative and do not constitute a contractual offer. The final price is the one shown on the meter, in accordance with applicable taxi regulations.",
     },
