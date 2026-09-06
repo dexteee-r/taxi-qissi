@@ -42,7 +42,12 @@ const communesRest = communes.slice(6);
       <div class="commune-chips">
         {communesMain.map((c) => <span>{c}</span>)}
       </div>
-      <details class="commune-more">
+      {/* Ouvert par défaut : sans JavaScript, un visiteur sur ordinateur
+          doit quand même voir les 16 communes, pas se retrouver avec un
+          bouton masqué et un contenu invisible. Le script ci-dessous
+          referme le dépliant sur mobile, où le bouton "Voir plus" reste,
+          lui, natif et fonctionnel sans JavaScript. */}
+      <details class="commune-more" open>
         <summary>
           {s.zoneAll}
           <span class="chev"></span>
@@ -51,10 +56,6 @@ const communesRest = communes.slice(6);
           {communesRest.map((c) => <div>{c}</div>)}
         </div>
       </details>
-
-      <div class="commune-list">
-        {communes.map((c) => <div>{c}</div>)}
-      </div>
 
       <p class="zone-note">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:3px"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>
@@ -67,6 +68,25 @@ const communesRest = communes.slice(6);
 <script>
   import { BUSINESS } from '../config/business.js';
   import { dictionary } from '../i18n/dictionary.js';
+
+  // Sur ordinateur, les 16 communes du dépliant doivent être visibles
+  // d'emblée (le bouton "Voir plus" est masqué en CSS à partir de 900px).
+  // Un <details> fermé ne montre son contenu QUE si l'attribut `open` est
+  // réellement posé — aucune règle CSS sur son contenu ne peut contourner
+  // ça, même avec !important (vérifié : forcer .open = true en JS fait
+  // passer sa hauteur de 0 à sa vraie valeur, alors que forcer `display`
+  // ou `content-visibility` sur son contenu ne change rien). D'où ce petit
+  // script, plutôt qu'une solution "tout CSS" qui semblait possible mais
+  // ne l'est pas pour cet élément précis.
+  const depliant = document.querySelector('.commune-more');
+  if (depliant) {
+    const estOrdinateur = window.matchMedia('(min-width: 900px)');
+    const synchroniser = () => {
+      depliant.open = estOrdinateur.matches;
+    };
+    synchroniser();
+    estOrdinateur.addEventListener('change', synchroniser);
+  }
 
   function norm(str) {
     return str

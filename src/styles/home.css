@@ -211,7 +211,11 @@
 .zone-miss .btn {
   min-height: 46px;
 }
-/* Mobile : 6 communes puis un dépliant. Ordinateur : liste sur 3 colonnes. */
+/* Mobile : 6 communes puis un dépliant. Ordinateur : deux blocs en colonnes.
+   Une seule liste de communes existe dans le HTML — desktop ne fait que la
+   restyler, il n'y a pas de second bloc qui la répète (voir plus bas :
+   avant, .commune-list rendait les 22 communes une deuxième fois pour
+   l'affichage ordinateur, dupliquant tout le texte dans la page). */
 .commune-chips {
   display: flex;
   flex-wrap: wrap;
@@ -243,14 +247,10 @@
   column-gap: 18px;
   padding-bottom: 14px;
 }
-.commune-more-list div,
-.commune-list div {
+.commune-more-list div {
   font: 400 13.5px/1.9 var(--font-body);
   color: var(--color-text-muted);
   break-inside: avoid;
-}
-.commune-list {
-  display: none;
 }
 .zone-note {
   display: flex;
@@ -260,16 +260,39 @@
   margin: 12px 0 0;
 }
 @media (min-width: 900px) {
-  .commune-chips,
-  .commune-more {
-    display: none;
-  }
-  .commune-list {
+  /* Les 6 premières communes perdent leur style de pastille et rejoignent
+     la mise en page en colonnes des 16 autres — mêmes communes, juste
+     redessinées, jamais réécrites une seconde fois. */
+  .commune-chips {
     display: block;
     columns: 3;
     column-gap: 28px;
+    margin-top: 0;
   }
-  .commune-list div {
+  .commune-chips span {
+    display: block;
+    font: 400 14.5px/2 var(--font-body);
+    color: var(--color-text-muted);
+    border: 0;
+    padding: 0;
+    break-inside: avoid;
+  }
+  /* Le dépliant mobile n'a plus de raison d'être replié : ses 16 communes
+     doivent être visibles d'emblée, dans le prolongement des 6 premières. */
+  .commune-more {
+    margin-top: 10px;
+    border-top: 0;
+  }
+  .commune-more > summary {
+    display: none;
+  }
+  .commune-more-list {
+    display: block;
+    columns: 3;
+    column-gap: 28px;
+    padding-bottom: 0;
+  }
+  .commune-more-list div {
     font-size: 14.5px;
     line-height: 2;
   }

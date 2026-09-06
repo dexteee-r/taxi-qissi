@@ -101,6 +101,55 @@ test.describe('touch targets and layout (brief §7)', () => {
   });
 });
 
+test.describe('liste des communes desservies', () => {
+  // Le HTML rendait autrefois les 22 communes deux fois : une fois pour
+  // l'affichage mobile (6 puces + un dépliant), une fois pour l'affichage
+  // ordinateur (une liste séparée). Ce test verrouille qu'il n'existe plus
+  // qu'une seule copie de chaque commune dans la page.
+  test('chaque commune n\'apparaît qu\'une seule fois dans le HTML', async ({ page }) => {
+    await page.goto('/fr/');
+    const noms = await page.locator('.commune-chips span, .commune-more-list div').allTextContents();
+    expect(noms).toHaveLength(22);
+    expect(new Set(noms).size).toBe(22);
+    await expect(page.locator('.commune-list')).toHaveCount(0);
+  });
+
+  test('ordinateur : les 22 communes sont visibles sans interaction', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'comportement spécifique au grand écran');
+    await page.goto('/fr/');
+
+    // <details> ne montre son contenu que si l'attribut `open` est
+    // vraiment posé : un simple display:block sur son contenu ne suffit
+    // pas (vérifié). Le bouton "Voir plus", lui, doit être invisible.
+    await expect(page.locator('.commune-more')).toHaveJSProperty('open', true);
+    await expect(page.locator('.commune-more > summary')).toBeHidden();
+    await expect(page.locator('.commune-more-list div').first()).toBeVisible();
+  });
+
+  test('mobile : repliée par défaut, le bouton natif l\'ouvre toujours', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'comportement spécifique au mobile');
+    await page.goto('/fr/');
+
+    await expect(page.locator('.commune-more')).toHaveJSProperty('open', false);
+    await expect(page.locator('.commune-more > summary')).toBeVisible();
+
+    await page.locator('.commune-more > summary').click();
+    await expect(page.locator('.commune-more')).toHaveJSProperty('open', true);
+  });
+
+  test('reste ouverte sur ordinateur même sans JavaScript', async ({ browser }) => {
+    // Filet de sécurité : l'attribut `open` est posé directement dans le
+    // HTML pour cette raison précise. Sans lui, un visiteur sans
+    // JavaScript sur ordinateur perdrait purement et simplement l'accès
+    // aux 16 communes du dépliant.
+    const contexte = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 1280, height: 800 } });
+    const page = await contexte.newPage();
+    await page.goto('/fr/');
+    await expect(page.locator('.commune-more-list div').first()).toBeVisible();
+    await contexte.close();
+  });
+});
+
 test.describe('homepage section alignment', () => {
   // Regression: .container sets margin-inline:auto, and an auto cross-axis
   // margin cancels stretch inside the .home-sections flex column — the
