@@ -20,6 +20,21 @@ const HOST_ADDRESS = 'Vercel Inc., 440 N Barranca Avenue #4133, Covina, CA 91723
 const HOST_ADDRESS_NL = 'Vercel Inc., 440 N Barranca Avenue #4133, Covina, CA 91723, Verenigde Staten';
 const HOST_ADDRESS_EN = 'Vercel Inc., 440 N Barranca Avenue #4133, Covina, CA 91723, United States';
 
+// Coordonnées de l'autorité de surveillance, exigées par l'article
+// XII.6, §1er, 5° du Code de droit économique dès qu'une activité est
+// soumise à autorisation — c'est le cas ici (vergunning IBP). Vérifiées le
+// 2026-09-06 sur la page officielle de la Ville de Tienen
+// (tienen.be/integrale-veiligheid-en-vergunningen).
+//
+// Le nom du service et l'adresse postale restent en néerlandais dans les
+// trois langues : ce sont des coordonnées à utiliser telles quelles pour
+// contacter l'administration, pas un texte à traduire. Seules les
+// étiquettes "téléphone"/"e-mail" suivent la langue de la page.
+const AUTHORITY_CORE = 'Stad Tienen — Integrale veiligheid en vergunningen, Stadhuis, Grote Markt 27, 3300 Tienen, België';
+const AUTHORITY_ADDRESS = `${AUTHORITY_CORE}. Tél. 016 24 73 50 — e-mail integraleveiligheid@tienen.be`;
+const AUTHORITY_ADDRESS_NL = `${AUTHORITY_CORE}. Tel. 016 24 73 50 — e-mail integraleveiligheid@tienen.be`;
+const AUTHORITY_ADDRESS_EN = `${AUTHORITY_CORE}. Phone 016 24 73 50 — email integraleveiligheid@tienen.be`;
+
 export const LEGAL = {
   fr: {
     juridisch: {
@@ -30,6 +45,8 @@ export const LEGAL = {
       p2: `Le site est hébergé par ${HOST_ADDRESS}.`,
       h3: 'Prix et responsabilité',
       p3: "Les montants affichés par l'outil d'estimation sont indicatifs et ne constituent pas une offre contractuelle. Le prix définitif est celui du compteur, conformément à la réglementation taxi en vigueur.",
+      h4: 'Autorité de surveillance',
+      p4: `Ce service de taxi est soumis à autorisation (vergunning individueel bezoldigd personenvervoer, décret flamand du 29 mars 2019). Autorité de surveillance compétente : ${AUTHORITY_ADDRESS}.`,
     },
     privacy: {
       title: 'Politique de confidentialité',
@@ -50,6 +67,8 @@ export const LEGAL = {
       p2: `De site wordt gehost door ${HOST_ADDRESS_NL}.`,
       h3: 'Prijs en aansprakelijkheid',
       p3: 'De bedragen van de prijsberekening zijn indicatief en vormen geen contractueel aanbod. De definitieve prijs is die van de meter, volgens de geldende taxireglementering.',
+      h4: 'Toezichthoudende overheid',
+      p4: `Deze taxidienst is onderworpen aan een vergunning (vergunning individueel bezoldigd personenvervoer, Vlaams decreet van 29 maart 2019). Bevoegde toezichthoudende overheid: ${AUTHORITY_ADDRESS_NL}.`,
     },
     privacy: {
       title: 'Privacybeleid',
@@ -70,6 +89,8 @@ export const LEGAL = {
       p2: `The site is hosted by ${HOST_ADDRESS_EN}.`,
       h3: 'Price and liability',
       p3: "Amounts shown by the estimation tool are indicative and do not constitute a contractual offer. The final price is the one shown on the meter, in accordance with applicable taxi regulations.",
+      h4: 'Supervisory authority',
+      p4: `This taxi service is subject to a permit (vergunning individueel bezoldigd personenvervoer, Flemish decree of 29 March 2019). Competent supervisory authority: ${AUTHORITY_ADDRESS_EN}.`,
     },
     privacy: {
       title: 'Privacy policy',
