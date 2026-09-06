@@ -346,6 +346,29 @@ hauteur du header (64px) au lieu de couvrir l'écran. Si vous réintroduisez
 un flou sur le header, sortez le menu mobile de sa hiérarchie DOM, ou testez
 soigneusement sur mobile.
 
+## Domaine Vercel bloqué à l'indexation
+
+`taxiqissi.be` et `taxi-qissi.vercel.app` servent le même build : un site
+statique n'a aucun moyen de savoir, au moment de la génération, sur quel
+nom de domaine il finira consulté. `robots.txt` et les balises `<meta>` ne
+peuvent donc pas différer entre les deux.
+
+`vercel.json` s'en charge à la place, au niveau de la plateforme plutôt que
+du site : un en-tête `X-Robots-Tag: noindex, nofollow` est ajouté à toutes
+les réponses, mais seulement quand la requête arrive sur
+`taxi-qissi.vercel.app` (matcher `host`). `taxiqissi.be` n'est pas concerné
+et reste indexable normalement.
+
+⚠️ Cette configuration n'a pas pu être vérifiée en conditions réelles
+depuis cet environnement (elle dépend du routage de périphérie de Vercel,
+qui ne s'exécute qu'au moment d'un vrai déploiement). Après le prochain
+déploiement, vérifier avec :
+
+```sh
+curl -sI https://taxi-qissi.vercel.app/ | grep -i x-robots-tag
+curl -sI https://taxiqissi.be/ | grep -i x-robots-tag   # doit être vide
+```
+
 ## Hébergement (homelab)
 
 - Build reproductible, sans dépendance à un service tiers : `npm run build`
