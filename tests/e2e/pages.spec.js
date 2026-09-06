@@ -80,6 +80,27 @@ test.describe('language switching keeps you on the same page', () => {
   }
 });
 
+test.describe('destinations en texte visible sur la page Tarifs', () => {
+  // Depuis que les deux champs du simulateur sont en saisie libre, plus
+  // aucun nom de destination n'apparaissait dans le HTML de cette page —
+  // même plus caché dans un <select> comme avant. Ce test verrouille que
+  // les noms sont bien redevenus du texte normal, lisible sans JavaScript.
+  for (const [locale, path] of Object.entries(PAGES.rates)) {
+    test(`${locale} : les destinations et le lien aéroport sont du texte réel`, async ({ page }) => {
+      const html = await (await page.request.get(path)).text();
+      expect(html).toContain('dest-summary');
+      expect(html).toMatch(/Leuven|Louvain/);
+
+      await page.goto(path);
+      const bloc = page.locator('.dest-summary');
+      await expect(bloc).toBeVisible();
+      const lien = bloc.locator('a');
+      await expect(lien).toBeVisible();
+      await expect(lien).toHaveAttribute('href', new RegExp(PAGES.airport[locale]));
+    });
+  }
+});
+
 test.describe("photo de la page transport aéroport", () => {
   const PAGES = {
     nl: '/nl/luchthavenvervoer/',

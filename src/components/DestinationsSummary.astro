@@ -1,0 +1,38 @@
+---
+// Liste en texte visible des destinations les plus demandées, sur la page
+// Tarifs.
+//
+// Avant, ces noms n'existaient que comme options d'un menu déroulant — donc
+// invisibles pour Google. Depuis que les deux champs du simulateur sont en
+// saisie libre, ils avaient carrément disparu du HTML de cette page : plus
+// aucun nom de destination n'y apparaissait, même caché dans un <select>.
+// Ce bloc les remet, en texte normal, indépendamment du formulaire.
+//
+// Les aéroports ont leur propre page (transport-aeroport) et leur propre
+// liste : on ne les répète pas ici, on y renvoie par un lien.
+import { t } from '../i18n/dictionary.js';
+import { localePath } from '../i18n/routes.js';
+import { DESTINATIONS, AIRPORT_IDS } from '../data/destinations.js';
+
+interface Props {
+  locale: 'nl' | 'fr' | 'en';
+}
+const { locale } = Astro.props;
+const s = t(locale);
+const villes = DESTINATIONS.filter((d) => !AIRPORT_IDS.includes(d.id));
+---
+
+<div class="dest-summary">
+  <h2 class="h-card">{s.pDestTitle}</h2>
+  <p class="sub">
+    {s.pDestIntro}{' '}
+    {villes.map((d, i) => (
+      <>
+        {i > 0 && ', '}
+        {d[locale]}
+      </>
+    ))}
+    {'. '}
+    <a href={localePath(locale, 'airport')}>{s.pDestAirportLink}</a>
+  </p>
+</div>

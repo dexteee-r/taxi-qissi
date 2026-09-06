@@ -48,6 +48,9 @@ export const fr = {
   pWait: 'Attente',
   pNight: 'Supplément de nuit',
   pNightSub: '22h – 4h',
+  pDestTitle: 'Destinations courantes',
+  pDestIntro: 'Nous desservons Tienen et les environs, avec des trajets fréquents vers',
+  pDestAirportLink: 'Transferts aéroport (Bruxelles, Charleroi, Liège, Maastricht, Eindhoven) →',
 
   simTitle: 'Estimation de votre course',
   simSub: 'Les montants sont indicatifs ; le prix final est celui du compteur.',

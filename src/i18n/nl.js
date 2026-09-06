@@ -48,6 +48,9 @@ export const nl = {
   pWait: 'Wachttijd',
   pNight: 'Nachttoeslag',
   pNightSub: '22u – 4u',
+  pDestTitle: 'Veelgevraagde bestemmingen',
+  pDestIntro: 'Wij rijden vanuit Tienen en omgeving, met regelmatige ritten naar',
+  pDestAirportLink: 'Luchthavenvervoer (Brussel, Charleroi, Luik, Maastricht, Eindhoven) →',
 
   simTitle: 'Schatting van uw rit',
   simSub: 'De bedragen zijn indicatief; de eindprijs is die van de meter.',

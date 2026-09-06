@@ -53,6 +53,18 @@
   }
 }
 
+/* Liste des destinations en texte visible, sous le tableau des tarifs. */
+.dest-summary {
+  margin-top: 28px;
+}
+.dest-summary .sub {
+  margin: 0;
+}
+.dest-summary a {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
 /* Accordéon FAQ ---------------------------------------------------------- */
 .faq-grid {
   display: grid;
