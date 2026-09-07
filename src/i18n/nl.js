@@ -46,6 +46,7 @@ export const nl = {
   pPickup: 'Opstapvergoeding',
   pPerKm: 'Per kilometer',
   pWait: 'Wachttijd',
+  pWaitSub: 'Berekend naar verstreken tijd, tot op de seconde',
   pNight: 'Nachttoeslag',
   pNightSub: '22u – 4u',
   pDestTitle: 'Veelgevraagde bestemmingen',

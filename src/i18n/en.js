@@ -46,6 +46,7 @@ export const en = {
   pPickup: 'Pickup fee',
   pPerKm: 'Per kilometre',
   pWait: 'Waiting',
+  pWaitSub: 'Billed pro rata, down to the second',
   pNight: 'Night surcharge',
   pNightSub: '10pm – 4am',
   pDestTitle: 'Popular destinations',

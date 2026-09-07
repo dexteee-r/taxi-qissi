@@ -46,6 +46,7 @@ export const fr = {
   pPickup: 'Prise en charge',
   pPerKm: 'Par kilomètre',
   pWait: 'Attente',
+  pWaitSub: 'Calculé au prorata, à la seconde près',
   pNight: 'Supplément de nuit',
   pNightSub: '22h – 4h',
   pDestTitle: 'Destinations courantes',
