@@ -145,6 +145,45 @@ test.describe("photo de la page transport aéroport", () => {
   });
 });
 
+test.describe('Vercel Web Analytics', () => {
+  // Vérifie que le script se charge sur un chemin du même domaine, pas
+  // vers un hôte tiers — c'est ce qui permet au test "no third-party
+  // requests" plus bas de rester vert malgré cet ajout. En build de
+  // développement (astro dev), ce même script charge sa version de
+  // débogage depuis va.vercel-scripts.com (un vrai tiers) : ce test tourne
+  // sur le build de production (dist/), pas sur "astro dev".
+  test("le script se charge sur /_vercel/insights/, jamais un domaine tiers", async ({ page }) => {
+    const requetes = [];
+    page.on('request', (req) => requetes.push(req.url()));
+    await page.goto('/fr/');
+    await page.waitForLoadState('networkidle');
+
+    const appelsAnalytics = requetes.filter((u) => u.includes('insights') || u.includes('vercel-scripts'));
+    expect(appelsAnalytics.length).toBeGreaterThan(0);
+    for (const url of appelsAnalytics) {
+      expect(new URL(url).host).toBe(new URL(page.url()).host);
+    }
+  });
+
+  test('les clics sur les boutons existants (appel, WhatsApp…) sont transmis', async ({ page }) => {
+    await page.goto('/fr/');
+    // On déclenche l'événement directement plutôt que de cliquer un bouton
+    // précis : ce qui est testé ici, c'est le relais dans BaseLayout.astro
+    // (délégation sur [data-analytics] → trackEvent() → window.va), pas la
+    // mise en page d'un bouton précis — déjà couverte par d'autres tests,
+    // et différente entre mobile et desktop.
+    const appels = await page.evaluate(() => {
+      const espion = [];
+      window.va = (...args) => espion.push(args);
+      document
+        .querySelector('[data-analytics="call_click"]')
+        .dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      return espion;
+    });
+    expect(appels).toContainEqual(['event', { name: 'call_click' }]);
+  });
+});
+
 test.describe('site plumbing', () => {
   test('/ redirects to /nl/', async ({ page }) => {
     await page.goto('/');

@@ -385,15 +385,37 @@ curl -sI https://taxiqissi.be/ | grep -i x-robots-tag   # doit être vide
 
 ## Analytics
 
-**Umami**, auto-hébergé à côté du site (brief §8 : sans cookie de suivi,
-donc sans bandeau de consentement à traduire trois fois). Choisi parce qu'il
-est libre, gratuit, ne pose aucun cookie, ne stocke pas de donnée
-personnelle, et parce que l'auto-hébergement garde les statistiques sur la
-même machine que le site.
+Deux outils, l'un actif, l'autre en attente.
 
-Activation : renseigner `PUBLIC_UMAMI_SRC` et `PUBLIC_UMAMI_WEBSITE_ID` dans
-`.env`. Tant qu'ils sont vides, **aucun script de mesure n'est chargé** — ni
-en dev, ni dans un build de pré-lancement.
+**Vercel Web Analytics** (actif depuis le 2026-09-11). Activé côté
+tableau de bord Vercel, puis câblé ici via `@vercel/analytics/astro`
+(`<Analytics />` dans `BaseLayout.astro`). Son script se charge sur un
+chemin du même domaine (`/_vercel/insights/script.js`) — Vercel le sert
+lui-même en périphérie, ce n'est jamais un appel réseau visible vers un
+domaine tiers, et le test E2E "serves no third-party requests" reste donc
+vert. Ça ne dispense pas de le déclarer : les données de visite partent
+bien vers Vercel Inc. (société américaine), disclosure ajoutée à la
+politique de confidentialité (`src/data/legal.js`).
+
+⚠️ **Piège vérifié le 2026-09-11** : en `astro dev`, ce script charge sa
+version de débogage depuis `https://va.vercel-scripts.com` — un vrai appel
+tiers, propre au développement local. Ne pas confondre avec le
+comportement en production (build statique), où le chemin est bien
+`/_vercel/insights/script.js`. Vérifié en inspectant les deux dans un
+navigateur, pas seulement en lisant le code du paquet — les deux branches
+existent dans le bundle compilé, seul le test en conditions réelles dit
+laquelle s'exécute.
+
+**Umami**, auto-hébergé, prévu par le brief (§8 : sans cookie de suivi,
+donc sans bandeau de consentement à traduire trois fois) mais toujours en
+attente d'une instance qui tourne quelque part. Activation : renseigner
+`PUBLIC_UMAMI_SRC` et `PUBLIC_UMAMI_WEBSITE_ID` dans `.env` — tant qu'ils
+sont vides, cette moitié ne charge rien, en dev comme en production.
+
+Les deux tournent en parallèle sans se gêner : `trackEvent()` dans
+`src/lib/analytics.js` envoie chaque événement aux deux à la fois (chacun
+protégé par son propre `try/catch`, un outil absent ou en panne ne doit
+jamais faire échouer l'autre ni casser la page).
 
 Événements instrumentés (via l'attribut `data-analytics`, cf. brief §8) :
 `call_click`, `whatsapp_click`, `simulator_open`, `estimate_success`,
