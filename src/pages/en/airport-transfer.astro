@@ -6,6 +6,7 @@ import { t } from '../../i18n/dictionary.js';
 import { seo } from '../../i18n/seo.js';
 import { localePath } from '../../i18n/routes.js';
 import { DESTINATIONS, AIRPORT_IDS } from '../../data/destinations.js';
+import { formatEuro } from '../../lib/format.js';
 
 const locale = 'en';
 const s = t(locale);
@@ -45,10 +46,10 @@ const airports = DESTINATIONS.filter((d) => AIRPORT_IDS.includes(d.id));
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 13.5 21 6l-6.5 13-2.5-6-9-1.5Z"/></svg>
               <span style="display:flex;flex-direction:column;gap:2px">
                 <span class="name">{a[locale]}</span>
-                <span class="meta">{s.aPending}</span>
+                <span class="meta">{a.price != null ? s.aFlat : s.aPending}</span>
               </span>
             </span>
-            <span class="price">— €</span>
+            <span class="price">{a.price != null ? formatEuro(a.price, locale) : '— €'}</span>
           </div>
         ))
       }

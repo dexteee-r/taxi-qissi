@@ -10,6 +10,7 @@ export const en = {
   menu: 'Menu',
   langLabel: 'Language',
   indicative: 'INDICATIVE PRICE',
+  flatFare: 'FIXED FARE',
   navHome: 'Home',
   navPrices: 'Rates',
   navAirport: 'Airport transfer',
@@ -95,11 +96,12 @@ export const en = {
   tbcPrice: 'to be confirmed',
   tbcDist: 'distance to be confirmed',
   tbcNote: "Airport transfer pricing isn't confirmed yet: call us for the exact estimate.",
-  aPendingNote: 'Distances and prices for airport transfers are still to be confirmed with Taxi QISSI.',
+  aPendingNote: "A flat fare appears once it's been agreed with the client; airports without a listed price remain to be confirmed with Taxi QISSI.",
   aCtaTitle: 'What will my transfer cost?',
   aCtaSub: 'Same rate as all our rides: €4 pickup + €3/km.',
   aCtaBtn: 'Estimate my transfer',
   aPending: 'distance and price to be confirmed',
+  aFlat: 'fixed fare, one-way',
 
 
   cSub: "Calling is the fastest way. We answer 24/7.",

@@ -10,6 +10,7 @@ export const fr = {
   menu: 'Menu',
   langLabel: 'Langue',
   indicative: 'PRIX INDICATIF',
+  flatFare: 'FORFAIT FIXE',
   navHome: 'Accueil',
   navPrices: 'Tarifs',
   navAirport: 'Transport aéroport',
@@ -95,11 +96,12 @@ export const fr = {
   tbcPrice: 'à confirmer',
   tbcDist: 'distance à confirmer',
   tbcNote: "Le prix des transferts aéroport n'est pas encore confirmé : appelez-nous pour l'estimation exacte.",
-  aPendingNote: 'Les distances et les prix des transferts aéroport restent à confirmer avec Taxi QISSI.',
+  aPendingNote: "Un forfait s'affiche dès qu'il est fixé avec le client ; les aéroports sans prix indiqué restent à confirmer avec Taxi QISSI.",
   aCtaTitle: 'Combien coûte mon transfert ?',
   aCtaSub: 'Même grille que toutes nos courses : 4 € de prise en charge + 3 €/km.',
   aCtaBtn: 'Estimer mon transfert',
   aPending: 'distance et prix à confirmer',
+  aFlat: 'forfait fixe, aller simple',
 
 
   cSub: "Le plus simple reste l'appel. Nous répondons 24h/24.",

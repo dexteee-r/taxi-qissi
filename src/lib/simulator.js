@@ -127,33 +127,39 @@ export function startSimulator() {
       return;
     }
 
-    // Un prix d'aéroport ne doit jamais s'afficher tant que le client ne
-    // l'a pas fixé (CDC §11.4), que le visiteur ait tapé "Brussels Airport"
-    // ou une adresse dans l'enceinte de l'aéroport.
-    const prixAConfirmer = airportAt(arrivee) !== null;
+    // Un aéroport affiche son forfait fixe si le client l'a communiqué ;
+    // sinon aucun prix ne doit s'afficher (CDC §11.4), que le visiteur ait
+    // tapé "Brussels Airport" ou une adresse dans l'enceinte de l'aéroport.
+    const aeroport = airportAt(arrivee);
+    const prixForfait = aeroport?.price ?? null;
+    const prixAConfirmer = aeroport !== null && prixForfait === null;
 
     const heure = el('time').value;
     const heureDuTrajet = heure ? parseInt(heure.slice(0, 2), 10) : new Date().getHours();
     const tarif = estimateFare(km, ((heureDuTrajet % 24) + 24) % 24);
 
-    remplirRecu({ depart, arrivee, km, minutes, tarif, prixAConfirmer });
+    remplirRecu({ depart, arrivee, km, minutes, tarif, prixForfait, prixAConfirmer });
     afficher('resultat');
     trackEvent('estimate_success');
     await afficherCarte(trace, `${depart.label} → ${arrivee.label}`);
   });
 
-  function remplirRecu({ depart, arrivee, km, minutes, tarif, prixAConfirmer }) {
+  function remplirRecu({ depart, arrivee, km, minutes, tarif, prixForfait, prixAConfirmer }) {
     el('route-label').textContent = `${depart.label} → ${arrivee.label}`;
     el('distance-label').textContent = prixAConfirmer
       ? textes.tbcDist
       : `${formatKm(km, locale)} · ~${minutes} min`;
 
+    const total = prixForfait ?? tarif.total;
     const prix = el('price-label');
-    prix.textContent = prixAConfirmer ? textes.tbcPrice : formatEuro(tarif.total, locale);
+    prix.textContent = prixAConfirmer ? textes.tbcPrice : formatEuro(total, locale);
     prix.classList.toggle('is-tbc', prixAConfirmer);
 
+    el('indicative-badge').textContent = prixForfait !== null ? textes.flatFare : textes.indicative;
     el('indicative-badge').hidden = prixAConfirmer;
-    el('breakdown').hidden = prixAConfirmer;
+    // La décomposition prise en charge + km ne vaut que pour le calcul au
+    // compteur : un forfait aéroport n'a pas de détail à afficher.
+    el('breakdown').hidden = prixAConfirmer || prixForfait !== null;
     el('tbc-note').hidden = !prixAConfirmer;
     el('line-pickup').textContent = formatEuro(tarif.breakdown.base, locale);
     el('line-km-label').textContent =
@@ -163,7 +169,8 @@ export function startSimulator() {
 
     // Plus loin que la destination la plus lointaine que le client propose :
     // le prix reste affiché, mais une course pareille se convient au téléphone.
-    el('long-distance-note').hidden = !(!prixAConfirmer && km > FURTHEST_PRESET_KM);
+    // Un forfait aéroport a son propre prix fixe, quelle que soit la distance.
+    el('long-distance-note').hidden = !(!prixAConfirmer && prixForfait === null && km > FURTHEST_PRESET_KM);
 
     const message = buildWhatsAppMessage({
       locale,
@@ -177,7 +184,7 @@ export function startSimulator() {
         name: el('name').value,
         note: el('note').value,
       },
-      fare: { total: tarif.total, isTbc: prixAConfirmer },
+      fare: { total, isTbc: prixAConfirmer },
     });
     el('wa-message-preview').textContent = message;
     el('whatsapp-send').href = buildWhatsAppUrl(message);

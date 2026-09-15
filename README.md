@@ -93,12 +93,15 @@ Conséquences concrètes :
   Tienen pour garder les résultats locaux en tête. La Belgique seule rendait
   Maastricht et Eindhoven — pourtant proposés comme transferts aéroport —
   impossibles à saisir.
-- **La règle « pas de prix aéroport » a survécu à la liste déroulante.**
-  C'était l'entrée du menu qui portait le drapeau `tbc` ; l'aéroport est
-  maintenant reconnu à la coordonnée choisie (`airportAt()`, rayon de 3 km
-  autour des cinq aéroports connus). Taper « Brussels Airport » affiche donc
-  toujours « à confirmer » et le bouton d'appel, jamais un prix que le
-  client n'a pas validé (CDC §11.4).
+- **La règle « pas de prix aéroport tant que le client ne l'a pas fixé »
+  a survécu à la liste déroulante.** L'aéroport est reconnu à la
+  coordonnée choisie (`airportAt()`, rayon de 3 km autour des cinq aéroports
+  connus), pas à une entrée de menu. Tant qu'aucun `price` n'est renseigné
+  sur l'entrée dans `destinations.js`, taper « Brussels Airport » affiche
+  toujours « à confirmer » et le bouton d'appel, jamais un prix inventé
+  (CDC §11.4). Zaventem (130 €) et Charleroi (150 €) ont un forfait fixe,
+  confirmé par le client le 2026-09-15 ; Liège, Maastricht et Eindhoven
+  restent « à confirmer ».
 - **Le `?from=` de la page d'accueil est traité comme du texte saisi** :
   tronqué à 120 caractères, et non résolu tant qu'il diffère de l'adresse
   par défaut. Le calcul automatique ne se déclenche donc que si le point de
@@ -447,8 +450,9 @@ placeholders `.airport-media`), elles doivent :
 - Numéro de licence IBP (vergunning individueel bezoldigd personenvervoer).
 - Confirmation indépendante du domaine `taxiqissi.be` (actuellement déduit
   de l'e-mail).
-- Distances/prix réels des transferts aéroport (actuellement `tbc`, comme
-  dans le prototype).
+- Prix réels des transferts aéroport : Zaventem (130 €) et Charleroi
+  (150 €) confirmés le 2026-09-15 ; Liège, Maastricht et Eindhoven restent
+  `tbc`, comme dans le prototype.
 - Liste définitive des communes desservies — celle affichée est le
   sous-ensemble "22 plus demandées" du prototype, pas la liste complète du
   CDC §3.

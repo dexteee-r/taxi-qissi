@@ -92,19 +92,20 @@ test.describe('price simulator', () => {
     await expect(page.locator('#line-night')).toBeVisible();
   });
 
-  test('shows "to be confirmed" instead of a price for airport transfers', async ({ page }) => {
+  test('shows "to be confirmed" instead of a price for airports without a fixed fare', async ({ page }) => {
     // The dropdown entry that carried the `tbc` flag is gone: the airport is
     // now recognised from the coordinate the visitor picked, so a typed
-    // "Brussels Airport" must still refuse to quote a price (CDC §11.4).
-    const zaventem = dest('zav');
+    // airport address must still refuse to quote a price (CDC §11.4) as
+    // long as the client hasn't set a fixed fare for it.
+    const liege = dest('lgg');
     await mockOrs(page, {
-      km: zaventem.km,
-      min: zaventem.min,
-      pointFor: () => ({ lat: zaventem.lat, lon: zaventem.lon }),
+      km: liege.km,
+      min: liege.min,
+      pointFor: () => ({ lat: liege.lat, lon: liege.lon }),
     });
     await page.goto('/nl/tarieven/');
 
-    await chooseAddress(page, '#dest', 'Brussels Airport');
+    await chooseAddress(page, '#dest', 'Luchthaven Luik');
     await page.click('#compute-btn');
 
     await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
@@ -121,6 +122,34 @@ test.describe('price simulator', () => {
     const message = decodeURIComponent(href.split('?text=')[1]);
     expect(message).toContain('Graag de prijs bevestigen');
     expect(message).not.toMatch(/\d+\.\d\d €/);
+  });
+
+  test('quotes the flat fare for an airport the client has priced', async ({ page }) => {
+    // Zaventem has a client-confirmed flat fare (see destinations.js):
+    // the simulator must show it instead of the base+km breakdown, and
+    // instead of "to be confirmed".
+    const zaventem = dest('zav');
+    await mockOrs(page, {
+      km: zaventem.km,
+      min: zaventem.min,
+      pointFor: () => ({ lat: zaventem.lat, lon: zaventem.lon }),
+    });
+    await page.goto('/nl/tarieven/');
+
+    await chooseAddress(page, '#dest', 'Brussels Airport');
+    await page.click('#compute-btn');
+
+    await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator('#price-label')).toHaveText(formatEuro(zaventem.price, 'nl'));
+    await expect(page.locator('#distance-label')).toContainText(formatKm(zaventem.km, 'nl'));
+    await expect(page.locator('#breakdown')).toBeHidden();
+    await expect(page.locator('#indicative-badge')).toBeVisible();
+    await expect(page.locator('#indicative-badge')).toHaveText('VAST TARIEF');
+    await expect(page.locator('#tbc-note')).toBeHidden();
+
+    const href = await page.locator('#whatsapp-send').getAttribute('href');
+    const message = decodeURIComponent(href.split('?text=')[1]);
+    expect(message).toContain(formatEuro(zaventem.price, 'nl'));
   });
 
   test('errors gracefully with the call button reachable when no destination is given', async ({ page }) => {

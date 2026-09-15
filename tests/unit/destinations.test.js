@@ -46,9 +46,17 @@ describe('preset destinations', () => {
     expect(FURTHEST_PRESET_KM * 1000).toBeGreaterThan(BUSINESS.serviceRadiusMeters);
   });
 
-  it('still hides a price for every airport', () => {
+  it('only quotes a fixed fare where the client has confirmed one', () => {
+    // Zaventem and Charleroi got a client-confirmed flat fare; the other
+    // three must still carry no price at all, invented or otherwise.
+    const confirmed = { zav: 130, cri: 150 };
     for (const id of AIRPORT_IDS) {
-      expect(DESTINATIONS.find((d) => d.id === id)?.tbc, id).toBe(true);
+      const airport = DESTINATIONS.find((d) => d.id === id);
+      if (id in confirmed) {
+        expect(airport.price, id).toBe(confirmed[id]);
+      } else {
+        expect(airport.price, id).toBeUndefined();
+      }
     }
   });
 });

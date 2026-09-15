@@ -10,6 +10,7 @@ export const nl = {
   menu: 'Menu',
   langLabel: 'Taal',
   indicative: 'INDICATIEVE PRIJS',
+  flatFare: 'VAST TARIEF',
   navHome: 'Home',
   navPrices: 'Tarieven',
   navAirport: 'Luchthavenvervoer',
@@ -95,11 +96,12 @@ export const nl = {
   tbcPrice: 'te bevestigen',
   tbcDist: 'afstand te bevestigen',
   tbcNote: 'De prijs van luchthaventransfers is nog niet bevestigd: bel ons voor de exacte schatting.',
-  aPendingNote: 'De afstanden en prijzen van de luchthaventransfers moeten nog bevestigd worden met Taxi QISSI.',
+  aPendingNote: 'Een vast tarief verschijnt zodra het met de klant is afgesproken; luchthavens zonder vermelde prijs blijven te bevestigen met Taxi QISSI.',
   aCtaTitle: 'Wat kost mijn transfer?',
   aCtaSub: 'Zelfde tarief als al onze ritten: 4 € opstap + 3 €/km.',
   aCtaBtn: 'Bereken mijn transfer',
   aPending: 'afstand en prijs te bevestigen',
+  aFlat: 'vast tarief, enkele rit',
 
 
   cSub: 'Bellen is het snelst. We nemen 24/7 op.',

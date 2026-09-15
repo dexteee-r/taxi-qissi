@@ -10,11 +10,11 @@
 // Les distances sont mesurées, pas estimées : `npm run verify:distances`.
 // `lat`/`lon` sont le point où le routeur termine réellement le trajet.
 export const DESTINATIONS = [
-  { id: 'zav', km: 42.8, min: 33, lat: 50.897070, lon: 4.479900, tbc: true, nl: 'Brussels Airport (Zaventem)', fr: 'Brussels Airport (Zaventem)', en: 'Brussels Airport (Zaventem)' },
-  { id: 'cri', km: 83.3, min: 66, lat: 50.461200, lon: 4.467920, tbc: true, nl: 'Brussels South (Charleroi)', fr: 'Brussels South (Charleroi)', en: 'Brussels South (Charleroi)' },
-  { id: 'lgg', km: 52.8, min: 38, lat: 50.642830, lon: 5.460430, tbc: true, nl: 'Luchthaven Luik', fr: 'Liège Airport', en: 'Liège Airport' },
-  { id: 'maa', km: 95.5, min: 65, lat: 50.911210, lon: 5.774460, tbc: true, nl: 'Maastricht Aachen Airport', fr: 'Maastricht Aachen Airport', en: 'Maastricht Aachen Airport' },
-  { id: 'ein', km: 104.3, min: 101, lat: 51.459850, lon: 5.395700, tbc: true, nl: 'Eindhoven Airport', fr: 'Eindhoven Airport', en: 'Eindhoven Airport' },
+  { id: 'zav', km: 42.8, min: 33, lat: 50.897070, lon: 4.479900, price: 130, nl: 'Brussels Airport (Zaventem)', fr: 'Brussels Airport (Zaventem)', en: 'Brussels Airport (Zaventem)' },
+  { id: 'cri', km: 83.3, min: 66, lat: 50.461200, lon: 4.467920, price: 150, nl: 'Brussels South (Charleroi)', fr: 'Brussels South (Charleroi)', en: 'Brussels South (Charleroi)' },
+  { id: 'lgg', km: 52.8, min: 38, lat: 50.642830, lon: 5.460430, nl: 'Luchthaven Luik', fr: 'Liège Airport', en: 'Liège Airport' },
+  { id: 'maa', km: 95.5, min: 65, lat: 50.911210, lon: 5.774460, nl: 'Maastricht Aachen Airport', fr: 'Maastricht Aachen Airport', en: 'Maastricht Aachen Airport' },
+  { id: 'ein', km: 104.3, min: 101, lat: 51.459850, lon: 5.395700, nl: 'Eindhoven Airport', fr: 'Eindhoven Airport', en: 'Eindhoven Airport' },
   { id: 'bru', km: 47.7, min: 44, lat: 50.846310, lon: 4.351460, nl: 'Brussel — centrum', fr: 'Bruxelles — centre', en: 'Brussels — city centre' },
   { id: 'leu', km: 33.6, min: 30, lat: 50.879640, lon: 4.700440, nl: 'Leuven', fr: 'Leuven', en: 'Leuven' },
   { id: 'has', km: 47, min: 50, lat: 50.929260, lon: 5.336430, nl: 'Hasselt', fr: 'Hasselt', en: 'Hasselt' },
@@ -27,8 +27,9 @@ export const DESTINATIONS = [
   { id: 'hos', km: 1.9, min: 7, lat: 50.810860, lon: 4.933900, nl: 'Regionaal Ziekenhuis, Tienen', fr: 'Hôpital régional, Tienen', en: 'Regional hospital, Tienen' },
 ];
 
-// `tbc: true` sur ces cinq-là : le cahier des charges interdit d'afficher un
-// prix d'aéroport tant que le client ne l'a pas fixé.
+// Un aéroport affiche son forfait fixe (`price`, en €, aller simple) dès que
+// le client l'a communiqué. Sans ce champ, le cahier des charges interdit
+// d'afficher un prix — calculé ou non — tant qu'il ne l'a pas fixé.
 export const AIRPORT_IDS = ['zav', 'cri', 'lgg', 'maa', 'ein'];
 
 // La destination la plus lointaine que le client propose. Au-delà, le

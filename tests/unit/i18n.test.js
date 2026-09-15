@@ -136,11 +136,16 @@ describe('translation completeness', () => {
 });
 
 describe('destinations dataset', () => {
-  it('keeps airport fares flagged as unconfirmed (CDC §3: no invented package)', () => {
+  it('keeps unconfirmed airport fares free of any invented price (CDC §3)', () => {
+    const confirmed = { zav: 130, cri: 150 };
     for (const id of AIRPORT_IDS) {
       const airport = DESTINATIONS.find((d) => d.id === id);
       expect(airport, id).toBeDefined();
-      expect(airport.tbc, id).toBe(true);
+      if (id in confirmed) {
+        expect(airport.price, id).toBe(confirmed[id]);
+      } else {
+        expect(airport.price, id).toBeUndefined();
+      }
     }
   });
 
