@@ -46,17 +46,15 @@ describe('preset destinations', () => {
     expect(FURTHEST_PRESET_KM * 1000).toBeGreaterThan(BUSINESS.serviceRadiusMeters);
   });
 
-  it('only quotes a fixed fare where the client has confirmed one', () => {
-    // Zaventem and Charleroi got a client-confirmed flat fare; the other
-    // three must still carry no price at all, invented or otherwise.
-    const confirmed = { zav: 130, cri: 150 };
-    for (const id of AIRPORT_IDS) {
-      const airport = DESTINATIONS.find((d) => d.id === id);
-      if (id in confirmed) {
-        expect(airport.price, id).toBe(confirmed[id]);
-      } else {
-        expect(airport.price, id).toBeUndefined();
-      }
+  it("quotes each airport's client-confirmed flat fare, never an invented one", () => {
+    // Confirmed by the client on 2026-09-15 (Zaventem/Charleroi) and
+    // 2026-09-16 (Liège/Maastricht/Eindhoven). If a new airport is ever
+    // added to AIRPORT_IDS without a matching entry here, this fails loudly
+    // instead of silently letting an unpriced destination through.
+    const confirmed = { zav: 130, cri: 150, lgg: 160, maa: 240, ein: 320 };
+    expect(Object.keys(confirmed).sort()).toEqual([...AIRPORT_IDS].sort());
+    for (const [id, price] of Object.entries(confirmed)) {
+      expect(DESTINATIONS.find((d) => d.id === id)?.price, id).toBe(price);
     }
   });
 });

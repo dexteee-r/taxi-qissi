@@ -96,7 +96,7 @@ export const en = {
   tbcPrice: 'to be confirmed',
   tbcDist: 'distance to be confirmed',
   tbcNote: "Airport transfer pricing isn't confirmed yet: call us for the exact estimate.",
-  aPendingNote: "A flat fare appears once it's been agreed with the client; airports without a listed price remain to be confirmed with Taxi QISSI.",
+  flatFareNote: 'These flat fares apply to a pickup in Tienen; the price may vary for a different pickup point. We always confirm the exact price before the ride.',
   aCtaTitle: 'What will my transfer cost?',
   aCtaSub: 'Same rate as all our rides: €4 pickup + €3/km.',
   aCtaBtn: 'Estimate my transfer',

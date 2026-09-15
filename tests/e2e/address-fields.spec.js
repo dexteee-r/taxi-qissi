@@ -205,9 +205,11 @@ test.describe('destination address', () => {
     await expect(page.locator('#long-distance-note')).toBeHidden();
   });
 
-  test('refuses to price an airport however the visitor got there', async ({ page }) => {
-    // No dropdown entry carries the `tbc` flag any more, so a typed airport
-    // address has to be recognised from its coordinate (CDC §11.4).
+  test('quotes an airport by its flat fare however the visitor got there, never the km breakdown', async ({ page }) => {
+    // No dropdown entry carries a flag any more: a typed airport address has
+    // to be recognised from its coordinate, not from matching a menu entry
+    // (CDC §11.4) — and once recognised, it must use the client-confirmed
+    // flat fare, never the base+km calculation.
     const liege = DESTINATIONS.find((d) => d.id === 'lgg');
     await mockOrs(page, {
       km: liege.km,
@@ -220,9 +222,9 @@ test.describe('destination address', () => {
     await page.click('#compute-btn');
     await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
 
-    await expect(page.locator('#price-label')).toHaveText(/confirmer/i);
-    await expect(page.locator('#tbc-note')).toBeVisible();
+    await expect(page.locator('#price-label')).toContainText('160');
     await expect(page.locator('#breakdown')).toBeHidden();
+    await expect(page.locator('#tbc-note')).toBeHidden();
   });
 });
 

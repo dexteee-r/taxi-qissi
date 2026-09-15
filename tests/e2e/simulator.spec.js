@@ -92,37 +92,14 @@ test.describe('price simulator', () => {
     await expect(page.locator('#line-night')).toBeVisible();
   });
 
-  test('shows "to be confirmed" instead of a price for airports without a fixed fare', async ({ page }) => {
-    // The dropdown entry that carried the `tbc` flag is gone: the airport is
-    // now recognised from the coordinate the visitor picked, so a typed
-    // airport address must still refuse to quote a price (CDC §11.4) as
-    // long as the client hasn't set a fixed fare for it.
-    const liege = dest('lgg');
-    await mockOrs(page, {
-      km: liege.km,
-      min: liege.min,
-      pointFor: () => ({ lat: liege.lat, lon: liege.lon }),
-    });
-    await page.goto('/nl/tarieven/');
-
-    await chooseAddress(page, '#dest', 'Luchthaven Luik');
-    await page.click('#compute-btn');
-
-    await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator('#price-label')).toHaveText('te bevestigen');
-    await expect(page.locator('#breakdown')).toBeHidden();
-    await expect(page.locator('#indicative-badge')).toBeHidden();
-
-    // The call CTA replaces the missing price.
-    const tbc = page.locator('#tbc-note');
-    await expect(tbc).toBeVisible();
-    await expect(tbc.locator(`a[href="tel:${PHONE}"]`)).toBeVisible();
-
-    const href = await page.locator('#whatsapp-send').getAttribute('href');
-    const message = decodeURIComponent(href.split('?text=')[1]);
-    expect(message).toContain('Graag de prijs bevestigen');
-    expect(message).not.toMatch(/\d+\.\d\d €/);
-  });
+  // The five airports in destinations.js all carry a client-confirmed flat
+  // fare as of 2026-09-16, so there is no real fixture left to exercise the
+  // "unconfirmed airport" branch (CDC §11.4: never invent a price) through
+  // the UI. That guarantee is still enforced by the code — `prixForfait`
+  // stays null for any airport without a `price` field — and is tested at
+  // the data layer in tests/unit/destinations.test.js and i18n.test.js,
+  // which fail loudly if a future airport is added to AIRPORT_IDS without a
+  // matching price.
 
   test('quotes the flat fare for an airport the client has priced', async ({ page }) => {
     // Zaventem has a client-confirmed flat fare (see destinations.js):
@@ -147,9 +124,34 @@ test.describe('price simulator', () => {
     await expect(page.locator('#indicative-badge')).toHaveText('VAST TARIEF');
     await expect(page.locator('#tbc-note')).toBeHidden();
 
+    // The client said this fare can vary for a pickup outside Tienen: the
+    // simulator must disclose that next to the price, not just on the
+    // airport-transfer page.
+    await expect(page.locator('#flat-fare-note')).toBeVisible();
+
     const href = await page.locator('#whatsapp-send').getAttribute('href');
     const message = decodeURIComponent(href.split('?text=')[1]);
     expect(message).toContain(formatEuro(zaventem.price, 'nl'));
+  });
+
+  test('quotes a different flat fare for another priced airport', async ({ page }) => {
+    // Regression guard: the flat fare must come from the matched airport,
+    // not be hard-coded to whichever one was tested first.
+    const eindhoven = dest('ein');
+    await mockOrs(page, {
+      km: eindhoven.km,
+      min: eindhoven.min,
+      pointFor: () => ({ lat: eindhoven.lat, lon: eindhoven.lon }),
+    });
+    await page.goto('/nl/tarieven/');
+
+    await chooseAddress(page, '#dest', 'Eindhoven Airport');
+    await page.click('#compute-btn');
+
+    await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator('#price-label')).toHaveText(formatEuro(eindhoven.price, 'nl'));
+    await expect(page.locator('#breakdown')).toBeHidden();
+    await expect(page.locator('#flat-fare-note')).toBeVisible();
   });
 
   test('errors gracefully with the call button reachable when no destination is given', async ({ page }) => {

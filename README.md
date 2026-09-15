@@ -97,11 +97,16 @@ Conséquences concrètes :
   a survécu à la liste déroulante.** L'aéroport est reconnu à la
   coordonnée choisie (`airportAt()`, rayon de 3 km autour des cinq aéroports
   connus), pas à une entrée de menu. Tant qu'aucun `price` n'est renseigné
-  sur l'entrée dans `destinations.js`, taper « Brussels Airport » affiche
-  toujours « à confirmer » et le bouton d'appel, jamais un prix inventé
-  (CDC §11.4). Zaventem (130 €) et Charleroi (150 €) ont un forfait fixe,
-  confirmé par le client le 2026-09-15 ; Liège, Maastricht et Eindhoven
-  restent « à confirmer ».
+  sur l'entrée dans `destinations.js`, taper « Brussels Airport » afficherait
+  « à confirmer » et le bouton d'appel, jamais un prix inventé (CDC §11.4).
+  Les cinq aéroports ont désormais un forfait fixe confirmé par le client
+  (Zaventem 130 €, Charleroi 150 € le 2026-09-15 ; Liège 160 €, Maastricht
+  240 €, Eindhoven 320 € le 2026-09-16) : la règle « aucun prix inventé »
+  reste testée au niveau des données (`tests/unit/destinations.test.js`),
+  prête à protéger un futur aéroport ajouté sans prix. Le client a aussi
+  précisé que ces forfaits sont ceux d'une prise en charge à Tienen et
+  peuvent varier pour un autre point de départ — d'où la note affichée sous
+  le prix (`flatFareNote`, `#flat-fare-note` dans le simulateur).
 - **Le `?from=` de la page d'accueil est traité comme du texte saisi** :
   tronqué à 120 caractères, et non résolu tant qu'il diffère de l'adresse
   par défaut. Le calcul automatique ne se déclenche donc que si le point de
@@ -450,9 +455,13 @@ placeholders `.airport-media`), elles doivent :
 - Numéro de licence IBP (vergunning individueel bezoldigd personenvervoer).
 - Confirmation indépendante du domaine `taxiqissi.be` (actuellement déduit
   de l'e-mail).
-- Prix réels des transferts aéroport : Zaventem (130 €) et Charleroi
-  (150 €) confirmés le 2026-09-15 ; Liège, Maastricht et Eindhoven restent
-  `tbc`, comme dans le prototype.
+- Règle précise de variation du forfait aéroport selon l'adresse de prise
+  en charge : les cinq prix (confirmés les 2026-09-15 et 2026-09-16) sont
+  ceux d'un départ de Tienen, mais le client a seulement signalé qu'ils
+  "peuvent différencier" pour un autre point de départ, sans donner de
+  règle de calcul. En attendant, le site affiche une note invitant à
+  confirmer le prix exact par téléphone (`flatFareNote`) plutôt que
+  d'inventer un ajustement.
 - Liste définitive des communes desservies — celle affichée est le
   sous-ensemble "22 plus demandées" du prototype, pas la liste complète du
   CDC §3.

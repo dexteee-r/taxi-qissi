@@ -164,6 +164,16 @@ const s = t(locale);
           </a>
         </div>
 
+        {/* Le forfait aéroport est celui d'une prise en charge à Tienen : le
+            client a précisé qu'il peut varier pour un autre point de départ
+            (voir destinations.js). */}
+        <div id="flat-fare-note" style="display:flex;flex-direction:column;gap:10px;align-items:flex-start" hidden>
+          <span style="display:flex;gap:8px;font:400 13px/1.5 var(--font-body);color:var(--color-text-muted)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>
+            {s.flatFareNote}
+          </span>
+        </div>
+
         {/* Affiché pour une course plus longue que tout ce que le client
             propose : le prix reste visible, mais mieux vaut s'entendre au
             téléphone. */}

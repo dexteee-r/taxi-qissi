@@ -96,7 +96,7 @@ export const nl = {
   tbcPrice: 'te bevestigen',
   tbcDist: 'afstand te bevestigen',
   tbcNote: 'De prijs van luchthaventransfers is nog niet bevestigd: bel ons voor de exacte schatting.',
-  aPendingNote: 'Een vast tarief verschijnt zodra het met de klant is afgesproken; luchthavens zonder vermelde prijs blijven te bevestigen met Taxi QISSI.',
+  flatFareNote: 'Deze vaste tarieven gelden voor een vertrek vanuit Tienen; de prijs kan afwijken bij een ander vertrekpunt. We bevestigen altijd de exacte prijs voor de rit.',
   aCtaTitle: 'Wat kost mijn transfer?',
   aCtaSub: 'Zelfde tarief als al onze ritten: 4 € opstap + 3 €/km.',
   aCtaBtn: 'Bereken mijn transfer',

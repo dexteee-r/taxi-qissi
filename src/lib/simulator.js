@@ -161,6 +161,7 @@ export function startSimulator() {
     // compteur : un forfait aéroport n'a pas de détail à afficher.
     el('breakdown').hidden = prixAConfirmer || prixForfait !== null;
     el('tbc-note').hidden = !prixAConfirmer;
+    el('flat-fare-note').hidden = prixForfait === null;
     el('line-pickup').textContent = formatEuro(tarif.breakdown.base, locale);
     el('line-km-label').textContent =
       `${formatKm(km, locale)} × ${formatEuro(FARE.perKmRate, locale)}`;

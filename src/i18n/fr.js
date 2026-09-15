@@ -96,7 +96,7 @@ export const fr = {
   tbcPrice: 'à confirmer',
   tbcDist: 'distance à confirmer',
   tbcNote: "Le prix des transferts aéroport n'est pas encore confirmé : appelez-nous pour l'estimation exacte.",
-  aPendingNote: "Un forfait s'affiche dès qu'il est fixé avec le client ; les aéroports sans prix indiqué restent à confirmer avec Taxi QISSI.",
+  flatFareNote: 'Ces forfaits correspondent à une prise en charge à Tienen ; le prix peut varier pour un autre point de départ. Nous confirmons toujours le prix exact avant le trajet.',
   aCtaTitle: 'Combien coûte mon transfert ?',
   aCtaSub: 'Même grille que toutes nos courses : 4 € de prise en charge + 3 €/km.',
   aCtaBtn: 'Estimer mon transfert',
