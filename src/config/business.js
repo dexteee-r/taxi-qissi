@@ -26,7 +26,8 @@ export const BUSINESS = {
   phone: '+32469230017', // format international, pour les liens tel:
   whatsapp: '32469230017', // format international, chiffres seuls, sans +
   email: 'info@taxiqissi.be',
-  // Déduit du domaine de l'e-mail, pas confirmé séparément.
+  // Déduit du domaine de l'e-mail à l'origine ; confirmé en direct le
+  // 2026-09-17 (le domaine répond et sert bien ce site, voir README).
   domain: 'taxiqissi.be',
   licenseNumber: '[TO_BE_CONFIRMED]', // licence taxi (IBP), toujours attendue du client
   // Les 22 communes affichées sur le site. C'est une liste d'affichage, pas

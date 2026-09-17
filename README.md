@@ -188,8 +188,11 @@ répertoire + repli sur `404.html`.
 
 **Confirmées** (source : prototype validé, confirmées réelles par
 l'utilisateur le 2026-09-04) : nom commercial (« Taxi QISSI »), téléphone,
-WhatsApp, e-mail. Le domaine `taxiqissi.be` est **déduit** du domaine de
-l'e-mail confirmé, pas explicitement validé séparément — à vérifier.
+WhatsApp, e-mail. Le domaine `taxiqissi.be` était **déduit** du domaine de
+l'e-mail confirmé, pas explicitement validé séparément — **confirmé le
+2026-09-17** : `taxiqissi.be` répond (redirection 308 vers
+`www.taxiqissi.be`, qui sert le site), et `site` dans `astro.config.mjs`
+pointait déjà sur la bonne valeur.
 
 **Toujours en attente** : `licenseNumber` (vergunning IBP — absente du
 prototype, non fournie). Reste `[TO_BE_CONFIRMED]` et s'affiche comme tel
@@ -197,9 +200,8 @@ dans le rendu — ne jamais la remplacer par une valeur plausible.
 
 Avant mise en ligne :
 
-1. Confirmer `BUSINESS.domain` et renseigner `BUSINESS.licenseNumber`.
-2. Vérifier que `site` dans `astro.config.mjs` correspond au domaine réel.
-3. Déclarer `ORS_API_KEY` **dans les variables d'environnement de l'hébergeur**
+1. Renseigner `BUSINESS.licenseNumber`.
+2. Déclarer `ORS_API_KEY` **dans les variables d'environnement de l'hébergeur**
    (sur Vercel : Settings → Environment Variables). Le `.env` local n'est pas
    déployé : sans ça, le simulateur fonctionne en local et échoue en
    production — plus aucune estimation n'est possible sans la clé. Puis **plafonner le quota journalier** sur le dashboard
@@ -367,13 +369,12 @@ les réponses, mais seulement quand la requête arrive sur
 `taxi-qissi.vercel.app` (matcher `host`). `taxiqissi.be` n'est pas concerné
 et reste indexable normalement.
 
-⚠️ Cette configuration n'a pas pu être vérifiée en conditions réelles
-depuis cet environnement (elle dépend du routage de périphérie de Vercel,
-qui ne s'exécute qu'au moment d'un vrai déploiement). Après le prochain
-déploiement, vérifier avec :
+✅ **Vérifié en conditions réelles le 2026-09-17** (le domaine `taxiqissi.be`
+ne répondait pas encore lors de l'écriture initiale de cette section) :
 
 ```sh
 curl -sI https://taxi-qissi.vercel.app/ | grep -i x-robots-tag
+# → X-Robots-Tag: noindex, nofollow
 curl -sI https://taxiqissi.be/ | grep -i x-robots-tag   # doit être vide
 ```
 
@@ -453,8 +454,6 @@ placeholders `.airport-media`), elles doivent :
 ## Points en attente côté client
 
 - Numéro de licence IBP (vergunning individueel bezoldigd personenvervoer).
-- Confirmation indépendante du domaine `taxiqissi.be` (actuellement déduit
-  de l'e-mail).
 - Règle précise de variation du forfait aéroport selon l'adresse de prise
   en charge : les cinq prix (confirmés les 2026-09-15 et 2026-09-16) sont
   ceux d'un départ de Tienen, mais le client a seulement signalé qu'ils
