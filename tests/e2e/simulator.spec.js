@@ -220,12 +220,18 @@ test.describe('price simulator', () => {
     await page.fill('#note', 'Vlucht SN2104');
     await page.click('#compute-btn');
     await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
+    // The route map's tiles fetch asynchronously *after* the price appears
+    // (README, "chargement différé") — without this wait, the assertion
+    // below raced them and flaked depending on machine timing.
+    await page.waitForLoadState('networkidle');
 
     // brief §1.1: the form is never submitted anywhere.
     expect(posts).toEqual([]);
-    // The two addresses reach the router by design (disclosed in the privacy
-    // policy). Everything else the visitor types stays in the browser.
-    expect(outbound.every((url) => url.startsWith('https://api.openrouteservice.org/'))).toBe(true);
+    // The two addresses reach the router by design, and the map's tiles
+    // come from OpenStreetMap — both disclosed in the privacy policy.
+    // Nothing else the visitor types should ever leave the browser.
+    const allowedHosts = ['api.openrouteservice.org', 'tile.openstreetmap.org'];
+    expect(outbound.every((url) => allowedHosts.includes(new URL(url).host))).toBe(true);
     expect(outbound.some((url) => url.includes('Jan') || url.includes('SN2104'))).toBe(false);
     expect(page.url()).not.toContain('Jan');
   });

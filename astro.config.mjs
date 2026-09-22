@@ -52,7 +52,15 @@ if (orsApiKey) {
 }
 
 export default defineConfig({
-  site: 'https://taxiqissi.be',
+  // Doit être la version RÉELLEMENT servie (vérifiée le 2026-09-22 :
+  // taxiqissi.be redirige en 308 vers www.taxiqissi.be, qui répond 200).
+  // canonical/hreflang/sitemap/robots.txt en dérivent tous (voir Astro.site
+  // dans BaseLayout.astro, SchemaOrg.astro, sitemap.xml.ts, robots.txt.ts) :
+  // un désaccord ici fait qu'une page se déclare canonique sur une URL qui
+  // redirige ailleurs — Google Search Console a fini par exclure les pages
+  // pour cette contradiction. Si le domaine primaire change un jour côté
+  // Vercel, cette valeur doit changer avec lui.
+  site: 'https://www.taxiqissi.be',
   trailingSlash: 'always',
   build: {
     format: 'directory',
