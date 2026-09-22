@@ -378,6 +378,22 @@ curl -sI https://taxi-qissi.vercel.app/ | grep -i x-robots-tag
 curl -sI https://taxiqissi.be/ | grep -i x-robots-tag   # doit être vide
 ```
 
+### Racine `/` : vraie redirection 301 (pas le tampon meta-refresh)
+
+`astro.config.mjs` déclare `redirects: { '/': '/nl/' }`, mais pour un build
+statique Astro ne peut produire qu'une page-tampon (`<meta
+http-equiv="refresh">` + `<meta name="robots" content="noindex">` — cette
+dernière balise volontaire, pour ne jamais indexer une page sans contenu).
+Search Console signale donc `/`, `www` et `http://` comme « exclues par la
+balise noindex » — normal, mais le rapport reste plus propre avec une vraie
+redirection.
+
+`vercel.json` en ajoute une (`redirects`, HTTP 301) : Vercel l'applique en
+périphérie, avant même de servir la page-tampon, sur tous les domaines
+(`taxiqissi.be`, `www.taxiqissi.be`, `taxi-qissi.vercel.app`). La
+page-tampon générée par Astro reste dans `dist/` en filet de secours pour
+un hébergement sans cette configuration (voir homelab ci-dessous).
+
 ## Hébergement (homelab)
 
 - Build reproductible, sans dépendance à un service tiers : `npm run build`
