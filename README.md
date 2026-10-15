@@ -510,10 +510,11 @@ placeholders `.airport-media`), elles doivent :
   d'inventer un ajustement.
 - Liste définitive des communes desservies — celle affichée est le
   sous-ensemble "22 plus demandées" du prototype, pas la liste complète du
-  CDC §3. Côté noms : seules les 5 paires NL/FR confirmées le 2026-10-15
-  sont affichées (Tienen/Tirlemont, Leuven/Louvain, Sint-Truiden/Saint-Trond,
-  Geldenaken/Jodoigne, Graven/Grez-Doiceau) ; Scherpenheuvel/Montaigu et
-  Hannut/Hannuit restent à confirmer avant d'être ajoutées.
+  CDC §3. Côté noms : seules les 7 paires NL/FR confirmées par le client
+  (2026-10-15 et 2026-10-19) sont affichées (Tienen/Tirlemont,
+  Leuven/Louvain, Sint-Truiden/Saint-Trond, Geldenaken/Jodoigne,
+  Graven/Grez-Doiceau, Scherpenheuvel/Montaigu, Hannuit/Hannut) ; toute autre
+  paire est à confirmer avant d'être ajoutée.
 - Relecture juridique de la politique de confidentialité et validation de
   l'affichage des tarifs (cf. `cdc_v1_taxi_qiss.md` §15).
 - Relecture du contenu anglais par le client si l'anglais reste au périmètre.

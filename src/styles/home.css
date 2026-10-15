@@ -198,11 +198,12 @@
   gap: 16px;
 }
 @media (min-width: 900px) {
-  /* La colonne des communes est plus large qu'avant (1.1fr) : « Saint-Trond
-     (Sint-Truiden) » doit tenir sur une ligne, sinon la grille a l'air
-     trouée. */
+  /* La colonne des communes est plus large qu'avant (1.1fr) : les noms
+     doubles les plus longs (« Scherpenheuvel (Montaigu) », 174 px) doivent
+     tenir sur une ligne dès 1280 px, sinon une ligne de la grille devient
+     plus haute que les autres et la liste a l'air trouée. */
   .zone-grid {
-    grid-template-columns: 1fr 1.4fr;
+    grid-template-columns: 1fr 1.55fr;
     gap: 64px;
     align-items: start;
   }

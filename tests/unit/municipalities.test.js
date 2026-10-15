@@ -12,6 +12,9 @@ describe('communeLabel', () => {
     expect(communeLabel(parNom('Tienen'), 'nl')).toBe('Tienen (Tirlemont)');
     expect(communeLabel(parNom('Geldenaken'), 'fr')).toBe('Jodoigne (Geldenaken)');
     expect(communeLabel(parNom('Geldenaken'), 'nl')).toBe('Geldenaken (Jodoigne)');
+    expect(communeLabel(parNom('Scherpenheuvel'), 'fr')).toBe('Montaigu (Scherpenheuvel)');
+    expect(communeLabel(parNom('Hannuit'), 'nl')).toBe('Hannuit (Hannut)');
+    expect(communeLabel(parNom('Hannuit'), 'fr')).toBe('Hannut (Hannuit)');
   });
 
   it('follows the Dutch name on the English pages', () => {
@@ -41,6 +44,9 @@ describe('findCommune', () => {
     expect(findCommune(communes, 'saint trond')?.nl).toBe('Sint-Truiden');
     expect(findCommune(communes, 'Grez-Doiceau')?.nl).toBe('Graven');
     expect(findCommune(communes, 'Graven')?.fr).toBe('Grez-Doiceau');
+    expect(findCommune(communes, 'Montaigu')?.nl).toBe('Scherpenheuvel');
+    expect(findCommune(communes, 'Hannut')?.nl).toBe('Hannuit');
+    expect(findCommune(communes, 'Hannuit')?.fr).toBe('Hannut');
   });
 
   it('prefers the start of a name over a fragment in the middle', () => {
