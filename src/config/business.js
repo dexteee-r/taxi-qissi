@@ -51,6 +51,12 @@ export const BUSINESS = {
     commune('Korbeek-Lo'), commune('Bierbeek'), commune('Geetbets'),
     commune('Oud-Heverlee'),
   ],
+  // Fiche Google Business Profile. Le lien d'avis est celui généré par Google
+  // pour la fiche (g.page/r/…/review) : il ouvre directement la fenêtre
+  // « écrire un avis ». L'identifiant de lieu vient de sa redirection ; il
+  // sert à relier le site à la fiche dans les données structurées.
+  googleReviewUrl: 'https://g.page/r/CUKWRUX3Lw21EAE/review',
+  googleMapsUrl: 'https://www.google.com/maps/place/?q=place_id:ChIJaWXrNF6m0a0RQpZFRfcvDbU',
   serviceRadiusMeters: 20000,
   // Centre approximatif de Tienen, pour les données structurées Google.
   // ATTENTION : les noms de propriétés sont écrits en entier (latitude,

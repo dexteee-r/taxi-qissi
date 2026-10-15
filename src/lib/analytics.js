@@ -17,7 +17,7 @@
 // seuls les noms d'événements ci-dessous circulent.
 import { track as trackVercel } from '@vercel/analytics';
 
-/** @typedef {'call_click'|'whatsapp_click'|'simulator_open'|'estimate_success'|'whatsapp_send'} EventName */
+/** @typedef {'call_click'|'whatsapp_click'|'simulator_open'|'estimate_success'|'whatsapp_send'|'google_review_click'} EventName */
 
 /** @param {EventName} nomEvenement */
 export function trackEvent(nomEvenement) {

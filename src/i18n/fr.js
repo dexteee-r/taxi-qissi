@@ -107,6 +107,9 @@ export const fr = {
 
 
   cSub: "Le plus simple reste l'appel. Nous répondons 24h/24.",
+  reviewTitle: 'Votre avis compte',
+  reviewText: "Une course avec Taxi QISSI à Tienen ? Laissez-nous un avis sur Google : cela aide d'autres clients à nous trouver.",
+  reviewBtn: 'Laisser un avis sur Google',
   lPhone: 'Téléphone',
   lMail: 'E-mail',
   lAddr: 'Adresse',

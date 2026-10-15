@@ -50,6 +50,11 @@ describe('business configuration', () => {
     expect(new Set(noms).size).toBe(noms.length);
   });
 
+  it('keeps the Google review link and the Maps listing on the same place', () => {
+    expect(BUSINESS.googleReviewUrl).toMatch(/^https:\/\/g\.page\/r\/[\w-]+\/review$/);
+    expect(BUSINESS.googleMapsUrl).toMatch(/^https:\/\/www\.google\.com\/maps\/place\/\?q=place_id:ChIJ[\w-]+$/);
+  });
+
   it('places the geo midpoint inside Belgium', () => {
     expect(BUSINESS.geoMidpoint.latitude).toBeGreaterThan(49.4);
     expect(BUSINESS.geoMidpoint.latitude).toBeLessThan(51.6);

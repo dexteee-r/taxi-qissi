@@ -107,6 +107,9 @@ export const nl = {
 
 
   cSub: 'Bellen is het snelst. We nemen 24/7 op.',
+  reviewTitle: 'Uw mening telt',
+  reviewText: 'Reed u met Taxi QISSI in Tienen? Laat een review achter op Google: zo vinden andere klanten ons makkelijker.',
+  reviewBtn: 'Review achterlaten op Google',
   lPhone: 'Telefoon',
   lMail: 'E-mail',
   lAddr: 'Adres',

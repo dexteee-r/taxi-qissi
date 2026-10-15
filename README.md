@@ -368,6 +368,25 @@ soigneusement sur mobile.
   clé `h1`) ; l'ancienne accroche (« Où voulez-vous aller ? », clé
   `heroHook`) est le sous-titre juste dessous (`.hero-hook`).
 
+## Avis Google
+
+Le lien d'avis de la fiche Google Business Profile
+(`BUSINESS.googleReviewUrl`, `src/config/business.js`) apparaît à deux endroits :
+le **pied de page** de toutes les pages (`Footer.astro`) et une invitation
+dédiée sur la page **Contact** (`ReviewCta.astro`). Le texte du lien dit ce
+qu'il fait (« Laisser un avis sur Google ») et nomme l'entreprise et la ville ;
+le lien est un lien normal (`target="_blank" rel="noopener"`, ni `nofollow` ni
+`sponsored` : c'est un lien éditorial vers sa propre fiche). Chaque clic est
+compté via `data-analytics="google_review_click"`.
+
+Les données structurées (`SchemaOrg.astro`) relient aussi le site à la fiche :
+`provider.hasMap` et `provider.sameAs` pointent vers l'URL Maps du lieu
+(`BUSINESS.googleMapsUrl`, construite avec l'identifiant de lieu que Google
+renvoie en redirigeant le lien d'avis). Si Google régénère le lien d'avis, les
+deux constantes sont à mettre à jour ensemble. Aucune note moyenne
+(`aggregateRating`) n'est publiée : on n'affiche jamais de notation qu'on ne
+peut pas prouver.
+
 ## Domaine Vercel bloqué à l'indexation
 
 `taxiqissi.be` et `taxi-qissi.vercel.app` servent le même build : un site
@@ -456,7 +475,7 @@ jamais faire échouer l'autre ni casser la page).
 
 Événements instrumentés (via l'attribut `data-analytics`, cf. brief §8) :
 `call_click`, `whatsapp_click`, `simulator_open`, `estimate_success`,
-`whatsapp_send`. Ne jamais faire transiter une donnée de formulaire dans un
+`whatsapp_send`, `google_review_click`. Ne jamais faire transiter une donnée de formulaire dans un
 événement — ce sont des noms d'événements anonymes, sans paramètre.
 
 Pour changer d'outil (Plausible CE, GoatCounter…) : la balise script dans

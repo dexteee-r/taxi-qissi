@@ -136,3 +136,26 @@
     height: 340px;
   }
 }
+
+/* Invitation à laisser un avis Google (page Contact) ------------------------ */
+.review-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: #fff;
+}
+.review-cta .sub {
+  margin-bottom: 14px;
+}
+@media (min-width: 900px) {
+  .review-cta {
+    padding: 22px;
+  }
+  .review-cta .sub {
+    font-size: 15px;
+    margin-bottom: 18px;
+  }
+}

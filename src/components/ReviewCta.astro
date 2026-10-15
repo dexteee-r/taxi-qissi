@@ -1,0 +1,23 @@
+---
+// Invite le visiteur à laisser un avis sur la fiche Google de l'entreprise.
+// Le lien vient de src/config/business.js (googleReviewUrl). Le texte nomme
+// l'entreprise et la ville : il lit clairement ce que le lien fait, pour un
+// visiteur comme pour un moteur de recherche ou une IA.
+import { BUSINESS } from '../config/business.js';
+import { t } from '../i18n/dictionary.js';
+
+interface Props {
+  locale: 'nl' | 'fr' | 'en';
+}
+const { locale } = Astro.props;
+const s = t(locale);
+---
+
+<aside class="review-cta" aria-labelledby="review-title">
+  <h2 id="review-title" class="h-card">{s.reviewTitle}</h2>
+  <p class="sub">{s.reviewText}</p>
+  <a class="btn btn-outline qissi-tap" href={BUSINESS.googleReviewUrl} target="_blank" rel="noopener" data-analytics="google_review_click">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="#f5b301" aria-hidden="true" style="flex:none"><path d="m12 2.8 2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8L12 2.8Z"/></svg>
+    {s.reviewBtn}
+  </a>
+</aside>

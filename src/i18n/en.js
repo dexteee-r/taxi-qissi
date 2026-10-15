@@ -107,6 +107,9 @@ export const en = {
 
 
   cSub: "Calling is the fastest way. We answer 24/7.",
+  reviewTitle: 'Your review matters',
+  reviewText: 'Took a ride with Taxi QISSI in Tienen? Leave us a review on Google: it helps other customers find us.',
+  reviewBtn: 'Leave a Google review',
   lPhone: 'Phone',
   lMail: 'Email',
   lAddr: 'Address',

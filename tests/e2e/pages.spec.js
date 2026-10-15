@@ -199,6 +199,61 @@ test.describe('Vercel Web Analytics', () => {
   });
 });
 
+test.describe('Avis Google', () => {
+  const LIEN = 'https://g.page/r/CUKWRUX3Lw21EAE/review';
+
+  // Le lien d'avis est dans le pied de page de chaque page (donc des 21),
+  // et la page Contact porte en plus une invitation dédiée.
+  for (const { key, locale, path } of ALL) {
+    test(`${locale} ${key} : le pied de page propose de laisser un avis`, async ({ page }) => {
+      await page.goto(path);
+      const lien = page.locator('footer a.footer-review');
+      await expect(lien).toHaveAttribute('href', LIEN);
+      await expect(lien).toHaveAttribute('target', '_blank');
+      // Lien éditorial vers sa propre fiche : ni nofollow ni sponsored, et
+      // noopener pour ne pas donner la main à l'onglet ouvert.
+      const rel = (await lien.getAttribute('rel')) ?? '';
+      expect(rel).toContain('noopener');
+      expect(rel).not.toMatch(/nofollow|sponsored/);
+      expect((await lien.innerText()).trim().length).toBeGreaterThan(10);
+    });
+  }
+
+  for (const [locale, path] of Object.entries(PAGES.contact)) {
+    test(`${locale} : la page Contact invite à laisser un avis, avec un texte explicite`, async ({ page }) => {
+      await page.goto(path);
+      const bloc = page.locator('.review-cta');
+      await expect(bloc).toBeVisible();
+      await expect(bloc.locator('h2')).not.toBeEmpty();
+      await expect(bloc).toContainText('Taxi QISSI');
+      await expect(bloc).toContainText('Tienen');
+      await expect(bloc.locator('a')).toHaveAttribute('href', LIEN);
+    });
+  }
+
+  test('un clic sur le lien est compté (google_review_click)', async ({ page }) => {
+    await page.goto('/fr/contact/');
+    const appels = await page.evaluate(() => {
+      const espion = [];
+      window.va = (...args) => espion.push(args);
+      // On empêche l'ouverture réelle : on teste le relais analytics, pas Google.
+      const lien = document.querySelector('.review-cta a');
+      lien.addEventListener('click', (e) => e.preventDefault());
+      lien.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      return espion;
+    });
+    expect(appels).toContainEqual(['event', { name: 'google_review_click' }]);
+  });
+
+  test('les données structurées relient le site à la fiche Google', async ({ page }) => {
+    await page.goto('/nl/');
+    const raw = await page.locator('script[type="application/ld+json"]').first().textContent();
+    const { provider } = JSON.parse(raw);
+    expect(provider.hasMap).toMatch(/^https:\/\/www\.google\.com\/maps\/place\/\?q=place_id:ChIJ/);
+    expect(provider.sameAs).toEqual([provider.hasMap]);
+  });
+});
+
 test.describe('site plumbing', () => {
   test('/ redirects to /nl/', async ({ page }) => {
     await page.goto('/');

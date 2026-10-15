@@ -17,6 +17,7 @@ Pour les décisions techniques et les explications de fond, voir le
 | Le style d'une partie du site | `src/styles/` | Un fichier par zone, voir plus bas |
 | Une question de la FAQ | `src/data/faqs.js` | |
 | Un service proposé | `src/data/services.js` | |
+| Le lien d'avis Google (pied de page, page Contact) | `src/config/business.js`, `googleReviewUrl` (+ `googleMapsUrl`) | Les deux viennent de la même fiche |
 | Une commune desservie | `src/config/business.js`, `servedMunicipalities` | `commune('Tienen', 'Tirlemont')` : nom néerlandais puis français ; un seul nom si identique |
 | Une destination du menu d'accueil | `src/data/destinations.js` | Relancer ensuite `npm run verify:distances` |
 | Les mentions légales, la confidentialité | `src/data/legal.js` | À relire si le simulateur change |

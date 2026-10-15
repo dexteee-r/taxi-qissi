@@ -28,6 +28,10 @@ const navItems = [
       <a href={`tel:${BUSINESS.phone}`} data-analytics="call_click">{BUSINESS.phoneDisplay}</a>
       <span>{BUSINESS.address.street}, {BUSINESS.address.postalCode} {BUSINESS.address.city}</span>
       <span>{BUSINESS.email}</span>
+      <a class="footer-review" href={BUSINESS.googleReviewUrl} target="_blank" rel="noopener" data-analytics="google_review_click">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.8 2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8L12 2.8Z"/></svg>
+        {s.reviewBtn}
+      </a>
     </div>
 
     <nav class="footer-nav" aria-label={s.navHome}>

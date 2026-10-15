@@ -39,6 +39,11 @@ const schema = {
       longitude: BUSINESS.geoMidpoint.longitude,
     },
     telephone: BUSINESS.phone,
+    // Relie le site à la fiche Google Business Profile (même entreprise,
+    // même lieu) : c'est ce que lisent Google et les moteurs génératifs pour
+    // rattacher les avis et la fiche à ce site.
+    hasMap: BUSINESS.googleMapsUrl,
+    sameAs: [BUSINESS.googleMapsUrl],
     email: BUSINESS.email,
     priceRange: `€${FARE.baseFare.toFixed(2)} + €${FARE.perKmRate.toFixed(2)}/km`,
     openingHoursSpecification: {
