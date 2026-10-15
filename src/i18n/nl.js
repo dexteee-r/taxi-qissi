@@ -32,6 +32,7 @@ export const nl = {
   zoneTitle: 'Bediende zone',
   zoneSub: 'Tienen en ongeveer 20 km rondom. Buiten deze zone: bel ons, vaak lukt het toch.',
   zonePh: 'Uw gemeente?',
+  zoneInputPh: 'Typ de naam van uw gemeente…',
   zoneAll: 'De 22 meest gevraagde gemeenten',
   zoneMore: 'Lijst niet volledig: we rijden ook veel verder.',
   zoneYes: 'Ja, we rijden in ',

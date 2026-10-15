@@ -32,6 +32,7 @@ export const en = {
   zoneTitle: 'Service area',
   zoneSub: "Tienen and roughly 20 km around it. Outside that area, call us: it's often still possible.",
   zonePh: 'Your municipality?',
+  zoneInputPh: 'Type the name of your municipality…',
   zoneAll: 'See the 22 most requested municipalities',
   zoneMore: 'Not an exhaustive list: we also drive well beyond it.',
   zoneYes: 'Yes, we serve ',

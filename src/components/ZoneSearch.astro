@@ -23,7 +23,7 @@ const communesRest = communes.slice(6);
       <p class="sub" style="max-width:42ch">{s.zoneSub}</p>
       <div class="field" style="max-width:340px">
         <label class="field-label" for="zone-query">{s.zonePh}</label>
-        <input type="text" id="zone-query" data-locale={locale} autocomplete="off" />
+        <input type="text" id="zone-query" data-locale={locale} autocomplete="off" placeholder={s.zoneInputPh} />
       </div>
 
       <p class="zone-hit" id="zone-hit" hidden>

@@ -141,6 +141,44 @@ test.describe('liste des communes desservies', () => {
     await expect(page.locator('#zone-hit-text')).toContainText('Jodoigne (Geldenaken)');
   });
 
+  // Sur ordinateur, les 6 premières communes et les 16 autres sont deux
+  // blocs : avec des colonnes CSS, les 6 premières se répartissaient 3/2/1 et
+  // laissaient un trou visible avant le second bloc. Les deux blocs sont
+  // maintenant des grilles à 3 colonnes identiques.
+  test('ordinateur : la liste forme une grille continue, sans trou', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'comportement spécifique au grand écran');
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/fr/');
+    const boites = await page.locator('.commune-chips span, .commune-more-list div').evaluateAll((els) =>
+      els.map((e) => {
+        const r = e.getBoundingClientRect();
+        return { x: Math.round(r.x), y: Math.round(r.y), h: Math.round(r.height) };
+      })
+    );
+    expect(boites).toHaveLength(22);
+
+    // Trois colonnes, au même endroit dans les deux blocs.
+    expect(new Set(boites.map((b) => b.x)).size).toBe(3);
+
+    // 22 communes sur 3 colonnes = 8 lignes (7 pleines + 1), sans ligne vide
+    // intercalée entre les deux blocs : l'écart entre deux lignes voisines
+    // ne dépasse jamais la hauteur d'une ligne de texte.
+    const lignes = [...new Set(boites.map((b) => b.y))].sort((a, b) => a - b);
+    expect(lignes).toHaveLength(8);
+    const hauteur = Math.max(...boites.map((b) => b.h));
+    for (let i = 1; i < lignes.length; i++) {
+      expect(lignes[i] - lignes[i - 1], `écart avant la ligne ${i + 1}`).toBeLessThanOrEqual(hauteur + 2);
+    }
+  });
+
+  test('le champ « Votre commune ? » invite à taper un nom (placeholder)', async ({ page }) => {
+    for (const locale of ['nl', 'fr', 'en']) {
+      await page.goto(`/${locale}/`);
+      const ph = await page.locator('#zone-query').getAttribute('placeholder');
+      expect(ph?.length ?? 0, locale).toBeGreaterThan(10);
+    }
+  });
+
   test('ordinateur : les 22 communes sont visibles sans interaction', async ({ page, isMobile }) => {
     test.skip(isMobile, 'comportement spécifique au grand écran');
     await page.goto('/fr/');

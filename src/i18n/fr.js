@@ -32,6 +32,7 @@ export const fr = {
   zoneTitle: 'Zone desservie',
   zoneSub: "Tienen et environ 20 km alentour. En dehors de cette zone, appelez-nous : c'est souvent possible.",
   zonePh: 'Votre commune ?',
+  zoneInputPh: 'Tapez le nom de votre commune…',
   zoneAll: 'Voir les 22 communes les plus demandées',
   zoneMore: 'Liste non exhaustive : nous roulons aussi bien au-delà.',
   zoneYes: 'Oui, nous desservons ',

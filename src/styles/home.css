@@ -198,8 +198,11 @@
   gap: 16px;
 }
 @media (min-width: 900px) {
+  /* La colonne des communes est plus large qu'avant (1.1fr) : « Saint-Trond
+     (Sint-Truiden) » doit tenir sur une ligne, sinon la grille a l'air
+     trouée. */
   .zone-grid {
-    grid-template-columns: 1fr 1.1fr;
+    grid-template-columns: 1fr 1.4fr;
     gap: 64px;
     align-items: start;
   }
@@ -273,12 +276,18 @@
 }
 @media (min-width: 900px) {
   /* Les 6 premières communes perdent leur style de pastille et rejoignent
-     la mise en page en colonnes des 16 autres — mêmes communes, juste
-     redessinées, jamais réécrites une seconde fois. */
+     la mise en page des 16 autres — mêmes communes, juste redessinées,
+     jamais réécrites une seconde fois.
+
+     Les deux blocs sont des grilles à 3 colonnes identiques, lues de gauche
+     à droite : les colonnes tombent exactement au même endroit d'un bloc à
+     l'autre, et 6 communes = 2 lignes pleines. Avec des colonnes CSS
+     (`columns: 3`), les 6 premières se répartissaient 3/2/1 et laissaient un
+     trou à droite avant le second bloc. */
   .commune-chips {
-    display: block;
-    columns: 3;
-    column-gap: 28px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0 20px; /* annule le gap de 7px des pastilles mobiles */
     margin-top: 0;
   }
   .commune-chips span {
@@ -287,21 +296,21 @@
     color: var(--color-text-muted);
     border: 0;
     padding: 0;
-    break-inside: avoid;
   }
   /* Le dépliant mobile n'a plus de raison d'être replié : ses 16 communes
-     doivent être visibles d'emblée, dans le prolongement des 6 premières. */
+     doivent être visibles d'emblée, dans le prolongement des 6 premières
+     (sans marge entre les deux : la liste doit se lire d'un seul tenant). */
   .commune-more {
-    margin-top: 10px;
+    margin-top: 0;
     border-top: 0;
   }
   .commune-more > summary {
     display: none;
   }
   .commune-more-list {
-    display: block;
-    columns: 3;
-    column-gap: 28px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: 20px;
     padding-bottom: 0;
   }
   .commune-more-list div {
