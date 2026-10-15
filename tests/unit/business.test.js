@@ -45,8 +45,9 @@ describe('business configuration', () => {
   it('describes the served area as the CDC does (20 km around Tienen)', () => {
     expect(BUSINESS.serviceRadiusMeters).toBe(20000);
     expect(BUSINESS.servedMunicipalities.length).toBeGreaterThan(0);
-    expect(BUSINESS.servedMunicipalities).toContain('Tienen');
-    expect(new Set(BUSINESS.servedMunicipalities).size).toBe(BUSINESS.servedMunicipalities.length);
+    expect(BUSINESS.servedMunicipalities.map((c) => c.nl)).toContain('Tienen');
+    const noms = BUSINESS.servedMunicipalities.map((c) => c.nl);
+    expect(new Set(noms).size).toBe(noms.length);
   });
 
   it('places the geo midpoint inside Belgium', () => {

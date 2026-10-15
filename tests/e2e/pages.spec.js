@@ -54,6 +54,21 @@ test.describe('the 21 pages', () => {
   }
 });
 
+test.describe("H1 de la page d'accueil", () => {
+  // Le <h1> porte le mot-clé (« Taxi à Tienen… ») ; l'ancienne accroche
+  // descend en sous-titre juste dessous, elle n'est pas supprimée.
+  const H1 = { nl: 'Taxi in Tienen, dag en nacht', fr: 'Taxi à Tienen, jour et nuit', en: 'Taxi in Tienen, day and night' };
+  const ACCROCHE = { nl: 'Waar wilt u naartoe?', fr: 'Où voulez-vous aller ?', en: 'Where are you headed?' };
+
+  for (const [locale, path] of Object.entries(PAGES.home)) {
+    test(`${locale} : le H1 contient le mot-clé, l'accroche est le sous-titre`, async ({ page }) => {
+      await page.goto(path);
+      await expect(page.locator('h1')).toHaveText(H1[locale]);
+      await expect(page.locator('h1 + .hero-hook')).toHaveText(ACCROCHE[locale]);
+    });
+  }
+});
+
 test.describe('language switching keeps you on the same page', () => {
   // The switcher is a native <details>: open the disclosure, then pick a
   // language — the same two steps a visitor takes.

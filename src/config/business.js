@@ -10,6 +10,9 @@
 // été mesurées : les deux doivent rester d'accord.
 const ROUTING_ORIGIN = { lat: 50.8075398, lon: 4.9371503 };
 
+// Une commune desservie : son nom néerlandais, et son nom français s'il diffère.
+const commune = (nl, fr = nl) => ({ nl, fr });
+
 export const BUSINESS = {
   legalName: 'Q.I.S.S SRL',
   // Confirmé par le client.
@@ -32,11 +35,21 @@ export const BUSINESS = {
   licenseNumber: '[TO_BE_CONFIRMED]', // licence taxi (IBP), toujours attendue du client
   // Les 22 communes affichées sur le site. C'est une liste d'affichage, pas
   // la définition exacte de la zone desservie.
+  //
+  // Chaque commune porte son nom néerlandais (nl) et son nom français (fr) ;
+  // un seul nom donné veut dire « identique dans les deux langues ». Seules
+  // les paires confirmées par le client (2026-10-15) sont renseignées —
+  // n'en ajouter aucune de mémoire. Voir src/lib/municipalities.js pour
+  // l'affichage et la recherche.
   servedMunicipalities: [
-    'Tienen', 'Leuven', 'Kessel-Lo', 'Sint-Truiden', 'Heverlee', 'Wilsele',
-    'Scherpenheuvel', 'Landen', 'Grez-Doiceau', 'Jodoigne', 'Lubbeek', 'Tielt',
-    'Linden', 'Hannut', 'Hoegaarden', 'Holsbeek', 'Boutersem', 'Bekkevoort',
-    'Korbeek-Lo', 'Bierbeek', 'Geetbets', 'Oud-Heverlee',
+    commune('Tienen', 'Tirlemont'), commune('Leuven', 'Louvain'), commune('Kessel-Lo'),
+    commune('Sint-Truiden', 'Saint-Trond'), commune('Heverlee'), commune('Wilsele'),
+    commune('Scherpenheuvel'), commune('Landen'), commune('Graven', 'Grez-Doiceau'),
+    commune('Geldenaken', 'Jodoigne'), commune('Lubbeek'), commune('Tielt'),
+    commune('Linden'), commune('Hannut'), commune('Hoegaarden'),
+    commune('Holsbeek'), commune('Boutersem'), commune('Bekkevoort'),
+    commune('Korbeek-Lo'), commune('Bierbeek'), commune('Geetbets'),
+    commune('Oud-Heverlee'),
   ],
   serviceRadiusMeters: 20000,
   // Centre approximatif de Tienen, pour les données structurées Google.

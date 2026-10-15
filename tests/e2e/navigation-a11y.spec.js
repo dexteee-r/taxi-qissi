@@ -114,6 +114,33 @@ test.describe('liste des communes desservies', () => {
     await expect(page.locator('.commune-list')).toHaveCount(0);
   });
 
+  // Chaque langue affiche d'abord son propre nom, puis l'autre entre
+  // parenthèses : « Jodoigne » ne doit plus s'afficher seul côté néerlandais.
+  test('les noms français et néerlandais sont tous deux dans le texte', async ({ page }) => {
+    const noms = async (chemin) => {
+      await page.goto(chemin);
+      return page.locator('.commune-chips span, .commune-more-list div').allTextContents();
+    };
+    const fr = await noms('/fr/');
+    expect(fr).toContain('Tirlemont (Tienen)');
+    expect(fr).toContain('Jodoigne (Geldenaken)');
+    const nl = await noms('/nl/');
+    expect(nl).toContain('Tienen (Tirlemont)');
+    expect(nl).toContain('Geldenaken (Jodoigne)');
+    expect(nl).toContain('Hoegaarden');
+  });
+
+  test('la recherche reconnaît le nom français comme le néerlandais', async ({ page }) => {
+    await page.goto('/nl/');
+    await page.fill('#zone-query', 'Tirlemont');
+    await expect(page.locator('#zone-hit')).toBeVisible();
+    await expect(page.locator('#zone-hit-text')).toContainText('Tienen (Tirlemont)');
+
+    await page.goto('/fr/');
+    await page.fill('#zone-query', 'Geldenaken');
+    await expect(page.locator('#zone-hit-text')).toContainText('Jodoigne (Geldenaken)');
+  });
+
   test('ordinateur : les 22 communes sont visibles sans interaction', async ({ page, isMobile }) => {
     test.skip(isMobile, 'comportement spécifique au grand écran');
     await page.goto('/fr/');

@@ -19,7 +19,8 @@ export const fr = {
   navLegal: 'Mentions légales',
   navPrivacy: 'Politique de confidentialité',
 
-  h1: 'Où voulez-vous aller ?',
+  h1: 'Taxi à Tienen, jour et nuit',
+  heroHook: 'Où voulez-vous aller ?',
   heroSub: "Course immédiate ou réservée à l'avance, dans Tienen et 20 km alentour. Transferts vers tous les aéroports.",
   trust2: 'Paiement dans le taxi : carte ou cash',
 

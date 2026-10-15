@@ -19,7 +19,8 @@ export const en = {
   navLegal: 'Legal notice',
   navPrivacy: 'Privacy policy',
 
-  h1: 'Where are you headed?',
+  h1: 'Taxi in Tienen, day and night',
+  heroHook: 'Where are you headed?',
   heroSub: 'Ride now or book ahead, in Tienen and up to 20 km around it. Transfers to every airport.',
   trust2: 'Pay in the taxi: card or cash',
 

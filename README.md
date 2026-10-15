@@ -356,6 +356,18 @@ hauteur du header (64px) au lieu de couvrir l'écran. Si vous réintroduisez
 un flou sur le header, sortez le menu mobile de sa hiérarchie DOM, ou testez
 soigneusement sur mobile.
 
+## Toponymes bilingues et H1 de l'accueil
+
+- **Communes** (`servedMunicipalities`, `src/lib/municipalities.js`) : chaque
+  commune porte son nom néerlandais et français. La page affiche celui de sa
+  langue d'abord, l'autre entre parenthèses (« Tirlemont (Tienen) » en FR,
+  « Tienen (Tirlemont) » en NL/EN) — les deux formes sont dans le texte, donc
+  indexables. Le champ « Votre commune ? » reconnaît l'un ou l'autre. Ne
+  renseigner une paire que si le client l'a confirmée.
+- **H1 de l'accueil** : porte le mot-clé (« Taxi à Tienen, jour et nuit »,
+  clé `h1`) ; l'ancienne accroche (« Où voulez-vous aller ? », clé
+  `heroHook`) est le sous-titre juste dessous (`.hero-hook`).
+
 ## Domaine Vercel bloqué à l'indexation
 
 `taxiqissi.be` et `taxi-qissi.vercel.app` servent le même build : un site
@@ -479,7 +491,10 @@ placeholders `.airport-media`), elles doivent :
   d'inventer un ajustement.
 - Liste définitive des communes desservies — celle affichée est le
   sous-ensemble "22 plus demandées" du prototype, pas la liste complète du
-  CDC §3.
+  CDC §3. Côté noms : seules les 5 paires NL/FR confirmées le 2026-10-15
+  sont affichées (Tienen/Tirlemont, Leuven/Louvain, Sint-Truiden/Saint-Trond,
+  Geldenaken/Jodoigne, Graven/Grez-Doiceau) ; Scherpenheuvel/Montaigu et
+  Hannut/Hannuit restent à confirmer avant d'être ajoutées.
 - Relecture juridique de la politique de confidentialité et validation de
   l'affichage des tarifs (cf. `cdc_v1_taxi_qiss.md` §15).
 - Relecture du contenu anglais par le client si l'anglais reste au périmètre.

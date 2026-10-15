@@ -4,13 +4,14 @@
 // reste se déplie. La liste vient de src/config/business.js.
 import { t } from '../i18n/dictionary.js';
 import { BUSINESS } from '../config/business.js';
+import { communeLabel } from '../lib/municipalities.js';
 
 interface Props {
   locale: 'nl' | 'fr' | 'en';
 }
 const { locale } = Astro.props;
 const s = t(locale);
-const communes = BUSINESS.servedMunicipalities;
+const communes = BUSINESS.servedMunicipalities.map((c) => communeLabel(c, locale));
 const communesMain = communes.slice(0, 6);
 const communesRest = communes.slice(6);
 ---
@@ -68,6 +69,7 @@ const communesRest = communes.slice(6);
 <script>
   import { BUSINESS } from '../config/business.js';
   import { dictionary } from '../i18n/dictionary.js';
+  import { communeLabel, findCommune, normalize } from '../lib/municipalities.js';
 
   // Sur ordinateur, les 16 communes du dépliant doivent être visibles
   // d'emblée (le bouton "Voir plus" est masqué en CSS à partir de 900px).
@@ -88,14 +90,6 @@ const communesRest = communes.slice(6);
     estOrdinateur.addEventListener('change', synchroniser);
   }
 
-  function norm(str) {
-    return str
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '')
-      .replace(/[^a-z]/g, '');
-  }
-
   const input = document.getElementById('zone-query');
   const hit = document.getElementById('zone-hit');
   const miss = document.getElementById('zone-miss');
@@ -105,19 +99,15 @@ const communesRest = communes.slice(6);
     const s = dictionary[locale];
 
     input.addEventListener('input', () => {
-      const zq = norm(input.value);
-      if (zq.length < 3) {
+      if (normalize(input.value).length < 3) {
         hit.hidden = true;
         miss.hidden = true;
         return;
       }
-      const match =
-        BUSINESS.servedMunicipalities.find((c) => norm(c).indexOf(zq) === 0) ||
-        BUSINESS.servedMunicipalities.find((c) => norm(c).indexOf(zq) >= 0) ||
-        null;
+      const match = findCommune(BUSINESS.servedMunicipalities, input.value);
 
       if (match) {
-        document.getElementById('zone-hit-text').textContent = `${s.zoneYes}${match}.`;
+        document.getElementById('zone-hit-text').textContent = `${s.zoneYes}${communeLabel(match, locale)}.`;
         hit.hidden = false;
         miss.hidden = true;
       } else {

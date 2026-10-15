@@ -93,6 +93,14 @@
 .hero-grid {
   display: grid;
 }
+/* L'ancienne accroche (« Où voulez-vous aller ? ») : le <h1> porte désormais
+   le mot-clé, elle descend en sous-titre juste dessous. */
+.hero-hook {
+  font: 700 20px/1.25 var(--font-display);
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  margin: 0 0 10px;
+}
 .trust-row {
   display: flex;
   align-items: center;
@@ -153,6 +161,10 @@
     grid-template-columns: 1.08fr 0.92fr;
     gap: 64px;
     align-items: start;
+  }
+  .hero-hook {
+    font-size: 26px;
+    margin-bottom: 14px;
   }
   .trust-row {
     font-size: 13.5px;

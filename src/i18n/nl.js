@@ -19,7 +19,8 @@ export const nl = {
   navLegal: 'Juridische info',
   navPrivacy: 'Privacybeleid',
 
-  h1: 'Waar wilt u naartoe?',
+  h1: 'Taxi in Tienen, dag en nacht',
+  heroHook: 'Waar wilt u naartoe?',
   heroSub: 'Directe rit of vooraf gereserveerd, in Tienen en 20 km rondom. Transfers naar alle luchthavens.',
   trust2: 'Betalen in de taxi: kaart of cash',
 
