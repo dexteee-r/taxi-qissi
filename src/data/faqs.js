@@ -1,5 +1,7 @@
 // Les questions/réponses de la FAQ, affichées sur la page d'accueil.
 // Elles alimentent aussi les données structurées lues par Google.
+import { FARE } from '../config/business.js';
+import { formatEuro } from '../lib/format.js';
 
 export const FAQS = {
   fr: [
@@ -28,5 +30,58 @@ export const FAQS = {
     { q: 'Do you wait if my flight is delayed?', a: "Yes, if you give us your flight number. Waiting time is billed at €36/h beyond the agreed time." },
     { q: 'Do you take large luggage?', a: 'Yes. Mention the number of suitcases in your WhatsApp message so we send the right vehicle.' },
     { q: 'Do you go outside the 20 km zone?', a: 'Yes, for airports and long distances. Ask us for an estimate via WhatsApp.' },
+  ],
+};
+
+// La FAQ de la page Tarifs (textes validés le 2026-10-19). Les montants
+// viennent de la grille tarifaire (src/config/business.js) : changer un tarif
+// là-bas change aussi cette FAQ, sans la réécrire à la main.
+const prix = (montant, locale) => formatEuro(montant, locale);
+
+export const FAQS_RATES = {
+  fr: [
+    {
+      q: "Comment est calculé le prix d'une course ?",
+      a: `${prix(FARE.baseFare, 'fr')} de prise en charge, plus ${prix(FARE.perKmRate, 'fr')} par kilomètre. Un supplément de nuit de ${prix(FARE.nightSurcharge, 'fr')} s'applique entre 22h et 4h. Le prix définitif est celui du compteur.`,
+    },
+    {
+      q: "Comment l'attente est-elle facturée ?",
+      a: `${prix(FARE.waitingRatePerHour, 'fr')} de l'heure, calculés au prorata, à la seconde près : 1 minute 14 d'attente se facture 1 minute 14, pas une heure entière.`,
+    },
+    { q: 'Puis-je payer par carte ?', a: 'Oui : carte ou cash, directement dans le taxi.' },
+    {
+      q: 'Desservez-vous la gare de Tienen ?',
+      a: "Oui, de jour comme de nuit. Pour un train tôt le matin, réservez à l'avance par téléphone ou WhatsApp : nous notons l'heure et nous y sommes.",
+    },
+  ],
+  nl: [
+    {
+      q: 'Hoe wordt de prijs van een rit berekend?',
+      a: `${prix(FARE.baseFare, 'nl')} opstap, plus ${prix(FARE.perKmRate, 'nl')} per kilometer. Tussen 22u en 4u geldt een nachttoeslag van ${prix(FARE.nightSurcharge, 'nl')}. De definitieve prijs is die van de meter.`,
+    },
+    {
+      q: 'Hoe wordt wachttijd aangerekend?',
+      a: `${prix(FARE.waitingRatePerHour, 'nl')} per uur, berekend naar verstreken tijd, tot op de seconde: 1 minuut 14 wachten kost 1 minuut 14, geen volledig uur.`,
+    },
+    { q: 'Kan ik met kaart betalen?', a: 'Ja: kaart of cash, rechtstreeks in de taxi.' },
+    {
+      q: 'Rijdt u naar het station van Tienen?',
+      a: 'Ja, dag en nacht. Voor een vroege trein reserveert u vooraf via telefoon of WhatsApp: wij noteren het uur en staan er.',
+    },
+  ],
+  en: [
+    {
+      q: 'How is the price of a ride calculated?',
+      a: `${prix(FARE.baseFare, 'en')} pickup fee, plus ${prix(FARE.perKmRate, 'en')} per kilometre. A ${prix(FARE.nightSurcharge, 'en')} night surcharge applies between 10pm and 4am. The final price is the one on the meter.`,
+    },
+    {
+      q: 'How is waiting time billed?',
+      a: `${prix(FARE.waitingRatePerHour, 'en')} per hour, billed pro rata down to the second: 1 minute 14 seconds of waiting is billed as 1 minute 14 seconds, not a full hour.`,
+    },
+    { q: 'Can I pay by card?', a: 'Yes: card or cash, directly in the taxi.' },
+    {
+      q: 'Do you serve Tienen station?',
+      a: "Yes, day and night. For an early train, book ahead by phone or WhatsApp: we note the time and we're there.",
+    },
   ],
 };

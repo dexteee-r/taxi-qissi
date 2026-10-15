@@ -12,21 +12,21 @@ export const SERVICE_ICONS = [
 export const SERVICES = {
   fr: [
     { title: 'Course immédiate', desc: 'Un appel, une voiture. À toute heure.', long: 'Vous appelez, nous partons. Dans Tienen et les communes voisines, de jour comme de nuit.' },
-    { title: "Réservation à l'avance", desc: 'Train tôt le matin, rendez-vous, retour de soirée.', long: "Train de 6h, rendez-vous à l'hôpital, retour de mariage : nous notons l'heure et nous y sommes." },
+    { title: "Réservation à l'avance", desc: 'Train tôt le matin, rendez-vous, retour de soirée.', long: "Train de 6h à la gare de Tienen, rendez-vous à l'hôpital, retour de mariage : nous notons l'heure et nous y sommes." },
     { title: 'Aéroport & gare', desc: 'Tous les aéroports, départ comme retour.', long: 'Tous les aéroports belges et frontaliers, aller comme retour, avec suivi du vol si vous nous donnez le numéro.' },
     { title: 'Événementiel', desc: 'Mariage, soirée, sortie de groupe.', long: "Mariages, fêtes, sorties de groupe. Plusieurs véhicules sur demande, horaires convenus à l'avance." },
     { title: 'Entreprises', desc: 'Trajets récurrents et facturation.', long: 'Trajets récurrents, accueil de vos clients, facturation mensuelle. Contactez-nous pour un accord.' },
   ],
   nl: [
     { title: 'Directe rit', desc: 'Eén telefoontje, één wagen. Op elk uur.', long: 'U belt, wij rijden. In Tienen en de buurgemeenten, dag en nacht.' },
-    { title: 'Reservering vooraf', desc: 'Vroege trein, afspraak, terugrit ’s avonds.', long: 'Trein van 6u, afspraak in het ziekenhuis, terugrit na een feest: wij noteren het uur en staan er.' },
+    { title: 'Reservering vooraf', desc: 'Vroege trein, afspraak, terugrit ’s avonds.', long: 'Trein van 6u vanaf station Tienen, afspraak in het ziekenhuis, terugrit na een feest: wij noteren het uur en staan er.' },
     { title: 'Luchthaven & station', desc: 'Alle luchthavens, heen en terug.', long: 'Alle Belgische en grensluchthavens, heen en terug, met vluchtopvolging als u het nummer doorgeeft.' },
     { title: 'Evenementen', desc: 'Huwelijk, feest, groepsuitstap.', long: 'Huwelijken, feesten, groepsuitstappen. Meerdere wagens op aanvraag, uren vooraf afgesproken.' },
     { title: 'Bedrijven', desc: 'Vaste ritten en facturatie.', long: 'Vaste ritten, uw klanten ophalen, maandelijkse facturatie. Contacteer ons voor een akkoord.' },
   ],
   en: [
     { title: 'Immediate ride', desc: 'One call, one car. Any time.', long: "You call, we drive. In Tienen and the neighbouring municipalities, day and night." },
-    { title: 'Advance booking', desc: 'Early train, appointment, evening return.', long: "6am train, hospital appointment, ride home after a wedding: we note the time and we're there." },
+    { title: 'Advance booking', desc: 'Early train, appointment, evening return.', long: "6am train from Tienen station, hospital appointment, ride home after a wedding: we note the time and we're there." },
     { title: 'Airport & station', desc: 'All airports, outbound and return.', long: 'All Belgian and cross-border airports, both ways, with flight tracking if you give us the flight number.' },
     { title: 'Events', desc: 'Weddings, parties, group outings.', long: 'Weddings, parties, group outings. Several vehicles on request, times agreed in advance.' },
     { title: 'Businesses', desc: 'Recurring rides and invoicing.', long: 'Recurring rides, picking up your clients, monthly invoicing. Contact us to set up an agreement.' },

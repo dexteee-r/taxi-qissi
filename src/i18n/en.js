@@ -110,6 +110,8 @@ export const en = {
   reviewTitle: 'Your review matters',
   reviewText: 'Took a ride with Taxi QISSI in Tienen? Leave us a review on Google: it helps other customers find us.',
   reviewBtn: 'Leave a Google review',
+  tipsTitle: "What should you include in your message?",
+  tipsText: "So we can reply quickly, include: your pickup address, your destination, the date and time, the number of passengers and bags, and your flight number for an airport.",
   lPhone: 'Phone',
   lMail: 'Email',
   lAddr: 'Address',

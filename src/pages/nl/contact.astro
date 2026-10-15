@@ -6,6 +6,7 @@ import { BUSINESS } from '../../config/business.js';
 import { WHATSAPP_PLAIN_URL } from '../../lib/whatsapp.js';
 import ContactDetails from '../../components/ContactDetails.astro';
 import ServiceAreaMap from '../../components/ServiceAreaMap.astro';
+import MessageTips from '../../components/MessageTips.astro';
 import ReviewCta from '../../components/ReviewCta.astro';
 
 const locale = 'nl';
@@ -32,6 +33,7 @@ const meta = seo[locale].contact;
         </div>
 
         <ContactDetails locale={locale} />
+        <MessageTips locale={locale} />
         <ReviewCta locale={locale} />
       </div>
 

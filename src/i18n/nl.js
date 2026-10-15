@@ -110,6 +110,8 @@ export const nl = {
   reviewTitle: 'Uw mening telt',
   reviewText: 'Reed u met Taxi QISSI in Tienen? Laat een review achter op Google: zo vinden andere klanten ons makkelijker.',
   reviewBtn: 'Review achterlaten op Google',
+  tipsTitle: "Wat vermeldt u in uw bericht?",
+  tipsText: "Zo kunnen we snel antwoorden: vermeld uw vertrekadres, uw bestemming, de datum en het uur, het aantal passagiers en bagage, en uw vluchtnummer voor een luchthaven.",
   lPhone: 'Telefoon',
   lMail: 'E-mail',
   lAddr: 'Adres',

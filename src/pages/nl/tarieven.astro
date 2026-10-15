@@ -5,6 +5,8 @@ import { seo } from '../../i18n/seo.js';
 import RatesTable from '../../components/RatesTable.astro';
 import DestinationsSummary from '../../components/DestinationsSummary.astro';
 import PriceSimulator from '../../components/PriceSimulator.astro';
+import FaqSection from '../../components/FaqSection.astro';
+import { FAQS_RATES } from '../../data/faqs.js';
 
 const locale = 'nl';
 const s = t(locale);
@@ -23,4 +25,6 @@ const meta = seo[locale].rates;
       <PriceSimulator locale={locale} />
     </div>
   </section>
+
+  <FaqSection title={s.faqTitle} items={FAQS_RATES[locale]} />
 </BaseLayout>

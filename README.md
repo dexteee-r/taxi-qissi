@@ -368,6 +368,26 @@ soigneusement sur mobile.
   clé `h1`) ; l'ancienne accroche (« Où voulez-vous aller ? », clé
   `heroHook`) est le sous-titre juste dessous (`.hero-hook`).
 
+## Contenu SEO validé (2026-10-19)
+
+- **Titles et meta descriptions** (`src/i18n/seo.js`) : mot-clé en tête, marque
+  à la fin (« Taxi à Tienen, jour et nuit — Taxi QISSI »), appel à l'action
+  (« Appelez-nous ou écrivez sur WhatsApp ») sur les 5 pages commerciales.
+  Limites vérifiées par test : titre ≤ 60, description ≤ 155 caractères.
+  Mentions légales et confidentialité gardent un titre sobre. Le mot
+  « réserver » est évité : le site dit qu'on ne réserve pas en ligne.
+- **FAQ de la page Tarifs** (`FAQS_RATES`, `src/data/faqs.js`) : 4 questions
+  (calcul du prix, attente à la seconde près, paiement par carte, gare de
+  Tienen), avec les données structurées `FAQPage`. Les montants viennent de
+  `FARE` : changer un tarif met la FAQ à jour.
+- **Bloc Contact** « Que mentionner dans votre message ? »
+  (`MessageTips.astro`) : reprend les champs du message WhatsApp pré-rempli.
+- **Gare de Tienen** nommée dans le texte « Réservation à l'avance » de la page
+  Services (`src/data/services.js`).
+- **Pas encore fait** : la FAQ de la page Transport aéroport attend les
+  réponses du client (forfaits « aller simple » ? supplément de nuit ? prix du
+  retour ?), et l'étoffement de la page Services attend les infos véhicules.
+
 ## Avis Google
 
 Le lien d'avis de la fiche Google Business Profile

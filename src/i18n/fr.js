@@ -110,6 +110,8 @@ export const fr = {
   reviewTitle: 'Votre avis compte',
   reviewText: "Une course avec Taxi QISSI à Tienen ? Laissez-nous un avis sur Google : cela aide d'autres clients à nous trouver.",
   reviewBtn: 'Laisser un avis sur Google',
+  tipsTitle: "Que mentionner dans votre message ?",
+  tipsText: "Pour que nous puissions répondre vite, indiquez : votre adresse de départ, votre destination, la date et l'heure, le nombre de passagers et de bagages, et votre numéro de vol pour un aéroport.",
   lPhone: 'Téléphone',
   lMail: 'E-mail',
   lAddr: 'Adresse',

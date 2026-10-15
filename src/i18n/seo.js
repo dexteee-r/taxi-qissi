@@ -8,24 +8,24 @@ const BRAND = 'Taxi QISSI';
 export const seo = {
   nl: {
     home: {
-      title: `${BRAND} — Taxi Tienen, dag en nacht`,
-      description: 'Taxidienst in Tienen en omgeving, 24 uur op 24 en 7 dagen op 7. Bel rechtstreeks of vraag een rit aan via WhatsApp.',
+      title: `Taxi in Tienen, dag en nacht — ${BRAND}`,
+      description: 'Taxi in Tienen en omgeving, 24 uur op 24 en 7 dagen op 7. Bel ons of stuur een WhatsApp: wij komen u ophalen, dag en nacht.',
     },
     services: {
-      title: `Diensten — ${BRAND}`,
-      description: 'Rit op aanvraag, vooraf reserveren, luchthaven- en stationvervoer, terbeschikkingstelling voor evenementen.',
+      title: `Taxidiensten in Tienen — ${BRAND}`,
+      description: 'Directe rit, reservering, luchthaven en station, evenementen, bedrijven: taxi in Tienen 24 uur op 24. Bel ons of stuur een WhatsApp.',
     },
     airport: {
-      title: `Luchthavenvervoer — ${BRAND}`,
-      description: 'Taxivervoer naar en van de luchthaven, vanuit Tienen en omgeving, 24 uur op 24 beschikbaar.',
+      title: `Luchthaventaxi vanuit Tienen — ${BRAND}`,
+      description: 'Taxi van Tienen naar Zaventem, Charleroi, Luik, Maastricht en Eindhoven. Vaste tarieven vanaf 130 €, 24 uur op 24. Bel ons!',
     },
     rates: {
-      title: `Tarieven en prijssimulator — ${BRAND}`,
-      description: 'Bekijk onze tarieven en bereken een indicatieve prijsschatting voor uw rit in Tienen en omgeving.',
+      title: `Taxitarieven Tienen en prijssimulator — ${BRAND}`,
+      description: 'Opstap 4 €, daarna 3 €/km: schat de prijs van uw taxi in Tienen in twee velden en bel ons of stuur een WhatsApp.',
     },
     contact: {
-      title: `Contact — ${BRAND}`,
-      description: 'Neem contact op met Taxi Q.I.S.S in Tienen: telefoon of WhatsApp, 24 uur op 24 bereikbaar.',
+      title: `Een taxi bellen in Tienen — ${BRAND}`,
+      description: "Bel Taxi QISSI op 0469 23 00 17 of stuur een WhatsApp: we nemen 24 uur op 24 op in Tienen en op zo'n 20 km errond.",
     },
     legal: {
       title: `Juridische info — ${BRAND}`,
@@ -38,24 +38,24 @@ export const seo = {
   },
   fr: {
     home: {
-      title: `${BRAND} — Taxi Tienen, jour et nuit`,
-      description: 'Service de taxi à Tienen et dans les environs, disponible 24h/24 et 7j/7. Appelez directement ou demandez une course via WhatsApp.',
+      title: `Taxi à Tienen, jour et nuit — ${BRAND}`,
+      description: 'Taxi à Tienen et environs, 24h/24 et 7j/7. Appelez-nous ou écrivez sur WhatsApp : nous venons vous chercher, de jour comme de nuit.',
     },
     services: {
-      title: `Services — ${BRAND}`,
-      description: "Course à la demande, réservation à l'avance, transport aéroport et gare, mise à disposition pour événements.",
+      title: `Services de taxi à Tienen — ${BRAND}`,
+      description: 'Course immédiate, réservation, aéroport et gare, événements, entreprises : taxi à Tienen 24h/24. Appelez-nous ou écrivez sur WhatsApp.',
     },
     airport: {
-      title: `Transport aéroport — ${BRAND}`,
-      description: "Transport en taxi vers et depuis l'aéroport, au départ de Tienen et des environs, disponible 24h/24.",
+      title: `Taxi aéroport depuis Tienen — ${BRAND}`,
+      description: 'Taxi de Tienen vers Zaventem, Charleroi, Liège, Maastricht et Eindhoven. Forfaits fixes dès 130 €, 24h/24. Appelez-nous !',
     },
     rates: {
-      title: `Tarifs et simulateur de prix — ${BRAND}`,
-      description: 'Consultez nos tarifs et obtenez une estimation indicative du prix de votre course à Tienen et dans les environs.',
+      title: `Tarifs taxi à Tienen et simulateur — ${BRAND}`,
+      description: 'Prise en charge 4 €, puis 3 €/km : estimez le prix de votre taxi à Tienen en deux champs, puis appelez-nous ou écrivez sur WhatsApp.',
     },
     contact: {
-      title: `Contact — ${BRAND}`,
-      description: 'Contactez Taxi Q.I.S.S à Tienen : téléphone ou WhatsApp, disponible 24h/24.',
+      title: `Appeler un taxi à Tienen — ${BRAND}`,
+      description: "Appelez Taxi QISSI au 0469 23 00 17 ou écrivez sur WhatsApp : nous répondons 24h/24 à Tienen et dans un rayon d'environ 20 km.",
     },
     legal: {
       title: `Mentions légales — ${BRAND}`,
@@ -68,24 +68,24 @@ export const seo = {
   },
   en: {
     home: {
-      title: `${BRAND} — Taxi in Tienen, day and night`,
-      description: 'Taxi service in Tienen and surrounding area, available 24/7. Call directly or request a ride via WhatsApp.',
+      title: `Taxi in Tienen, day and night — ${BRAND}`,
+      description: "Taxi in Tienen and the surrounding area, 24/7. Call us or message us on WhatsApp: we'll pick you up, day or night.",
     },
     services: {
-      title: `Services — ${BRAND}`,
-      description: 'On-demand rides, advance booking, airport and station transfers, chauffeur hire for events.',
+      title: `Taxi services in Tienen — ${BRAND}`,
+      description: 'Immediate rides, advance booking, airport and station transfers, events, businesses: taxi in Tienen 24/7. Call or WhatsApp us.',
     },
     airport: {
-      title: `Airport transfer — ${BRAND}`,
-      description: 'Taxi transport to and from the airport, departing from Tienen and the surrounding area, available 24/7.',
+      title: `Airport taxi from Tienen — ${BRAND}`,
+      description: 'Taxi from Tienen to Brussels Airport, Charleroi, Liège, Maastricht and Eindhoven. Fixed fares from €130, 24/7. Call us!',
     },
     rates: {
-      title: `Rates and price simulator — ${BRAND}`,
-      description: 'Check our rates and get an indicative price estimate for your ride in Tienen and the surrounding area.',
+      title: `Tienen taxi rates and price simulator — ${BRAND}`,
+      description: '€4 pickup, then €3/km: estimate your taxi fare in Tienen in two fields, then call us or message us on WhatsApp.',
     },
     contact: {
-      title: `Contact — ${BRAND}`,
-      description: 'Get in touch with Taxi Q.I.S.S in Tienen: phone or WhatsApp, available 24/7.',
+      title: `Call a taxi in Tienen — ${BRAND}`,
+      description: 'Call Taxi QISSI on 0469 23 00 17 or message us on WhatsApp: we answer 24/7 in Tienen and within about 20 km around it.',
     },
     legal: {
       title: `Legal notice — ${BRAND}`,

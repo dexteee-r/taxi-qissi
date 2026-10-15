@@ -1,0 +1,17 @@
+---
+// Ce qu'il vaut mieux mettre dans un message (page Contact). La liste reprend
+// les lignes du message WhatsApp pré-rempli par le simulateur (src/lib/
+// whatsapp.js) : départ, destination, quand, passagers, bagages, vol.
+import { t } from '../i18n/dictionary.js';
+
+interface Props {
+  locale: 'nl' | 'fr' | 'en';
+}
+const { locale } = Astro.props;
+const s = t(locale);
+---
+
+<section class="message-tips" aria-labelledby="tips-title">
+  <h2 id="tips-title" class="h-card">{s.tipsTitle}</h2>
+  <p class="sub">{s.tipsText}</p>
+</section>

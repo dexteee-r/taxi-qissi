@@ -159,3 +159,12 @@
     margin-bottom: 18px;
   }
 }
+
+/* Ce qu'il faut mentionner dans un message (page Contact) -------------------- */
+.message-tips {
+  margin-bottom: 22px;
+}
+.message-tips .sub {
+  max-width: 52ch;
+  margin-bottom: 0;
+}

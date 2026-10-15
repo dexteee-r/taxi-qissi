@@ -199,6 +199,58 @@ test.describe('Vercel Web Analytics', () => {
   });
 });
 
+test.describe('contenu SEO validé (2026-10-19)', () => {
+  for (const [locale, path] of Object.entries(PAGES.rates)) {
+    test(`${locale} : la page Tarifs a sa FAQ, avec les données structurées FAQPage`, async ({ page }) => {
+      await page.goto(path);
+      await expect(page.locator('details.faq-item')).toHaveCount(4);
+
+      const blocs = await page.locator('script[type="application/ld+json"]').allTextContents();
+      const faq = blocs.map((b) => JSON.parse(b)).find((b) => b['@type'] === 'FAQPage');
+      expect(faq, 'FAQPage').toBeDefined();
+      expect(faq.mainEntity).toHaveLength(4);
+      // Le calcul à la seconde près (précision du client) est bien dit.
+      expect(JSON.stringify(faq)).toMatch(/36/);
+    });
+  }
+
+  for (const [locale, path] of Object.entries(PAGES.contact)) {
+    test(`${locale} : la page Contact dit quoi mentionner dans le message`, async ({ page }) => {
+      await page.goto(path);
+      const bloc = page.locator('.message-tips');
+      await expect(bloc).toBeVisible();
+      await expect(bloc.locator('h2')).not.toBeEmpty();
+      await expect(bloc).toContainText(/\w+/);
+      // Entre les coordonnées et l'invitation à laisser un avis.
+      const ordre = await page.evaluate(() => {
+        const tips = document.querySelector('.message-tips');
+        const avis = document.querySelector('.review-cta');
+        return tips.compareDocumentPosition(avis) & Node.DOCUMENT_POSITION_FOLLOWING;
+      });
+      expect(ordre).toBeTruthy();
+    });
+  }
+
+  const GARE = { fr: 'gare de Tienen', nl: 'station Tienen', en: 'Tienen station' };
+  for (const [locale, path] of Object.entries(PAGES.services)) {
+    test(`${locale} : la page Services nomme la gare de Tienen`, async ({ page }) => {
+      await page.goto(path);
+      await expect(page.locator('main')).toContainText(GARE[locale]);
+    });
+  }
+
+  for (const key of ['home', 'services', 'airport', 'rates', 'contact']) {
+    for (const [locale, path] of Object.entries(PAGES[key])) {
+      test(`${locale} ${key} : le <title> commence par le mot-clé`, async ({ page }) => {
+        await page.goto(path);
+        const titre = await page.title();
+        expect(titre).toContain('Tienen');
+        expect(titre.startsWith('Taxi QISSI')).toBe(false);
+      });
+    }
+  }
+});
+
 test.describe('Avis Google', () => {
   const LIEN = 'https://g.page/r/CUKWRUX3Lw21EAE/review';
 
