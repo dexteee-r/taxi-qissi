@@ -7,6 +7,7 @@ import { seo } from '../../i18n/seo.js';
 import { localePath } from '../../i18n/routes.js';
 import { DESTINATIONS, AIRPORT_IDS } from '../../data/destinations.js';
 import { formatEuro } from '../../lib/format.js';
+import AirportFromJodoigne from '../../components/AirportFromJodoigne.astro';
 
 const locale = 'en';
 const s = t(locale);
@@ -58,6 +59,8 @@ const airports = DESTINATIONS.filter((d) => AIRPORT_IDS.includes(d.id));
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:3px"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>
       {s.flatFareNote}
     </p>
+
+    <AirportFromJodoigne locale={locale} />
 
     <div class="airport-cta">
       <span class="title">{s.aCtaTitle}</span>

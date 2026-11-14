@@ -107,6 +107,27 @@ Conséquences concrètes :
   précisé que ces forfaits sont ceux d'une prise en charge à Tienen et
   peuvent varier pour un autre point de départ — d'où la note affichée sous
   le prix (`flatFareNote`, `#flat-fare-note` dans le simulateur).
+- **Le forfait n'est servi qu'à un départ proche de Tienen** (demande Jodoigne,
+  2026-11-14, option B). `inFlatFareZone()` (`destinations.js`) compare le
+  point de départ au centre de Tienen, dans un rayon de
+  `BUSINESS.flatFareRadiusKm` (5 km, `business.js`). Au-delà — Jodoigne est à
+  ~10 km — le simulateur affiche « à confirmer » + le bouton d'appel, avec la
+  distance réelle et la note `pickupFareNote` (« les forfaits affichés sont
+  ceux d'un départ de Tienen »), au lieu de montrer le prix de Tienen à un
+  client qui part d'ailleurs. **Étape C, à faire quand le client donne ses prix
+  au départ de Jodoigne** : remplacer ce « à confirmer » par un forfait par
+  zone de départ (une zone = centre + rayon + prix par aéroport) ; la zone de
+  Tienen actuelle en sera la première entrée.
+- **Page Aéroport** : section « Taxi de Jodoigne vers l'aéroport »
+  (`AirportFromJodoigne.astro`), sans aucun prix tant que le client n'a pas
+  communiqué ceux de Jodoigne (un test vérifie qu'aucun montant n'y figure).
+  Elle porte deux boutons — appel et WhatsApp (message pré-rempli qui annonce
+  déjà le départ de Jodoigne, clé `jodWaMessage`) — pour que le visiteur n'ait
+  pas à chercher la page Contact. La question « Jodoigne → aéroport » est
+  la dernière de la FAQ de l'accueil (`FAQS`, 8 questions ; `FAQ_JODOIGNE` dans
+  `faqs.js`). La page Aéroport n'a pas de FAQ : une première version à une
+  seule question a été retirée à la demande de l'utilisateur (2026-11-14) ; la
+  FAQ Aéroport complète attend les réponses du client.
 - **Le `?from=` de la page d'accueil est traité comme du texte saisi** :
   tronqué à 120 caractères, et non résolu tant qu'il diffère de l'adresse
   par défaut. Le calcul automatique ne se déclenche donc que si le point de

@@ -15,7 +15,7 @@ import { buildWhatsAppMessage, buildWhatsAppUrl } from './whatsapp.js';
 import { formatEuro, formatKm } from './format.js';
 import { trackEvent } from './analytics.js';
 import { t } from '../i18n/dictionary.js';
-import { DESTINATIONS, FURTHEST_PRESET_KM, airportAt } from '../data/destinations.js';
+import { DESTINATIONS, FURTHEST_PRESET_KM, airportAt, inFlatFareZone } from '../data/destinations.js';
 import { BUSINESS, FARE } from '../config/business.js';
 
 // Longueur maximale acceptée pour une adresse, y compris celle qu'un lien
@@ -131,24 +131,31 @@ export function startSimulator() {
     // sinon aucun prix ne doit s'afficher (CDC §11.4), que le visiteur ait
     // tapé "Brussels Airport" ou une adresse dans l'enceinte de l'aéroport.
     const aeroport = airportAt(arrivee);
-    const prixForfait = aeroport?.price ?? null;
+    // Les forfaits sont ceux d'un départ de Tienen : ailleurs, le client dit
+    // que le prix peut différer. On ne montre alors pas un chiffre de Tienen,
+    // mais « à confirmer » et le bouton d'appel.
+    const departHorsTienen = aeroport !== null && !inFlatFareZone(depart);
+    const prixForfait = departHorsTienen ? null : (aeroport?.price ?? null);
     const prixAConfirmer = aeroport !== null && prixForfait === null;
 
     const heure = el('time').value;
     const heureDuTrajet = heure ? parseInt(heure.slice(0, 2), 10) : new Date().getHours();
     const tarif = estimateFare(km, ((heureDuTrajet % 24) + 24) % 24);
 
-    remplirRecu({ depart, arrivee, km, minutes, tarif, prixForfait, prixAConfirmer });
+    remplirRecu({ depart, arrivee, km, minutes, tarif, prixForfait, prixAConfirmer, departHorsTienen });
     afficher('resultat');
     trackEvent('estimate_success');
     await afficherCarte(trace, `${depart.label} → ${arrivee.label}`);
   });
 
-  function remplirRecu({ depart, arrivee, km, minutes, tarif, prixForfait, prixAConfirmer }) {
+  function remplirRecu({ depart, arrivee, km, minutes, tarif, prixForfait, prixAConfirmer, departHorsTienen }) {
     el('route-label').textContent = `${depart.label} → ${arrivee.label}`;
-    el('distance-label').textContent = prixAConfirmer
-      ? textes.tbcDist
-      : `${formatKm(km, locale)} · ~${minutes} min`;
+    // La distance est connue même quand le prix reste à confirmer : seul un
+    // aéroport sans prix du tout la masque.
+    el('distance-label').textContent =
+      prixAConfirmer && !departHorsTienen
+        ? textes.tbcDist
+        : `${formatKm(km, locale)} · ~${minutes} min`;
 
     const total = prixForfait ?? tarif.total;
     const prix = el('price-label');
@@ -161,6 +168,7 @@ export function startSimulator() {
     // compteur : un forfait aéroport n'a pas de détail à afficher.
     el('breakdown').hidden = prixAConfirmer || prixForfait !== null;
     el('tbc-note').hidden = !prixAConfirmer;
+    el('tbc-note-text').textContent = departHorsTienen ? textes.pickupFareNote : textes.tbcNote;
     el('flat-fare-note').hidden = prixForfait === null;
     el('line-pickup').textContent = formatEuro(tarif.breakdown.base, locale);
     el('line-km-label').textContent =

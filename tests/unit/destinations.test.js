@@ -1,7 +1,7 @@
 // Vérifie la liste des destinations et la reconnaissance des aéroports
 // (src/data/destinations.js).
 import { describe, it, expect } from 'vitest';
-import { DESTINATIONS, FURTHEST_PRESET_KM, AIRPORT_IDS, airportAt } from '../../src/data/destinations.js';
+import { DESTINATIONS, FURTHEST_PRESET_KM, AIRPORT_IDS, airportAt, inFlatFareZone } from '../../src/data/destinations.js';
 import { BUSINESS } from '../../src/config/business.js';
 import { ROUTE_GEOMETRIES } from '../../scripts/route-geometries.js';
 import { decodePolyline } from '../../scripts/polyline.js';
@@ -87,5 +87,35 @@ describe('airportAt', () => {
     expect(airportAt(null)).toBeNull();
     expect(airportAt({})).toBeNull();
     expect(airportAt({ lat: 'x', lon: 4 })).toBeNull();
+  });
+});
+
+describe('inFlatFareZone', () => {
+  // Les forfaits aéroport sont ceux d'un départ de Tienen (le client a dit que
+  // le prix peut varier ailleurs) : seul un départ proche de Tienen les reçoit.
+  const lieu = (id) => DESTINATIONS.find((d) => d.id === id);
+
+  it('accepts Tienen and its landmarks', () => {
+    expect(inFlatFareZone(BUSINESS.defaultPickup)).toBe(true);
+    expect(inFlatFareZone(lieu('sta'))).toBe(true);
+    expect(inFlatFareZone(lieu('hos'))).toBe(true);
+  });
+
+  it('refuses Jodoigne and the other towns around', () => {
+    expect(inFlatFareZone(lieu('jod'))).toBe(false);
+    expect(inFlatFareZone(lieu('leu'))).toBe(false);
+    expect(inFlatFareZone(lieu('stt'))).toBe(false);
+  });
+
+  it('refuses a missing or malformed point rather than quoting a price', () => {
+    expect(inFlatFareZone(null)).toBe(false);
+    expect(inFlatFareZone({})).toBe(false);
+    expect(inFlatFareZone({ lat: 'x', lon: 'y' })).toBe(false);
+  });
+
+  it('keeps Jodoigne outside the radius with a margin', () => {
+    // Si ce test casse en agrandissant le rayon, les clients de Jodoigne
+    // verraient de nouveau le prix de Tienen.
+    expect(BUSINESS.flatFareRadiusKm).toBeLessThan(8);
   });
 });

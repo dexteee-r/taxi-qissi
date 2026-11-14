@@ -99,7 +99,7 @@ describe('translation completeness', () => {
   it('translates the five services and seven FAQ entries into all locales', () => {
     for (const locale of LOCALES) {
       expect(SERVICES[locale]).toHaveLength(5);
-      expect(FAQS[locale]).toHaveLength(7);
+      expect(FAQS[locale]).toHaveLength(8);
       for (const svc of SERVICES[locale]) {
         expect(svc.title.length).toBeGreaterThan(0);
         expect(svc.desc.length).toBeGreaterThan(0);

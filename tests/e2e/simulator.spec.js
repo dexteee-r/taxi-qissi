@@ -154,6 +154,65 @@ test.describe('price simulator', () => {
     await expect(page.locator('#flat-fare-note')).toBeVisible();
   });
 
+  test('départ de Jodoigne vers un aéroport : "à confirmer" et appel, pas le forfait de Tienen', async ({ page }) => {
+    // Les forfaits sont ceux d'un départ de Tienen ; le client a dit qu'ils
+    // peuvent varier ailleurs (demande du 2026-11-14, option B). Sans ça, un
+    // visiteur de Jodoigne verrait « 130 € » — le prix de Tienen.
+    const zaventem = dest('zav');
+    const jodoigne = dest('jod');
+    await mockOrs(page, {
+      km: 55,
+      min: 45,
+      pointFor: (texte) =>
+        /Jodoigne/i.test(texte) ? { lat: jodoigne.lat, lon: jodoigne.lon } : { lat: zaventem.lat, lon: zaventem.lon },
+    });
+    await page.goto('/nl/tarieven/');
+
+    await chooseAddress(page, '#from', 'Jodoigne');
+    await chooseAddress(page, '#dest', 'Brussels Airport');
+    await page.click('#compute-btn');
+
+    await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator('#price-label')).toHaveText('te bevestigen');
+    // La distance, elle, est connue : on la montre.
+    await expect(page.locator('#distance-label')).toContainText(formatKm(55, 'nl'));
+    await expect(page.locator('#indicative-badge')).toBeHidden();
+    await expect(page.locator('#breakdown')).toBeHidden();
+    await expect(page.locator('#flat-fare-note')).toBeHidden();
+
+    // La note explique pourquoi, et le bouton d'appel remplace le prix.
+    const note = page.locator('#tbc-note');
+    await expect(note).toBeVisible();
+    await expect(page.locator('#tbc-note-text')).toContainText('vertrek vanuit Tienen');
+    await expect(note.locator(`a[href="tel:${PHONE}"]`)).toBeVisible();
+
+    const href = await page.locator('#whatsapp-send').getAttribute('href');
+    const message = decodeURIComponent(href.split('?text=')[1]);
+    expect(message).toContain('Graag de prijs bevestigen');
+    expect(message).not.toContain('130');
+  });
+
+  test('départ proche de Tienen (gare) vers un aéroport : le forfait s\'affiche toujours', async ({ page }) => {
+    const zaventem = dest('zav');
+    const gare = dest('sta');
+    await mockOrs(page, {
+      km: zaventem.km,
+      min: zaventem.min,
+      pointFor: (texte) =>
+        /gare|station/i.test(texte) ? { lat: gare.lat, lon: gare.lon } : { lat: zaventem.lat, lon: zaventem.lon },
+    });
+    await page.goto('/nl/tarieven/');
+
+    await chooseAddress(page, '#from', 'Station Tienen');
+    await chooseAddress(page, '#dest', 'Brussels Airport');
+    await page.click('#compute-btn');
+
+    await expect(page.locator('#state-result')).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator('#price-label')).toHaveText(formatEuro(zaventem.price, 'nl'));
+    await expect(page.locator('#tbc-note')).toBeHidden();
+    await expect(page.locator('#flat-fare-note')).toBeVisible();
+  });
+
   test('errors gracefully with the call button reachable when no destination is given', async ({ page }) => {
     await page.goto('/nl/tarieven/');
     await page.click('#compute-btn');

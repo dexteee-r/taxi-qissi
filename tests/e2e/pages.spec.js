@@ -231,6 +231,40 @@ test.describe('contenu SEO validé (2026-10-19)', () => {
     });
   }
 
+  for (const [locale, path] of Object.entries(PAGES.airport)) {
+    test(`${locale} : la page Aéroport s'adresse aux clients de Jodoigne, sans inventer de prix`, async ({ page }) => {
+      await page.goto(path);
+      const bloc = page.locator('.airport-from');
+      await expect(bloc).toBeVisible();
+      await expect(bloc.locator('h2')).toContainText(/Jodoigne|Geldenaken/);
+      await expect(bloc).toContainText('Tienen');
+      // Les prix au départ de Jodoigne ne sont pas encore connus : le bloc
+      // n'en annonce aucun (voir propositions-contenu-seo.md §8).
+      expect(await bloc.innerText()).not.toMatch(/\d\s?€|€\s?\d/);
+    });
+  }
+
+  for (const [locale, path] of Object.entries(PAGES.airport)) {
+    test(`${locale} : la section Jodoigne propose d'appeler ou d'écrire sur WhatsApp, sans quitter la page`, async ({ page }) => {
+      await page.goto(path);
+      const bloc = page.locator('.airport-from');
+
+      const appel = bloc.locator('a[href^="tel:"]');
+      await expect(appel).toBeVisible();
+      await expect(appel).toHaveAttribute('href', 'tel:+32469230017');
+      await expect(appel).toHaveAttribute('data-analytics', 'call_click');
+
+      // Le message WhatsApp annonce déjà le départ de Jodoigne.
+      const wa = bloc.locator('a[href^="https://wa.me/"]');
+      await expect(wa).toBeVisible();
+      await expect(wa).toHaveAttribute('data-analytics', 'whatsapp_click');
+      await expect(wa).toHaveAttribute('target', '_blank');
+      const href = await wa.getAttribute('href');
+      expect(href).toContain('https://wa.me/32469230017?text=');
+      expect(decodeURIComponent(href.split('?text=')[1])).toMatch(/Jodoigne|Geldenaken/);
+    });
+  }
+
   const GARE = { fr: 'gare de Tienen', nl: 'station Tienen', en: 'Tienen station' };
   for (const [locale, path] of Object.entries(PAGES.services)) {
     test(`${locale} : la page Services nomme la gare de Tienen`, async ({ page }) => {
@@ -387,7 +421,9 @@ test.describe('site plumbing', () => {
     const blocks = await page.locator('script[type="application/ld+json"]').allTextContents();
     const faq = blocks.map((b) => JSON.parse(b)).find((s) => s['@type'] === 'FAQPage');
     expect(faq).toBeDefined();
-    expect(faq.mainEntity.length).toBe(7);
+    expect(faq.mainEntity.length).toBe(8);
+    // La question Jodoigne → aéroport est la dernière de la FAQ de l'accueil.
+    expect(faq.mainEntity.at(-1).name).toContain('Jodoigne');
     for (const entry of faq.mainEntity) {
       expect(entry.name.length).toBeGreaterThan(0);
       expect(entry.acceptedAnswer.text.length).toBeGreaterThan(0);

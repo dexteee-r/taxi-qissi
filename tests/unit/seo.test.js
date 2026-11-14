@@ -32,6 +32,12 @@ describe('titres et descriptions', () => {
     }
   });
 
+  it('la page Aéroport cite Jodoigne (Geldenaken en néerlandais)', () => {
+    expect(seo.fr.airport.title).toContain('Jodoigne');
+    expect(seo.nl.airport.title).toContain('Geldenaken');
+    expect(seo.en.airport.title).toContain('Jodoigne');
+  });
+
   it('proposent un appel à l\'action sur les pages commerciales', () => {
     const appel = /Appelez|Bel |Call|WhatsApp/;
     for (const locale of LOCALES) {

@@ -67,6 +67,12 @@ export const BUSINESS = {
     longitude: 4.9403,
   },
   routingOrigin: ROUTING_ORIGIN,
+  // Rayon, autour de routingOrigin, dans lequel un départ compte comme
+  // « départ de Tienen » : c'est de là que viennent les forfaits aéroport
+  // (destinations.js). Au-delà, le client dit que le prix peut différer, et le
+  // simulateur affiche « à confirmer » plutôt qu'un chiffre de Tienen.
+  // 5 km couvre la ville et ses villages proches, pas Jodoigne (~10 km).
+  flatFareRadiusKm: 5,
   // L'adresse pré-remplie dans le champ "départ". Ses coordonnées étant
   // connues, la garder ne coûte aucune recherche d'adresse.
   defaultPickup: {

@@ -9,6 +9,8 @@
 //
 // Les distances sont mesurées, pas estimées : `npm run verify:distances`.
 // `lat`/`lon` sont le point où le routeur termine réellement le trajet.
+import { BUSINESS } from '../config/business.js';
+
 export const DESTINATIONS = [
   { id: 'zav', km: 42.8, min: 33, lat: 50.897070, lon: 4.479900, price: 130, nl: 'Brussels Airport (Zaventem)', fr: 'Brussels Airport (Zaventem)', en: 'Brussels Airport (Zaventem)' },
   { id: 'cri', km: 83.3, min: 66, lat: 50.461200, lon: 4.467920, price: 150, nl: 'Brussels South (Charleroi)', fr: 'Brussels South (Charleroi)', en: 'Brussels South (Charleroi)' },
@@ -58,6 +60,18 @@ export function airportAt(point) {
   if (!point || typeof point.lat !== 'number' || typeof point.lon !== 'number') return null;
   const aeroports = DESTINATIONS.filter((d) => AIRPORT_IDS.includes(d.id));
   return aeroports.find((a) => distanceAVolDOiseauKm(point, a) <= RAYON_AEROPORT_KM) ?? null;
+}
+
+/**
+ * Le départ est-il assez près de Tienen pour que le forfait aéroport affiché
+ * s'applique ? Les forfaits sont ceux d'une prise en charge à Tienen ; le
+ * client a précisé qu'ils peuvent varier ailleurs (BUSINESS.flatFareRadiusKm).
+ *
+ * @param {{ lat: number, lon: number }} point
+ */
+export function inFlatFareZone(point) {
+  if (!point || typeof point.lat !== 'number' || typeof point.lon !== 'number') return false;
+  return distanceAVolDOiseauKm(point, BUSINESS.routingOrigin) <= BUSINESS.flatFareRadiusKm;
 }
 
 // Distance à vol d'oiseau, uniquement pour répondre à "est-ce l'aéroport ?".

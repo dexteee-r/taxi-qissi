@@ -16,7 +16,7 @@ export const seo = {
       description: 'Directe rit, reservering, luchthaven en station, evenementen, bedrijven: taxi in Tienen 24 uur op 24. Bel ons of stuur een WhatsApp.',
     },
     airport: {
-      title: `Luchthaventaxi vanuit Tienen — ${BRAND}`,
+      title: `Luchthaventaxi Tienen en Geldenaken — ${BRAND}`,
       description: 'Taxi van Tienen naar Zaventem, Charleroi, Luik, Maastricht en Eindhoven. Vaste tarieven vanaf 130 €, 24 uur op 24. Bel ons!',
     },
     rates: {
@@ -46,7 +46,7 @@ export const seo = {
       description: 'Course immédiate, réservation, aéroport et gare, événements, entreprises : taxi à Tienen 24h/24. Appelez-nous ou écrivez sur WhatsApp.',
     },
     airport: {
-      title: `Taxi aéroport depuis Tienen — ${BRAND}`,
+      title: `Taxi aéroport Tienen et Jodoigne — ${BRAND}`,
       description: 'Taxi de Tienen vers Zaventem, Charleroi, Liège, Maastricht et Eindhoven. Forfaits fixes dès 130 €, 24h/24. Appelez-nous !',
     },
     rates: {
@@ -76,7 +76,7 @@ export const seo = {
       description: 'Immediate rides, advance booking, airport and station transfers, events, businesses: taxi in Tienen 24/7. Call or WhatsApp us.',
     },
     airport: {
-      title: `Airport taxi from Tienen — ${BRAND}`,
+      title: `Airport taxi from Tienen and Jodoigne — ${BRAND}`,
       description: 'Taxi from Tienen to Brussels Airport, Charleroi, Liège, Maastricht and Eindhoven. Fixed fares from €130, 24/7. Call us!',
     },
     rates: {

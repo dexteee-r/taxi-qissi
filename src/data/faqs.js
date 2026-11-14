@@ -3,6 +3,23 @@
 import { FARE } from '../config/business.js';
 import { formatEuro } from '../lib/format.js';
 
+// Question « Jodoigne → aéroport » (demande du client, 2026-11-14), affichée en
+// dernier dans la FAQ de l'accueil (FAQS). La page Aéroport n'a pas de FAQ.
+const FAQ_JODOIGNE = {
+  fr: {
+    q: 'Faites-vous le trajet Jodoigne → aéroport ?',
+    a: "Oui. Nous venons vous chercher à votre adresse à Jodoigne et vous conduisons à Zaventem, Charleroi, Liège, Maastricht ou Eindhoven, 24h/24. Le prix peut différer de celui affiché depuis Tienen : appelez-nous ou écrivez-nous sur WhatsApp, nous confirmons le prix exact avant le trajet.",
+  },
+  nl: {
+    q: 'Rijdt u van Geldenaken (Jodoigne) naar de luchthaven?',
+    a: 'Ja. We komen u ophalen op uw adres in Geldenaken en brengen u naar Zaventem, Charleroi, Luik, Maastricht of Eindhoven, 24/7. De prijs kan afwijken van die vanuit Tienen: bel ons of stuur een WhatsApp, we bevestigen de exacte prijs voor de rit.',
+  },
+  en: {
+    q: 'Do you drive from Jodoigne to the airport?',
+    a: 'Yes. We pick you up at your address in Jodoigne and take you to Brussels Airport, Charleroi, Liège, Maastricht or Eindhoven, 24/7. The price may differ from the one shown from Tienen: call us or message us on WhatsApp, and we confirm the exact price before the ride.',
+  },
+};
+
 export const FAQS = {
   fr: [
     { q: 'Puis-je réserver en ligne ?', a: "Non. Tout se règle par téléphone ou WhatsApp, en direct avec nous. Le site sert à estimer le prix et à nous joindre." },
@@ -12,6 +29,7 @@ export const FAQS = {
     { q: 'Attendez-vous si mon vol a du retard ?', a: 'Oui, si vous nous donnez votre numéro de vol. L’attente est facturée 36 €/h au-delà du délai convenu.' },
     { q: 'Emportez-vous les gros bagages ?', a: 'Oui. Indiquez le nombre de valises dans votre message WhatsApp pour que nous envoyions le bon véhicule.' },
     { q: 'Allez-vous en dehors de la zone des 20 km ?', a: 'Oui pour les aéroports et les longues distances. Demandez-nous une estimation par WhatsApp.' },
+    FAQ_JODOIGNE.fr,
   ],
   nl: [
     { q: 'Kan ik online reserveren?', a: 'Nee. Alles regelen we telefonisch of via WhatsApp, rechtstreeks met ons. De site dient om de prijs te schatten en ons te bereiken.' },
@@ -21,6 +39,7 @@ export const FAQS = {
     { q: 'Wacht u als mijn vlucht vertraging heeft?', a: 'Ja, als u ons uw vluchtnummer geeft. Wachttijd kost 36 €/u boven de afgesproken termijn.' },
     { q: 'Neemt u grote bagage mee?', a: 'Ja. Vermeld het aantal koffers in uw WhatsApp-bericht, dan sturen we de juiste wagen.' },
     { q: 'Rijdt u buiten de zone van 20 km?', a: 'Ja, voor luchthavens en lange afstanden. Vraag ons een schatting via WhatsApp.' },
+    FAQ_JODOIGNE.nl,
   ],
   en: [
     { q: 'Can I book online?', a: 'No. Everything is arranged by phone or WhatsApp, directly with us. The site is here to estimate the price and to reach us.' },
@@ -30,6 +49,7 @@ export const FAQS = {
     { q: 'Do you wait if my flight is delayed?', a: "Yes, if you give us your flight number. Waiting time is billed at €36/h beyond the agreed time." },
     { q: 'Do you take large luggage?', a: 'Yes. Mention the number of suitcases in your WhatsApp message so we send the right vehicle.' },
     { q: 'Do you go outside the 20 km zone?', a: 'Yes, for airports and long distances. Ask us for an estimate via WhatsApp.' },
+    FAQ_JODOIGNE.en,
   ],
 };
 

@@ -168,3 +168,28 @@
   max-width: 52ch;
   margin-bottom: 0;
 }
+
+/* Section « au départ de Jodoigne » (page Aéroport) -------------------------- */
+.airport-from {
+  margin-top: 32px;
+}
+.airport-from .sub {
+  max-width: 62ch;
+  margin-bottom: 0;
+}
+.airport-from-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+}
+.airport-from-cta .btn {
+  flex: 1 1 200px;
+  max-width: 280px;
+}
+@media (min-width: 900px) {
+  .airport-from-cta .btn {
+    flex: 0 0 auto;
+    min-height: 56px;
+  }
+}
